@@ -25,7 +25,9 @@
                 <div class="flex justify-between h-16">
                     <div class="flex items-center">
                         <div class="flex-shrink-0 flex items-center">
-                            <img src="assets/logo.png" alt="LoveCraft Logo" class="h-10 w-10 mr-3">
+                            <div class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center overflow-hidden mr-3 border-2 border-white shadow">
+                                <img src="assets/logo.png" alt="LoveCraft Logo" class="w-8 h-8 object-cover">
+                            </div>
                             <span class="text-2xl font-bold text-purple-600">LoveCraft</span>
                         </div>
                     </div>
@@ -45,11 +47,16 @@
         <div class="gradient-bg">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
                 <div class="text-center">
+                    <div class="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-6 animate-float">
+                        <div class="w-16 h-16 rounded-full bg-white flex items-center justify-center">
+                            <img src="assets/logo.png" alt="LoveCraft" class="w-12 h-12 object-cover">
+                        </div>
+                    </div>
                     <h1 class="text-4xl md:text-6xl font-bold text-white mb-6">
                         Créez des surprises digitales<br>inoubliables
                     </h1>
                     <p class="text-xl text-purple-100 mb-10 max-w-3xl mx-auto">
-                        Comme Max pour Tryphène, créez des déclarations d'amour uniques en quelques minutes.<br>
+                        <span class="font-bold">Comme Max pour Eve</span>, créez des déclarations d'amour uniques en quelques minutes.<br>
                         QR Codes, messages personnalisés, expérience complète.
                     </p>
                     <div class="flex flex-col md:flex-row gap-4 justify-center">
@@ -64,18 +71,16 @@
             </div>
         </div>
 
-        <!-- Login/Signup Modal -->
+        <!-- Modal d'authentification -->
         <div id="authModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
             <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
                 <div class="mt-3">
-                    <!-- Close Button -->
                     <div class="flex justify-end">
                         <button id="closeModal" class="text-gray-400 hover:text-gray-500">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
                     
-                    <!-- Tabs -->
                     <div class="flex border-b mb-6">
                         <button id="tabLogin" class="flex-1 py-2 text-center font-medium text-purple-600 border-b-2 border-purple-600">
                             Connexion
@@ -85,7 +90,6 @@
                         </button>
                     </div>
                     
-                    <!-- Login Form -->
                     <div id="loginForm">
                         <div class="mb-4">
                             <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
@@ -106,12 +110,8 @@
                             <img src="https://www.google.com/favicon.ico" class="w-5 h-5 mr-2">
                             Continuer avec Google
                         </button>
-                        <p class="text-center text-sm text-gray-500 mt-4">
-                            <a href="#" class="text-purple-600 hover:underline">Mot de passe oublié ?</a>
-                        </p>
                     </div>
                     
-                    <!-- Signup Form (hidden by default) -->
                     <div id="signupForm" class="hidden">
                         <div class="mb-4">
                             <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
@@ -137,9 +137,6 @@
                             <img src="https://www.google.com/favicon.ico" class="w-5 h-5 mr-2">
                             S'inscrire avec Google
                         </button>
-                        <p class="text-center text-sm text-gray-500 mt-4">
-                            En vous inscrivant, vous acceptez nos <a href="#" class="text-purple-600 hover:underline">CGU</a> et <a href="#" class="text-purple-600 hover:underline">Politique de confidentialité</a>.
-                        </p>
                     </div>
                 </div>
             </div>
