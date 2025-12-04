@@ -524,16 +524,77 @@ class SurpriseCreator {
     }
 
     showQRCode() {
-        if (!this.surpriseId) return;
-        
-        const url = `${window.location.origin}/LoveCraft/s/?id=${this.surpriseId}`;
-        
-        // Mettre à jour le champ URL
-        const urlInput = document.getElementById('surpriseUrl');
-        if (urlInput) {
-            urlInput.value = url;
-        }
-        
+    if (!this.surpriseId) {
+        console.error('❌ Pas d\'ID de surprise !');
+        return;
+    }
+    
+    const url = `${window.location.origin}/LoveCraft/s/?id=${this.surpriseId}`;
+    console.log('📱 URL de la surprise:', url);
+    
+    // Mettre à jour le champ URL
+    const urlInput = document.getElementById('surpriseUrl');
+    if (urlInput) {
+        urlInput.value = url;
+    }
+    
+    // Vérifier si QRCode est chargé
+    if (typeof QRCode === 'undefined') {
+        console.error('❌ QRCode.js non chargé !');
+        document.getElementById('qrCode').innerHTML = `
+            <div class="text-red-500 text-center p-4">
+                <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+                <p>Erreur: Librairie QRCode non chargée</p>
+                <p class="text-sm">Rechargez la page</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Générer le QR Code
+    const qrElement = document.getElementById('qrCode');
+    if (!qrElement) {
+        console.error('❌ Element #qrCode non trouvé');
+        return;
+    }
+    
+    // Nettoyer l'élément d'abord
+    qrElement.innerHTML = '';
+    
+    try {
+        QRCode.toCanvas(qrElement, url, {
+            width: 200,
+            height: 200,
+            margin: 1,
+            color: {
+                dark: '#7C3AED',
+                light: '#FFFFFF'
+            },
+            errorCorrectionLevel: 'H'
+        }, function (error) {
+            if (error) {
+                console.error('❌ Erreur QR Code:', error);
+                qrElement.innerHTML = `
+                    <div class="text-red-500 text-center p-4">
+                        <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+                        <p>Erreur génération QR Code</p>
+                        <p class="text-sm">${error.message}</p>
+                    </div>
+                `;
+            } else {
+                console.log('✅ QR Code généré avec succès');
+            }
+        });
+    } catch (error) {
+        console.error('❌ Exception QR Code:', error);
+        qrElement.innerHTML = `
+            <div class="text-red-500 text-center p-4">
+                <i class="fas fa-bug text-2xl mb-2"></i>
+                <p>Exception: ${error.message}</p>
+            </div>
+        `;
+    }
+}
         // Générer le QR Code
         QRCode.toCanvas(document.getElementById('qrCode'), url, {
             width: 200,
