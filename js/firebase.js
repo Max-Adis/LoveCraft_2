@@ -1,4 +1,4 @@
-// Firebase configuration
+// Firebase configuration - MODIFIÉ POUR FIRESTORE
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 import { 
     getFirestore, 
@@ -9,20 +9,23 @@ import {
     updateDoc,
     increment 
 } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-analytics.js";
 
-// REMPLACE CES VALEURS AVEC TES CLÉS FIREBASE
+// TES CLÉS FIREBASE (celles que tu as partagées)
 const firebaseConfig = {
-    apiKey: "AIzaSyB...",
-    authDomain: "lovecraft-surprise.firebaseapp.com",
-    projectId: "lovecraft-surprise",
-    storageBucket: "lovecraft-surprise.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "1:123456789:web:abc123def456"
+  apiKey: "AIzaSyB1hcyt4IVDtKcOw2JcVnCcLP5gOvPt4F0",
+  authDomain: "lovecraft-web.firebaseapp.com",
+  projectId: "lovecraft-web",
+  storageBucket: "lovecraft-web.firebasestorage.app",
+  messagingSenderId: "28643241616",
+  appId: "1:28643241616:web:616f5aa143d739cd0f3215",
+  measurementId: "G-L1N4GTS1EL"
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const analytics = getAnalytics(app);
 
 // Export des fonctions Firebase
 export { 
@@ -32,5 +35,6 @@ export {
     getDoc, 
     doc, 
     updateDoc, 
-    increment 
+    increment,
+    analytics 
 };
