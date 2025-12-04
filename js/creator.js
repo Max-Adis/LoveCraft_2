@@ -1,4 +1,4 @@
-import { database, auth, ref, set, get, update } from './firebase.js';
+import { database, auth, ref, set, get, update, remove } from './firebase.js';
 
 class SurpriseCreator {
     constructor(userId) {
@@ -13,13 +13,17 @@ class SurpriseCreator {
             messageFinal: 'Je t\'aime plus que tout au monde...',
             theme: 'romantique',
             createdAt: new Date().toISOString(),
-            views: 0
+            views: 0,
+            completedViews: 0
         };
         this.surpriseId = null;
+        this.editMode = false;
         this.init();
     }
 
     init() {
+        this.checkTemplate();
+        this.checkEditMode();
         this.render();
         this.bindEvents();
         this.checkAuth();
@@ -32,11 +36,50 @@ class SurpriseCreator {
         }
     }
 
+    checkTemplate() {
+        const templateData = localStorage.getItem('selectedTemplate');
+        if (templateData) {
+            try {
+                const template = JSON.parse(templateData);
+                this.surprise.question1 = template.question;
+                this.surprise.messageFinal = template.message;
+                localStorage.removeItem('selectedTemplate');
+            } catch (e) {
+                console.error('Erreur template:', e);
+            }
+        }
+    }
+
+    checkEditMode() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get('edit');
+        if (editId) {
+            this.editMode = true;
+            this.loadSurpriseForEdit(editId);
+        }
+    }
+
+    async loadSurpriseForEdit(id) {
+        try {
+            const surpriseRef = ref(database, 'surprises/' + id);
+            const snapshot = await get(surpriseRef);
+            
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                this.surpriseId = id;
+                this.surprise = { ...data };
+                console.log('Surprise chargée pour édition:', this.surprise);
+            }
+        } catch (error) {
+            console.error('Erreur chargement édition:', error);
+        }
+    }
+
     render() {
         const app = document.getElementById('app');
         app.innerHTML = `
             <div class="max-w-4xl mx-auto">
-                <!-- Header avec info utilisateur -->
+                <!-- Header -->
                 <div class="flex justify-between items-center mb-8">
                     <div class="flex items-center">
                         <a href="dashboard.html" class="flex items-center text-purple-600 hover:text-purple-700">
@@ -55,11 +98,11 @@ class SurpriseCreator {
                     </div>
                 </div>
 
-                <!-- Titre principal -->
+                <!-- Titre -->
                 <div class="text-center mb-8">
                     <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
                         <i class="fas fa-magic text-purple-600 mr-2"></i>
-                        Créez votre surprise
+                        ${this.editMode ? 'Modifier votre surprise' : 'Créez votre surprise'}
                     </h1>
                     <p class="text-gray-600">
                         Personnalisez chaque détail pour créer un moment unique
@@ -78,7 +121,7 @@ class SurpriseCreator {
                             <i class="fas fa-heart text-xl"></i>
                         </div>
                     </div>
-                    <p class="text-lg italic mb-2">"Tryphène a pleuré de joie quand elle a découvert ma surprise digitale."</p>
+                    <p class="text-lg italic mb-2">"Eve a pleuré de joie quand elle a découvert ma surprise digitale."</p>
                     <p class="font-semibold">— Max, créateur de LoveCraft</p>
                 </div>
             </div>
@@ -106,7 +149,7 @@ class SurpriseCreator {
                                     type="text" 
                                     value="${this.surprise.pourQui}"
                                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                                    placeholder="Ex: Tryphène"
+                                    placeholder="Ex: Eve"
                                     required
                                 />
                             </div>
@@ -184,7 +227,7 @@ class SurpriseCreator {
                                     <i class="fas fa-lightbulb mr-1"></i>
                                     Ce message sera révélé à la fin de la surprise
                                 </p>
-                                <span id="charCount" class="text-sm text-gray-500">0/500</span>
+                                <span id="charCount" class="text-sm text-gray-500">${this.surprise.messageFinal.length}/500</span>
                             </div>
                         </div>
                     </div>
@@ -217,9 +260,16 @@ class SurpriseCreator {
                     <!-- Bouton de création -->
                     <div class="pt-6 border-t border-gray-200">
                         <button id="createBtn" class="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-lg hover:opacity-90 transition transform hover:-translate-y-1 shadow-lg">
-                            <i class="fas fa-sparkles mr-2"></i>
-                            Créer ma surprise
+                            <i class="fas fa-${this.editMode ? 'save' : 'sparkles'} mr-2"></i>
+                            ${this.editMode ? 'Mettre à jour la surprise' : 'Créer ma surprise'}
                         </button>
+                        ${this.editMode ? `
+                            <div class="mt-4 text-center">
+                                <button id="deleteBtn" class="text-red-600 hover:text-red-700 text-sm">
+                                    <i class="fas fa-trash mr-1"></i>Supprimer cette surprise
+                                </button>
+                            </div>
+                        ` : ''}
                         <p class="text-center text-sm text-gray-500 mt-4">
                             <i class="fas fa-shield-alt mr-1"></i>
                             Votre surprise sera sauvegardée dans votre espace personnel
@@ -233,9 +283,11 @@ class SurpriseCreator {
             return `
                 <div class="text-center">
                     <div class="text-5xl mb-6 animate-bounce">🎉</div>
-                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Félicitations !</h2>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">
+                        ${this.editMode ? 'Surprise mise à jour !' : 'Félicitations !'}
+                    </h2>
                     <p class="text-gray-600 mb-8">
-                        Votre surprise "<span class="font-semibold">${this.surprise.pourQui}</span>" a été créée avec succès.
+                        Votre surprise "<span class="font-semibold">${this.surprise.pourQui}</span>" a été ${this.editMode ? 'mise à jour' : 'créée'} avec succès.
                     </p>
                     
                     <!-- QR Code -->
@@ -262,7 +314,7 @@ class SurpriseCreator {
                                 id="surpriseUrl" 
                                 value="${window.location.origin}/LoveCraft/s/?id=${this.surpriseId}"
                                 readonly
-                                class="flex-grow px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-700"
+                                class="flex-grow px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-700 text-sm"
                             />
                             <button id="copyLinkBtn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition whitespace-nowrap">
                                 <i class="fas fa-copy mr-2"></i>Copier
@@ -296,7 +348,7 @@ class SurpriseCreator {
                             <div class="text-3xl mb-2">
                                 <i class="fas fa-tachometer-alt"></i>
                             </div>
-                            <span class="font-medium">Tableau de bord</span>
+                            <span class="font-medium">Dashboard</span>
                             <span class="text-xs text-white/80 mt-1">Voir toutes mes surprises</span>
                         </a>
                     </div>
@@ -347,7 +399,7 @@ class SurpriseCreator {
                 }
             });
 
-            // Compteur de caractères pour le message
+            // Compteur de caractères
             const messageInput = document.getElementById('messageFinal');
             if (messageInput) {
                 messageInput.addEventListener('input', (e) => {
@@ -361,8 +413,6 @@ class SurpriseCreator {
                         charCount.classList.remove('text-red-500');
                     }
                 });
-                // Initialiser le compteur
-                document.getElementById('charCount').textContent = `${messageInput.value.length}/500`;
             }
 
             // Boutons de thème
@@ -371,7 +421,6 @@ class SurpriseCreator {
                     const theme = e.currentTarget.dataset.theme;
                     this.surprise.theme = theme;
                     
-                    // Mettre à jour les styles des boutons
                     document.querySelectorAll('.theme-btn').forEach(b => {
                         b.classList.remove('border-pink-500', 'border-blue-500', 'border-yellow-500', 'border-gray-500');
                         b.classList.remove('bg-pink-50', 'bg-blue-50', 'bg-yellow-50', 'bg-gray-50');
@@ -391,10 +440,17 @@ class SurpriseCreator {
                 });
             });
 
-            // Bouton de création
+            // Bouton de création/mise à jour
             document.getElementById('createBtn').addEventListener('click', () => {
                 this.saveSurprise();
             });
+
+            // Bouton de suppression
+            if (this.editMode) {
+                document.getElementById('deleteBtn').addEventListener('click', () => {
+                    this.deleteSurprise();
+                });
+            }
 
             // Entrée pour soumettre
             document.addEventListener('keypress', (e) => {
@@ -405,6 +461,7 @@ class SurpriseCreator {
         }
 
         if (this.step === 2) {
+            this.showQRCode();
             this.bindResultEvents();
         }
     }
@@ -421,25 +478,24 @@ class SurpriseCreator {
             return;
         }
 
-        // Vérifier l'authentification
         if (!this.user) {
             alert('Session expirée. Veuillez vous reconnecter.');
             window.location.href = 'index.html';
             return;
         }
 
-        // Désactiver le bouton pendant la sauvegarde
         const createBtn = document.getElementById('createBtn');
         if (createBtn) {
-            createBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Création en cours...';
+            createBtn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>${this.editMode ? 'Mise à jour...' : 'Création en cours...'}`;
             createBtn.disabled = true;
         }
 
         try {
-            // Générer un ID unique
-            this.surpriseId = `surprise_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-            
-            // Préparer les données complètes
+            // Générer un ID si nouvelle surprise
+            if (!this.editMode) {
+                this.surpriseId = `surprise_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            }
+
             const surpriseData = {
                 // Données de base
                 pourQui: this.surprise.pourQui.trim(),
@@ -456,14 +512,7 @@ class SurpriseCreator {
                 userPhoto: this.user.photoURL || '',
                 
                 // Dates
-                createdAt: new Date().toISOString(),
-                createdTimestamp: Date.now(),
                 lastUpdated: new Date().toISOString(),
-                
-                // Statistiques
-                views: 0,
-                shares: 0,
-                completedViews: 0,
                 
                 // Statut
                 status: 'active',
@@ -472,38 +521,47 @@ class SurpriseCreator {
                 // Autres
                 version: '1.0'
             };
-            
+
+            // Ajouter createdAt seulement pour nouvelle surprise
+            if (!this.editMode) {
+                surpriseData.createdAt = new Date().toISOString();
+                surpriseData.createdTimestamp = Date.now();
+                surpriseData.views = 0;
+                surpriseData.completedViews = 0;
+            }
+
             console.log('📝 Sauvegarde de la surprise:', surpriseData);
             
-            // 1. Sauvegarder la surprise principale
+            // Sauvegarder dans Firebase
             await set(ref(database, 'surprises/' + this.surpriseId), surpriseData);
             console.log('✅ Surprise sauvegardée avec ID:', this.surpriseId);
             
-            // 2. Ajouter à la liste des surprises de l'utilisateur
-            await set(ref(database, 'users/' + this.user.uid + '/surprises/' + this.surpriseId), {
-                id: this.surpriseId,
-                pourQui: this.surprise.pourQui,
-                createdAt: new Date().toISOString(),
-                theme: this.surprise.theme,
-                views: 0
-            });
-            console.log('✅ Ajoutée à la liste utilisateur');
-            
-            // 3. Mettre à jour les stats utilisateur
-            const userStatsRef = ref(database, 'users/' + this.user.uid + '/stats');
-            const statsSnapshot = await get(userStatsRef);
-            const currentStats = statsSnapshot.exists() ? statsSnapshot.val() : {
-                totalSurprises: 0,
-                totalViews: 0,
-                lastCreated: null
-            };
-            
-            await update(ref(database, 'users/' + this.user.uid + '/stats'), {
-                totalSurprises: (currentStats.totalSurprises || 0) + 1,
-                lastCreated: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-            });
-            console.log('✅ Stats mises à jour');
+            // Si nouvelle surprise, ajouter à la liste utilisateur
+            if (!this.editMode) {
+                await set(ref(database, 'users/' + this.user.uid + '/surprises/' + this.surpriseId), {
+                    id: this.surpriseId,
+                    pourQui: this.surprise.pourQui,
+                    createdAt: new Date().toISOString(),
+                    theme: this.surprise.theme,
+                    views: 0
+                });
+                console.log('✅ Ajoutée à la liste utilisateur');
+                
+                // Mettre à jour les stats utilisateur
+                const userStatsRef = ref(database, 'users/' + this.user.uid + '/stats');
+                const statsSnapshot = await get(userStatsRef);
+                const currentStats = statsSnapshot.exists() ? statsSnapshot.val() : {
+                    totalSurprises: 0,
+                    totalViews: 0,
+                    lastCreated: null
+                };
+                
+                await update(ref(database, 'users/' + this.user.uid + '/stats'), {
+                    totalSurprises: (currentStats.totalSurprises || 0) + 1,
+                    lastCreated: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                });
+            }
             
             // Passer à l'étape 2
             this.step = 2;
@@ -515,107 +573,100 @@ class SurpriseCreator {
             console.error('❌ Erreur Firebase:', error);
             this.showError(`Erreur de sauvegarde: ${error.message}`);
             
-            // Réactiver le bouton
             if (createBtn) {
-                createBtn.innerHTML = '<i class="fas fa-sparkles mr-2"></i>Créer ma surprise';
+                createBtn.innerHTML = `<i class="fas fa-${this.editMode ? 'save' : 'sparkles'} mr-2"></i>${this.editMode ? 'Mettre à jour la surprise' : 'Créer ma surprise'}`;
                 createBtn.disabled = false;
             }
         }
     }
 
+    async deleteSurprise() {
+        if (!this.surpriseId || !confirm('Supprimer cette surprise ? Cette action est irréversible.')) {
+            return;
+        }
+
+        try {
+            await remove(ref(database, 'surprises/' + this.surpriseId));
+            await remove(ref(database, 'users/' + this.user.uid + '/surprises/' + this.surpriseId));
+            
+            alert('Surprise supprimée avec succès !');
+            window.location.href = 'dashboard.html';
+        } catch (error) {
+            console.error('Erreur suppression:', error);
+            this.showError('Erreur lors de la suppression');
+        }
+    }
+
     showQRCode() {
-    if (!this.surpriseId) {
-        console.error('❌ Pas d\'ID de surprise !');
-        return;
-    }
-    
-    const url = `${window.location.origin}/LoveCraft/s/?id=${this.surpriseId}`;
-    console.log('📱 URL de la surprise:', url);
-    
-    // Mettre à jour le champ URL
-    const urlInput = document.getElementById('surpriseUrl');
-    if (urlInput) {
-        urlInput.value = url;
-    }
-    
-    // Vérifier si QRCode est chargé
-    if (typeof QRCode === 'undefined') {
-        console.error('❌ QRCode.js non chargé !');
-        document.getElementById('qrCode').innerHTML = `
-            <div class="text-red-500 text-center p-4">
-                <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
-                <p>Erreur: Librairie QRCode non chargée</p>
-                <p class="text-sm">Rechargez la page</p>
-            </div>
-        `;
-        return;
-    }
-    
-    // Générer le QR Code
-    const qrElement = document.getElementById('qrCode');
-    if (!qrElement) {
-        console.error('❌ Element #qrCode non trouvé');
-        return;
-    }
-    
-    // Nettoyer l'élément d'abord
-    qrElement.innerHTML = '';
-    
-    try {
-        QRCode.toCanvas(qrElement, url, {
-            width: 200,
-            height: 200,
-            margin: 1,
-            color: {
-                dark: '#7C3AED',
-                light: '#FFFFFF'
-            },
-            errorCorrectionLevel: 'H'
-        }, function (error) {
-            if (error) {
-                console.error('❌ Erreur QR Code:', error);
-                qrElement.innerHTML = `
-                    <div class="text-red-500 text-center p-4">
-                        <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
-                        <p>Erreur génération QR Code</p>
-                        <p class="text-sm">${error.message}</p>
-                    </div>
-                `;
-            } else {
-                console.log('✅ QR Code généré avec succès');
-            }
-        });
-    } catch (error) {
-        console.error('❌ Exception QR Code:', error);
-        qrElement.innerHTML = `
-            <div class="text-red-500 text-center p-4">
-                <i class="fas fa-bug text-2xl mb-2"></i>
-                <p>Exception: ${error.message}</p>
-            </div>
-        `;
-    }
-}
+        if (!this.surpriseId) {
+            console.error('❌ Pas d\'ID de surprise !');
+            return;
+        }
+        
+        const url = `${window.location.origin}/LoveCraft/s/?id=${this.surpriseId}`;
+        console.log('📱 URL de la surprise:', url);
+        
+        // Mettre à jour le champ URL
+        const urlInput = document.getElementById('surpriseUrl');
+        if (urlInput) {
+            urlInput.value = url;
+        }
+        
+        // Vérifier si QRCode.js est chargé
+        if (typeof QRCode === 'undefined') {
+            console.error('❌ QRCode.js non chargé !');
+            document.getElementById('qrCode').innerHTML = `
+                <div class="text-red-500 text-center p-4">
+                    <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+                    <p>Erreur: Librairie QRCode non chargée</p>
+                    <p class="text-sm">Rechargez la page</p>
+                </div>
+            `;
+            return;
+        }
+        
         // Générer le QR Code
-        QRCode.toCanvas(document.getElementById('qrCode'), url, {
-            width: 200,
-            height: 200,
-            margin: 2,
-            color: {
-                dark: '#7C3AED', // Couleur violette
-                light: '#FFFFFF'
-            },
-            errorCorrectionLevel: 'H'
-        }, function (error) {
-            if (error) {
-                console.error('Erreur QR Code:', error);
-                document.getElementById('qrCode').innerHTML = `
-                    <div class="text-red-500 p-4">
-                        <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
-                        <p>Erreur de génération du QR Code</p>
-                    </div>
-                `;
-            }
-        });
+        const qrElement = document.getElementById('qrCode');
+        if (!qrElement) {
+            console.error('❌ Element #qrCode non trouvé');
+            return;
+        }
+        
+        // Nettoyer l'élément
+        qrElement.innerHTML = '';
+        
+        try {
+            QRCode.toCanvas(qrElement, url, {
+                width: 200,
+                height: 200,
+                margin: 1,
+                color: {
+                    dark: '#7C3AED',
+                    light: '#FFFFFF'
+                },
+                errorCorrectionLevel: 'H'
+            }, function (error) {
+                if (error) {
+                    console.error('❌ Erreur QR Code:', error);
+                    qrElement.innerHTML = `
+                        <div class="text-red-500 text-center p-4">
+                            <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+                            <p>Erreur génération QR Code</p>
+                        </div>
+                    `;
+                } else {
+                    console.log('✅ QR Code généré avec succès');
+                }
+            });
+        } catch (error) {
+            console.error('❌ Exception QR Code:', error);
+            qrElement.innerHTML = `
+                <div class="text-red-500 text-center p-4">
+                    <i class="fas fa-bug text-2xl mb-2"></i>
+                    <p>Exception: ${error.message}</p>
+                </div>
+            `;
+        }
     }
 
     bindResultEvents() {
@@ -623,26 +674,46 @@ class SurpriseCreator {
         document.getElementById('copyLinkBtn').addEventListener('click', () => {
             const urlInput = document.getElementById('surpriseUrl');
             urlInput.select();
-            document.execCommand('copy');
+            urlInput.setSelectionRange(0, 99999); // Pour mobile
             
-            // Animation de confirmation
-            const btn = document.getElementById('copyLinkBtn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-check mr-2"></i>Copié !';
-            btn.classList.add('bg-green-600');
-            
-            setTimeout(() => {
-                btn.innerHTML = originalText;
-                btn.classList.remove('bg-green-600');
-            }, 2000);
+            try {
+                navigator.clipboard.writeText(urlInput.value).then(() => {
+                    const btn = document.getElementById('copyLinkBtn');
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-check mr-2"></i>Copié !';
+                    btn.classList.add('bg-green-600');
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.classList.remove('bg-green-600');
+                    }, 2000);
+                });
+            } catch (err) {
+                // Fallback pour anciens navigateurs
+                document.execCommand('copy');
+                const btn = document.getElementById('copyLinkBtn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check mr-2"></i>Copié !';
+                btn.classList.add('bg-green-600');
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('bg-green-600');
+                }, 2000);
+            }
         });
         
         // Télécharger PNG
         document.getElementById('downloadPNG').addEventListener('click', () => {
+            if (typeof html2canvas === 'undefined') {
+                this.showError('html2canvas non chargé. Rechargez la page.');
+                return;
+            }
+            
             const qrContainer = document.getElementById('qrContainer');
             html2canvas(qrContainer, {
                 backgroundColor: '#ffffff',
-                scale: 2 // Qualité HD
+                scale: 2
             }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = `LoveCraft_${this.surprise.pourQui}_QRCode.png`;
@@ -652,18 +723,28 @@ class SurpriseCreator {
                 document.body.removeChild(link);
             }).catch(error => {
                 console.error('Erreur PNG:', error);
-                alert('Erreur lors de la génération du PNG');
+                this.showError('Erreur lors de la génération du PNG');
             });
         });
         
         // Télécharger PDF
         document.getElementById('downloadPDF').addEventListener('click', () => {
+            if (typeof jsPDF === 'undefined') {
+                this.showError('jsPDF non chargé. Rechargez la page.');
+                return;
+            }
+            
+            if (typeof html2canvas === 'undefined') {
+                this.showError('html2canvas non chargé. Rechargez la page.');
+                return;
+            }
+            
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF('p', 'mm', 'a4');
             
             // Titre
             pdf.setFontSize(24);
-            pdf.setTextColor(124, 58, 237); // Violet
+            pdf.setTextColor(124, 58, 237);
             pdf.text('✨ LoveCraft Surprise ✨', 105, 20, { align: 'center' });
             
             // Sous-titre
@@ -704,18 +785,20 @@ class SurpriseCreator {
                 // Footer
                 pdf.setFontSize(10);
                 pdf.setTextColor(100, 100, 100);
-                pdf.text('Crée avec ❤️ sur LoveCraft - Inspiré par Max & Tryphène', 105, 280, { align: 'center' });
+                pdf.text('Crée avec ❤️ sur LoveCraft - Inspiré par Max & Eve', 105, 280, { align: 'center' });
                 
                 // Sauvegarder
                 pdf.save(`LoveCraft_Surprise_${this.surprise.pourQui}.pdf`);
+            }).catch(error => {
+                console.error('Erreur PDF:', error);
+                this.showError('Erreur lors de la génération du PDF');
             });
         });
     }
 
     showError(message) {
-        // Créer une alerte élégante
         const alertDiv = document.createElement('div');
-        alertDiv.className = 'fixed top-4 right-4 bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg shadow-lg z-50 max-w-md animate-slideIn';
+        alertDiv.className = 'fixed top-4 right-4 bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg shadow-lg z-50 max-w-md';
         alertDiv.innerHTML = `
             <div class="flex items-center">
                 <i class="fas fa-exclamation-circle text-xl mr-3"></i>
@@ -731,25 +814,12 @@ class SurpriseCreator {
         
         document.body.appendChild(alertDiv);
         
-        // Supprimer automatiquement après 5 secondes
         setTimeout(() => {
             if (alertDiv.parentElement) {
                 alertDiv.remove();
             }
         }, 5000);
-        
-        // Ajouter l'animation CSS
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideIn {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-            .animate-slideIn { animation: slideIn 0.3s ease-out; }
-        `;
-        document.head.appendChild(style);
     }
 }
 
-// Export pour l'utiliser dans create.html
 export default SurpriseCreator;
