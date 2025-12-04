@@ -257,4 +257,49 @@ class SurpriseViewer {
         const input = document.getElementById('userAnswer').value.toLowerCase().trim();
         const expected = this.surprise.reponse1.toLowerCase();
         
-        // Si pas de réponse attend
+        // Si pas de réponse attendue, passer directement
+        if (!this.surprise.reponse1 || this.surprise.reponse1.trim() === '') {
+            this.step = 3;
+            this.render();
+            this.bindEvents();
+            return;
+        }
+        
+        if (input === expected || 
+            input.includes(expected) || 
+            expected.includes(input)) {
+            this.step = 3;
+            this.render();
+            this.bindEvents();
+        } else {
+            document.getElementById('error').classList.remove('hidden');
+            document.getElementById('error').textContent = 
+                `Indice : Réfléchis à qui a créé cette surprise... (${this.surprise.reponse1})`;
+            
+            const inputField = document.getElementById('userAnswer');
+            inputField.classList.add('border-red-500');
+            setTimeout(() => inputField.classList.remove('border-red-500'), 500);
+        }
+    }
+
+    shareSurprise() {
+        const shareUrl = window.location.href;
+        const shareText = `Découvre la surprise que ${this.surprise.deLaPartDe} a créée pour moi sur LoveCraft ! ❤️`;
+        
+        if (navigator.share) {
+            navigator.share({
+                title: 'Surprise LoveCraft',
+                text: shareText,
+                url: shareUrl,
+            });
+        } else {
+            // Fallback: copier le lien
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                alert('Lien copié dans le presse-papier ! Partage-le avec tes amis.');
+            });
+        }
+    }
+}
+
+// Démarrer la surprise
+new SurpriseViewer();
