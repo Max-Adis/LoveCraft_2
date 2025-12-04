@@ -5,16 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LoveCraft - Crée ta surprise d'amour</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <style>
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes pulse-heart {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        .animate-pulse-heart { animation: pulse-heart 1.5s ease-in-out infinite; }
+    </style>
+    <!-- Scripts externes -->
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script type="module" src="js/firebase.js"></script>
 </head>
 <body class="bg-gradient-to-br from-pink-50 to-red-50 min-h-screen">
-    <!-- Le contenu sera chargé par JavaScript -->
     <div id="app" class="min-h-screen p-4 md:p-8"></div>
     
+    <!-- Scripts locaux -->
     <script type="module" src="js/creator.js"></script>
 </body>
 </html>
