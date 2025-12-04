@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord - LoveCraft</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            transition: transform 0.3s ease;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div id="app">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 flex items-center">
+                            <img src="assets/logo.png" alt="LoveCraft Logo" class="h-10 w-10 mr-3">
+                            <span class="text-2xl font-bold text-purple-600">LoveCraft</span>
+                        </div>
+                        <div class="hidden md:block ml-10">
+                            <div class="flex items-baseline space-x-4">
+                                <a href="dashboard.html" class="bg-purple-100 text-purple-700 px-3 py-2 rounded-md text-sm font-medium">
+                                    <i class="fas fa-tachometer-alt mr-1"></i>Tableau de bord
+                                </a>
+                                <a href="create.html" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">
+                                    <i class="fas fa-plus-circle mr-1"></i>Créer une surprise
+                                </a>
+                                <a href="#" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">
+                                    <i class="fas fa-history mr-1"></i>Historique
+                                </a>
+                                <a href="#" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">
+                                    <i class="fas fa-cog mr-1"></i>Paramètres
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="relative group" id="userMenu">
+                            <button class="flex items-center space-x-2 focus:outline-none">
+                                <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <span id="userEmail" class="text-sm font-medium text-gray-700"></span>
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </button>
+                            <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden group-hover:block z-10">
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-user mr-2"></i>Mon profil
+                                </a>
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-crown mr-2"></i>Pass Premium
+                                </a>
+                                <div class="border-t my-1"></div>
+                                <button id="logoutBtn" class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                    <i class="fas fa-sign-out-alt mr-2"></i>Déconnexion
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
+                            <i class="fas fa-gift text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Surprises créées</p>
+                            <p id="totalSurprises" class="text-3xl font-bold">0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-green-100 text-green-600 mr-4">
+                            <i class="fas fa-eye text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Vues totales</p>
+                            <p id="totalViews" class="text-3xl font-bold">0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-purple-100 text-purple-600 mr-4">
+                            <i class="fas fa-heart text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Taux de succès</p>
+                            <p id="successRate" class="text-3xl font-bold">0%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="mb-8">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-gray-800">Actions rapides</h2>
+                    <a href="create.html" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition flex items-center">
+                        <i class="fas fa-plus mr-2"></i>Nouvelle surprise
+                    </a>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <button onclick="window.location.href='create.html'" class="bg-white border border-gray-200 rounded-xl p-6 text-center hover:border-purple-300 transition card-hover">
+                        <div class="text-4xl text-purple-600 mb-4">
+                            <i class="fas fa-magic"></i>
+                        </div>
+                        <h3 class="font-bold text-gray-800 mb-2">Créer une surprise</h3>
+                        <p class="text-sm text-gray-600">Créez une nouvelle déclaration personnalisée</p>
+                    </button>
+                    <button onclick="importTemplate()" class="bg-white border border-gray-200 rounded-xl p-6 text-center hover:border-purple-300 transition card-hover">
+                        <div class="text-4xl text-blue-600 mb-4">
+                            <i class="fas fa-file-import"></i>
+                        </div>
+                        <h3 class="font-bold text-gray-800 mb-2">Importer un modèle</h3>
+                        <p class="text-sm text-gray-600">Utilisez un de nos templates pré-faits</p>
+                    </button>
+                    <button onclick="showStats()" class="bg-white border border-gray-200 rounded-xl p-6 text-center hover:border-purple-300 transition card-hover">
+                        <div class="text-4xl text-green-600 mb-4">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 class="font-bold text-gray-800 mb-2">Analytiques</h3>
+                        <p class="text-sm text-gray-600">Voir les performances de vos surprises</p>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent Surprises -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">Dernières surprises</h2>
+                    <a href="#" class="text-purple-600 hover:text-purple-700 text-sm font-medium">
+                        Voir tout <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+                <div id="surprisesList" class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pour</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vues</th>
+                                <th class="px 6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="surprisesTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Rempli par JavaScript -->
+                            <tr>
+                                <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                                    <i class="fas fa-gift text-4xl mb-4 text-gray-300"></i>
+                                    <p>Aucune surprise créée pour le moment</p>
+                                    <a href="create.html" class="inline-block mt-4 text-purple-600 hover:text-purple-700">
+                                        Créer votre première surprise
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tutorial -->
+            <div class="mt-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-8 text-white">
+                <div class="flex flex-col md:flex-row items-center justify-between">
+                    <div>
+                        <h3 class="text-2xl font-bold mb-2">Nouveau sur LoveCraft ?</h3>
+                        <p class="mb-4 max-w-2xl">Découvrez comment Max a surpris Tryphène et inspirez-vous pour créer vos propres moments magiques.</p>
+                        <button onclick="showTutorial()" class="bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition">
+                            <i class="fas fa-play-circle mr-2"></i>Voir le tutoriel
+                        </button>
+                    </div>
+                    <div class="mt-4 md:mt-0">
+                        <div class="text-6xl animate-pulse">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/dashboard.js"></script>
+</body>
+</html>
