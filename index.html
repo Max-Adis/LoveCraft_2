@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LoveCraft - Créez des surprises digitales</title>
+    <title data-i18n="app.title">LoveCraft - Créez des surprises digitales</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -11,35 +11,78 @@
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-10px); }
         }
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
         .animate-float { animation: float 3s ease-in-out infinite; }
+        .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+        .animate-fadeIn { animation: fadeIn 0.5s ease-out; }
         .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .emoji-float {
+            position: absolute;
+            font-size: 2rem;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+        }
+        .emoji-rating {
+            font-size: 2.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 5px;
+            border-radius: 10px;
+        }
+        .emoji-rating:hover {
+            transform: scale(1.2);
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col bg-gray-50">
     <div id="app" class="flex-grow">
+        <!-- Décorations flottantes -->
+        <div class="emoji-float top-10 left-5 animate-float delay-100">❤️</div>
+        <div class="emoji-float top-20 right-10 animate-float delay-300">✨</div>
+        <div class="emoji-float bottom-20 left-10 animate-float delay-500">🎉</div>
+        <div class="emoji-float bottom-10 right-20 animate-pulse-glow delay-700">💖</div>
+        <div class="emoji-float top-1/3 left-1/4 animate-float delay-900">😊</div>
+        <div class="emoji-float top-1/4 right-1/4 animate-float delay-1100">🥰</div>
+
         <!-- Navigation -->
-        <nav class="bg-white shadow-sm">
+        <nav class="bg-white shadow-sm relative z-10">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-16">
                     <div class="flex items-center">
                         <a href="index.html" class="flex-shrink-0 flex items-center">
-                            <!-- LOGO EN CERCLE -->
-                            <div class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center overflow-hidden mr-3 border-2 border-white shadow">
-                                <img src="assets/logo.png" alt="LoveCraft Logo" class="w-full h-full object-cover">
+                            <!-- LOGO ROND PARFAIT -->
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center overflow-hidden mr-3 border-2 border-white shadow-lg">
+                                <img src="assets/logo.png" alt="LoveCraft Logo" 
+                                     class="w-full h-full object-cover p-0.5">
                             </div>
                             <span class="text-2xl font-bold text-purple-600">LoveCraft</span>
                         </a>
                     </div>
                     <div class="flex items-center space-x-4">
-                        <a href="#" id="langToggle" class="text-gray-700 hover:text-purple-600 text-sm">
+                        <a href="#" id="langToggle" class="text-gray-700 hover:text-purple-600 text-sm px-3 py-2 rounded-md hover:bg-purple-50 transition">
                             <i class="fas fa-globe mr-1"></i>EN
                         </a>
-                        <a href="#" id="loginBtn" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">
+                        <a href="#" id="loginBtn" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium hover:bg-purple-50 transition" data-i18n="nav.login">
                             Connexion
                         </a>
-                        <a href="#" id="signupBtn" class="bg-purple-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-purple-700">
+                        <a href="#" id="signupBtn" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:opacity-90 transition shadow-md hover:shadow-lg" data-i18n="nav.signup">
                             Inscription
                         </a>
                     </div>
@@ -51,24 +94,25 @@
         <div class="gradient-bg relative overflow-hidden">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 relative z-10">
                 <div class="text-center">
-                    <!-- LOGO EN CERCLE DANS HERO -->
                     <div class="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-6 animate-float">
                         <div class="w-16 h-16 rounded-full bg-white flex items-center justify-center">
-                            <img src="assets/logo.png" alt="LoveCraft" class="w-12 h-12 object-cover">
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center overflow-hidden">
+                                <img src="assets/logo.png" alt="LoveCraft" class="w-full h-full object-cover p-0.5">
+                            </div>
                         </div>
                     </div>
-                    <h1 class="text-4xl md:text-6xl font-bold text-white mb-6">
+                    <h1 class="text-4xl md:text-6xl font-bold text-white mb-6 animate-fadeIn" data-i18n-html="hero.title">
                         Créez des surprises digitales<br>inoubliables
                     </h1>
-                    <p class="text-xl text-purple-100 mb-10 max-w-3xl mx-auto">
+                    <p class="text-xl text-purple-100 mb-10 max-w-3xl mx-auto animate-fadeIn delay-200">
                         <span class="font-bold">Comme Max pour Eve</span>, créez des déclarations d'amour uniques en quelques minutes.
                     </p>
-                    <div class="flex flex-col md:flex-row gap-4 justify-center">
+                    <div class="flex flex-col md:flex-row gap-4 justify-center animate-fadeIn delay-300">
                         <button id="ctaSignup" class="bg-white text-purple-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-purple-50 transition shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                            <i class="fas fa-heart mr-2"></i>Commencer gratuitement
+                            <i class="fas fa-heart mr-2"></i><span data-i18n="hero.cta1">Commencer gratuitement</span>
                         </button>
                         <a href="story.html" class="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-white/10 transition">
-                            <i class="fas fa-play mr-2"></i>Voir notre histoire
+                            <i class="fas fa-play mr-2"></i><span data-i18n="hero.cta2">Voir notre histoire</span>
                         </a>
                     </div>
                 </div>
@@ -83,20 +127,48 @@
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="bg-white p-8 rounded-2xl shadow-lg text-center hover:shadow-xl transition">
+                <div class="bg-white p-8 rounded-2xl shadow-lg text-center hover:shadow-xl transition card-hover">
                     <div class="text-4xl mb-4 text-purple-600">1️⃣</div>
                     <h3 class="text-xl font-bold text-gray-800 mb-3">Personnalisez</h3>
                     <p class="text-gray-600">Créez votre message unique avec le nom de votre bien-aimé(e)</p>
                 </div>
-                <div class="bg-white p-8 rounded-2xl shadow-lg text-center hover:shadow-xl transition">
+                <div class="bg-white p-8 rounded-2xl shadow-lg text-center hover:shadow-xl transition card-hover">
                     <div class="text-4xl mb-4 text-pink-600">2️⃣</div>
                     <h3 class="text-xl font-bold text-gray-800 mb-3">Générez</h3>
                     <p class="text-gray-600">Obtenez un QR Code et un lien à partager</p>
                 </div>
-                <div class="bg-white p-8 rounded-2xl shadow-lg text-center hover:shadow-xl transition">
+                <div class="bg-white p-8 rounded-2xl shadow-lg text-center hover:shadow-xl transition card-hover">
                     <div class="text-4xl mb-4 text-blue-600">3️⃣</div>
                     <h3 class="text-xl font-bold text-gray-800 mb-3">Surprenez</h3>
                     <p class="text-gray-600">Regardez la réaction quand ils découvrent votre surprise</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="bg-gradient-to-r from-purple-500 to-pink-500 text-white py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold mb-4">Rejoignez notre communauté d'amoureux</h2>
+                    <p class="text-xl opacity-90">Des milliers de surprises créées avec amour</p>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                    <div>
+                        <div class="text-4xl font-bold mb-2" id="statSurprises">1,247+</div>
+                        <div class="opacity-90">Surprises créées</div>
+                    </div>
+                    <div>
+                        <div class="text-4xl font-bold mb-2" id="statUsers">500+</div>
+                        <div class="opacity-90">Utilisateurs heureux</div>
+                    </div>
+                    <div>
+                        <div class="text-4xl font-bold mb-2" id="statCountries">25+</div>
+                        <div class="opacity-90">Pays</div>
+                    </div>
+                    <div>
+                        <div class="text-4xl font-bold mb-2" id="statSuccess">98%</div>
+                        <div class="opacity-90">Taux de satisfaction</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -108,9 +180,8 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div>
                     <div class="flex items-center mb-4">
-                        <!-- LOGO EN CERCLE FOOTER -->
-                        <div class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center overflow-hidden mr-3">
-                            <img src="assets/logo.png" alt="LoveCraft Logo" class="w-full h-full object-cover">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center overflow-hidden mr-3">
+                            <img src="assets/logo.png" alt="LoveCraft Logo" class="w-full h-full object-cover p-0.5">
                         </div>
                         <span class="text-xl font-bold">LoveCraft</span>
                     </div>
@@ -118,127 +189,248 @@
                 </div>
                 
                 <div>
-                    <h3 class="font-bold text-lg mb-4">Navigation</h3>
+                    <h3 class="font-bold text-lg mb-4" data-i18n="footer.navigation">Navigation</h3>
                     <ul class="space-y-2">
-                        <li><a href="index.html" class="text-gray-400 hover:text-white">Accueil</a></li>
-                        <li><a href="story.html" class="text-gray-400 hover:text-white">Notre histoire</a></li>
-                        <li><a href="#" id="footerLogin" class="text-gray-400 hover:text-white">Connexion</a></li>
-                        <li><a href="#" id="footerSignup" class="text-gray-400 hover:text-white">Inscription</a></li>
+                        <li><a href="index.html" class="text-gray-400 hover:text-white transition">Accueil</a></li>
+                        <li><a href="story.html" class="text-gray-400 hover:text-white transition">Notre histoire</a></li>
+                        <li><a href="#" id="footerLogin" class="text-gray-400 hover:text-white transition">Connexion</a></li>
+                        <li><a href="#" id="footerSignup" class="text-gray-400 hover:text-white transition">Inscription</a></li>
                     </ul>
                 </div>
                 
                 <div>
-                    <h3 class="font-bold text-lg mb-4">Légal</h3>
+                    <h3 class="font-bold text-lg mb-4" data-i18n="footer.legal">Légal</h3>
                     <ul class="space-y-2">
-                        <li><a href="legal/terms.html" class="text-gray-400 hover:text-white">Conditions d'utilisation</a></li>
-                        <li><a href="legal/privacy.html" class="text-gray-400 hover:text-white">Politique de confidentialité</a></li>
-                        <li><a href="legal/cookies.html" class="text-gray-400 hover:text-white">Cookies</a></li>
+                        <li><a href="legal/terms.html" class="text-gray-400 hover:text-white transition">Conditions d'utilisation</a></li>
+                        <li><a href="legal/privacy.html" class="text-gray-400 hover:text-white transition">Politique de confidentialité</a></li>
+                        <li><a href="legal/cookies.html" class="text-gray-400 hover:text-white transition">Cookies</a></li>
                     </ul>
                 </div>
                 
                 <div>
-                    <h3 class="font-bold text-lg mb-4">Contact</h3>
+                    <h3 class="font-bold text-lg mb-4" data-i18n="footer.contact">Contact</h3>
                     <ul class="space-y-2">
-                        <!-- LIEN CONTACT FONCTIONNEL -->
-                        <li><a href="mailto:contact@lovecraft.com" class="text-gray-400 hover:text-white">contact@lovecraft.com</a></li>
-                        <li><a href="#" onclick="showContactModal()" class="text-gray-400 hover:text-white">Donnez votre avis</a></li>
-                        <li><a href="#" onclick="showSupportModal()" class="text-gray-400 hover:text-white">Support</a></li>
+                        <li>
+                            <a href="mailto:contact@lovecraft.com" class="text-gray-400 hover:text-white transition">
+                                <i class="fas fa-envelope mr-2"></i>contact@lovecraft.com
+                            </a>
+                        </li>
+                        <li>
+                            <button id="footerFeedbackBtn" class="text-gray-400 hover:text-white transition text-left w-full">
+                                <i class="fas fa-comment-alt mr-2"></i>Donnez votre avis
+                            </button>
+                        </li>
+                        <li>
+                            <button id="footerSupportBtn" class="text-gray-400 hover:text-white transition text-left w-full">
+                                <i class="fas fa-headset mr-2"></i>Support
+                            </button>
+                        </li>
                     </ul>
                 </div>
             </div>
             
             <div class="border-t border-gray-700 mt-8 pt-8 text-center">
-                <p class="text-gray-400">© 2025 LoveCraft - Conçu avec ❤️ par Max_Adis</p>
-                <p class="text-gray-500 text-sm mt-2">Inspiré par une histoire vraie d'amour</p>
+                <p class="text-gray-400" data-i18n="footer.copyright">© 2025 LoveCraft - Conçu avec ❤️ par Max_Adis</p>
+                <p class="text-gray-500 text-sm mt-2" data-i18n="footer.story">Inspiré par une histoire vraie d'amour</p>
             </div>
         </div>
     </footer>
 
     <!-- Modals -->
     <div id="authModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <!-- Contenu auth (identique) -->
-    </div>
-
-    <!-- Modal Contact -->
-    <div id="contactModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 overflow-y-auto">
-        <div class="min-h-screen flex items-center justify-center p-4">
-            <div class="bg-white rounded-xl max-w-2xl w-full">
-                <div class="p-8">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-2xl font-bold text-gray-800">Contactez LoveCraft</h3>
-                        <button onclick="closeModal('contactModal')" class="text-gray-400 hover:text-gray-600">
-                            <i class="fas fa-times text-xl"></i>
-                        </button>
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex justify-end">
+                    <button id="closeModal" class="text-gray-400 hover:text-gray-500">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="flex border-b mb-6">
+                    <button id="tabLogin" class="flex-1 py-2 text-center font-medium text-purple-600 border-b-2 border-purple-600">
+                        <span data-i18n="auth.login">Connexion</span>
+                    </button>
+                    <button id="tabSignup" class="flex-1 py-2 text-center font-medium text-gray-500">
+                        <span data-i18n="auth.signup">Inscription</span>
+                    </button>
+                </div>
+                
+                <div id="loginForm">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" data-i18n="auth.email">Email</label>
+                        <input type="email" id="loginEmail" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-800" placeholder="votre@email.com">
                     </div>
-                    
-                    <form id="contactForm" action="https://formspree.io/f/mgvgzykk" method="POST">
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Nom</label>
-                                <input type="text" name="name" required class="w-full px-4 py-2 border rounded-lg">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                                <input type="email" name="email" required class="w-full px-4 py-2 border rounded-lg">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Message</label>
-                                <textarea name="message" rows="5" required class="w-full px-4 py-2 border rounded-lg" placeholder="Votre avis, suggestion ou question..."></textarea>
-                            </div>
-                            <button type="submit" class="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition">
-                                Envoyer le message
-                            </button>
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" data-i18n="auth.password">Mot de passe</label>
+                        <input type="password" id="loginPassword" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-800" placeholder="••••••••">
+                        <div class="text-right mt-2">
+                            <button id="forgotPassword" class="text-sm text-purple-600 hover:text-purple-700" data-i18n="auth.forgotPassword">Mot de passe oublié ?</button>
                         </div>
-                    </form>
+                    </div>
+                    <div id="loginError" class="text-red-500 text-sm mb-4 hidden"></div>
+                    <button id="submitLogin" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition">
+                        <span data-i18n="auth.login">Se connecter</span>
+                    </button>
+                    <div class="text-center my-4">
+                        <span class="text-gray-500" data-i18n="auth.or">ou</span>
+                    </div>
+                    <button id="googleLogin" class="w-full bg-white border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition flex items-center justify-center">
+                        <img src="https://www.google.com/favicon.ico" class="w-5 h-5 mr-2">
+                        <span data-i18n="auth.google">Continuer avec Google</span>
+                    </button>
+                </div>
+                
+                <div id="signupForm" class="hidden">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" data-i18n="auth.email">Email</label>
+                        <input type="email" id="signupEmail" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-800" placeholder="votre@email.com">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" data-i18n="auth.password">Mot de passe</label>
+                        <input type="password" id="signupPassword" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-800" placeholder="••••••••">
+                        <p class="text-xs text-gray-500 mt-1">Minimum 6 caractères</p>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" data-i18n="auth.confirmPassword">Confirmer le mot de passe</label>
+                        <input type="password" id="signupConfirm" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-800" placeholder="••••••••">
+                    </div>
+                    <div id="signupError" class="text-red-500 text-sm mb-4 hidden"></div>
+                    <button id="submitSignup" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition">
+                        <span data-i18n="auth.signup">Créer un compte</span>
+                    </button>
+                    <div class="text-center my-4">
+                        <span class="text-gray-500" data-i18n="auth.or">ou</span>
+                    </div>
+                    <button id="googleSignup" class="w-full bg-white border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition flex items-center justify-center">
+                        <img src="https://www.google.com/favicon.ico" class="w-5 h-5 mr-2">
+                        <span data-i18n="auth.google">S'inscrire avec Google</span>
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal Support -->
-    <div id="supportModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 overflow-y-auto">
+    <!-- Forgot Password Modal -->
+    <div id="forgotPasswordModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50 overflow-y-auto">
         <div class="min-h-screen flex items-center justify-center p-4">
-            <div class="bg-white rounded-xl max-w-2xl w-full">
-                <div class="p-8">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-2xl font-bold text-gray-800">Support LoveCraft</h3>
-                        <button onclick="closeModal('supportModal')" class="text-gray-400 hover:text-gray-600">
-                            <i class="fas fa-times text-xl"></i>
-                        </button>
-                    </div>
-                    <div class="space-y-4">
-                        <p>Besoin d'aide ? Voici comment nous contacter :</p>
-                        <div class="bg-gray-50 p-4 rounded-lg">
-                            <h4 class="font-bold mb-2">📧 Email direct</h4>
-                            <p class="text-sm">support@lovecraft.com</p>
-                        </div>
-                        <div class="bg-gray-50 p-4 rounded-lg">
-                            <h4 class="font-bold mb-2">💬 Problème technique</h4>
-                            <p class="text-sm">Rendez-vous sur notre <a href="https://github.com/Max-Adis/LoveCraft/issues" target="_blank" class="text-purple-600">page GitHub</a></p>
-                        </div>
-                    </div>
+            <div class="bg-white rounded-xl max-w-md w-full p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-800" data-i18n="auth.forgotPassword">Mot de passe oublié</h3>
+                    <button id="closeForgotModal" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
+                <div class="mb-4">
+                    <p class="text-gray-600 mb-4">Entrez votre email pour recevoir un lien de réinitialisation :</p>
+                    <input type="email" id="resetEmail" placeholder="votre@email.com" class="w-full px-4 py-2 border rounded-lg mb-4 text-gray-800">
+                    <button id="submitReset" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700">
+                        Envoyer le lien
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Contact -->
+    <div id="contactModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50 overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl max-w-md w-full p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-800">Contactez-nous</h3>
+                    <button id="closeContactModal" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <form id="contactForm">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Votre nom</label>
+                        <input type="text" id="contactName" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-800">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Votre email</label>
+                        <input type="email" id="contactEmail" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-800">
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Message</label>
+                        <textarea id="contactMessage" rows="4" required
+                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-800"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-bold hover:opacity-90 transition">
+                        <i class="fas fa-paper-plane mr-2"></i>Envoyer le message
+                    </button>
+                </form>
+                
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <p class="text-sm text-gray-600">
+                        <i class="fas fa-envelope mr-2"></i>
+                        <strong>Email :</strong> contact@lovecraft.com
+                    </p>
+                    <p class="text-sm text-gray-600 mt-2">
+                        <i class="fas fa-clock mr-2"></i>
+                        Réponse sous 24-48h
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Feedback -->
+    <div id="feedbackModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50 overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl max-w-md w-full p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-800">Votre avis compte !</h3>
+                    <button id="closeFeedbackModal" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <form id="feedbackForm">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Comment évaluez-vous LoveCraft ?</label>
+                        <div class="flex justify-center space-x-2 my-3">
+                            <button type="button" class="emoji-rating" data-rating="1">😞</button>
+                            <button type="button" class="emoji-rating" data-rating="2">😐</button>
+                            <button type="button" class="emoji-rating" data-rating="3">🙂</button>
+                            <button type="button" class="emoji-rating" data-rating="4">😊</button>
+                            <button type="button" class="emoji-rating" data-rating="5">😍</button>
+                        </div>
+                        <input type="hidden" id="feedbackRating" value="0">
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Vos suggestions</label>
+                        <textarea id="feedbackText" rows="4" 
+                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-800"
+                                  placeholder="Que pouvons-nous améliorer ?"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-bold hover:opacity-90 transition">
+                        <i class="fas fa-star mr-2"></i>Envoyer mon avis
+                    </button>
+                </form>
+                
+                <p class="text-center text-sm text-gray-500 mt-4">
+                    Merci de nous aider à améliorer LoveCraft ! ❤️
+                </p>
             </div>
         </div>
     </div>
 
     <!-- Scripts -->
     <script type="module" src="js/auth.js"></script>
-    <script>
-        // Fonctions pour les modals
-        function showContactModal() {
-            document.getElementById('contactModal').classList.remove('hidden');
-        }
+    <script type="module" src="js/localization.js"></script>
+    
+    <script type="module">
+        import i18n from './js/localization.js';
         
-        function showSupportModal() {
-            document.getElementById('supportModal').classList.remove('hidden');
-        }
-        
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.add('hidden');
-        }
-        
-        // Footer auth
+        // Footer interactions
         document.getElementById('footerLogin')?.addEventListener('click', (e) => {
             e.preventDefault();
             document.getElementById('authModal').classList.remove('hidden');
@@ -251,11 +443,130 @@
             document.getElementById('tabSignup').click();
         });
         
-        // Fermer modal en cliquant dehors
-        document.addEventListener('click', (e) => {
-            if (e.target.id === 'contactModal' || e.target.id === 'supportModal') {
-                e.target.classList.add('hidden');
+        // Gestion des modals contact/feedback
+        document.addEventListener('DOMContentLoaded', function() {
+            // Contact Modal
+            const contactBtn = document.getElementById('footerSupportBtn');
+            const contactModal = document.getElementById('contactModal');
+            const closeContact = document.getElementById('closeContactModal');
+            
+            if (contactBtn && contactModal) {
+                contactBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    contactModal.classList.remove('hidden');
+                });
             }
+            
+            if (closeContact) {
+                closeContact.addEventListener('click', () => {
+                    contactModal.classList.add('hidden');
+                });
+            }
+            
+            // Feedback Modal
+            const feedbackBtn = document.getElementById('footerFeedbackBtn');
+            const feedbackModal = document.getElementById('feedbackModal');
+            const closeFeedback = document.getElementById('closeFeedbackModal');
+            
+            if (feedbackBtn && feedbackModal) {
+                feedbackBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    feedbackModal.classList.remove('hidden');
+                });
+            }
+            
+            if (closeFeedback) {
+                closeFeedback.addEventListener('click', () => {
+                    feedbackModal.classList.add('hidden');
+                });
+            }
+            
+            // Rating système
+            const ratingButtons = document.querySelectorAll('.emoji-rating');
+            const ratingInput = document.getElementById('feedbackRating');
+            
+            ratingButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const rating = this.dataset.rating;
+                    ratingInput.value = rating;
+                    
+                    // Reset tous
+                    ratingButtons.forEach(b => {
+                        b.classList.remove('scale-125', 'ring-2', 'ring-purple-500');
+                    });
+                    
+                    // Activer sélectionné
+                    this.classList.add('scale-125', 'ring-2', 'ring-purple-500');
+                });
+            });
+            
+            // Formulaires
+            const contactForm = document.getElementById('contactForm');
+            if (contactForm) {
+                contactForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Simulation d'envoi
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.innerHTML;
+                    
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Envoi en cours...';
+                    submitBtn.disabled = true;
+                    
+                    setTimeout(() => {
+                        alert('Merci ! Votre message a été envoyé. Nous vous répondrons rapidement.');
+                        contactForm.reset();
+                        contactModal.classList.add('hidden');
+                        
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    }, 1500);
+                });
+            }
+            
+            const feedbackForm = document.getElementById('feedbackForm');
+            if (feedbackForm) {
+                feedbackForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    if (ratingInput.value === '0') {
+                        alert('Veuillez donner une note');
+                        return;
+                    }
+                    
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.innerHTML;
+                    
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Envoi en cours...';
+                    submitBtn.disabled = true;
+                    
+                    setTimeout(() => {
+                        alert('Merci beaucoup pour votre feedback ! ❤️');
+                        feedbackForm.reset();
+                        feedbackModal.classList.add('hidden');
+                        
+                        // Reset rating
+                        ratingButtons.forEach(b => {
+                            b.classList.remove('scale-125', 'ring-2', 'ring-purple-500');
+                        });
+                        ratingInput.value = '0';
+                        
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    }, 1500);
+                });
+            }
+            
+            // Close modals on outside click
+            [contactModal, feedbackModal].forEach(modal => {
+                if (modal) {
+                    modal.addEventListener('click', (e) => {
+                        if (e.target === modal) {
+                            modal.classList.add('hidden');
+                        }
+                    });
+                }
+            });
         });
     </script>
 </body>
