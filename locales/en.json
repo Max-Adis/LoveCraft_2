@@ -1,5 +1,3 @@
-[file name]: en.json
-[file content begin]
 {
     "app": {
         "title": "LoveCraft - Create Digital Surprises",
@@ -46,4 +44,4 @@
         "contact": "Contact"
     }
 }
-[file content end]
+
