@@ -259,7 +259,18 @@ class SurpriseCreator {
                             Partagez ce lien par message, email ou réseaux sociaux
                         </p>
                     </div>
-
+                    // Dans render() - étape 2, ajoute dans la section actions :
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+    <button id="downloadQRBtn" class="p-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:opacity-90 transition flex flex-col items-center justify-center">
+        <div class="text-3xl mb-2">
+            <i class="fas fa-download"></i>
+        </div>
+        <span class="font-bold">Télécharger JPG</span>
+        <span class="text-xs opacity-90 mt-1">QR Code avec design</span>
+    </button>
+    
+    <!-- ... autres boutons existants ... -->
+</div>
                     <!-- Actions -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                         <a href="dashboard.html" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-6 rounded-xl text-center hover:opacity-90 transition">
