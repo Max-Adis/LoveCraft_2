@@ -514,7 +514,112 @@ class SurpriseCreator {
             }
         }
     }
+    async downloadQRCode() {
+    const qrContainer = document.getElementById('qrCode');
+    if (!qrContainer) return;
+    
+    try {
+        // Chercher le canvas du QR Code
+        const canvas = qrContainer.querySelector('canvas');
+        if (!canvas) {
+            throw new Error('QR Code non trouvé');
+        }
+        
+        // Créer un nouveau canvas avec fond blanc et design
+        const downloadCanvas = document.createElement('canvas');
+        downloadCanvas.width = 600;
+        downloadCanvas.height = 700;
+        const ctx = downloadCanvas.getContext('2d');
+        
+        // Fond blanc
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, downloadCanvas.width, downloadCanvas.height);
+        
+        // En-tête avec logo
+        ctx.fillStyle = '#7C3AED';
+        ctx.fillRect(0, 0, downloadCanvas.width, 150);
+        
+        // Logo LoveCraft (texte)
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 36px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('LoveCraft', downloadCanvas.width / 2, 60);
+        ctx.font = '20px Arial';
+        ctx.fillText('Votre surprise digitale', downloadCanvas.width / 2, 95);
+        
+        // Cœur
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '40px Arial';
+        ctx.fillText('❤️', downloadCanvas.width / 2, 140);
+        
+        // Titre
+        ctx.fillStyle = '#1f2937';
+        ctx.font = 'bold 28px Arial';
+        ctx.fillText(`Pour ${this.surprise.pourQui}`, downloadCanvas.width / 2, 200);
+        ctx.font = '22px Arial';
+        ctx.fillStyle = '#6b7280';
+        ctx.fillText(`De la part de ${this.surprise.deLaPartDe}`, downloadCanvas.width / 2, 235);
+        
+        // QR Code au centre
+        const qrSize = 250;
+        const qrX = (downloadCanvas.width - qrSize) / 2;
+        const qrY = 270;
+        
+        // Dessiner le QR Code
+        ctx.drawImage(canvas, qrX, qrY, qrSize, qrSize);
+        
+        // Cadre autour du QR Code
+        ctx.strokeStyle = '#7C3AED';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(qrX - 5, qrY - 5, qrSize + 10, qrSize + 10);
+        
+        // Instructions
+        ctx.fillStyle = '#1f2937';
+        ctx.font = 'bold 20px Arial';
+        ctx.fillText('Comment utiliser :', downloadCanvas.width / 2, 560);
+        
+        ctx.font = '16px Arial';
+        ctx.fillStyle = '#4b5563';
+        const instructions = [
+            '1. Scannez ce QR Code avec votre téléphone',
+            '2. Ou visitez le lien directement',
+            '3. Suivez les étapes pour découvrir la surprise'
+        ];
+        
+        instructions.forEach((text, index) => {
+            ctx.fillText(text, downloadCanvas.width / 2, 590 + (index * 25));
+        });
+        
+        // Footer
+        ctx.fillStyle = '#9ca3af';
+        ctx.font = '14px Arial';
+        ctx.fillText('Crée avec ❤️ sur LoveCraft', downloadCanvas.width / 2, 680);
+        
+        // Télécharger l'image
+        const link = document.createElement('a');
+        link.download = `LoveCraft_Surprise_${this.surprise.pourQui}.jpg`;
+        link.href = downloadCanvas.toDataURL('image/jpeg', 0.9);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        this.showNotification('QR Code téléchargé avec succès !', 'success');
+        
+    } catch (error) {
+        console.error('Erreur téléchargement:', error);
+        this.showNotification('Erreur lors du téléchargement', 'error');
+    }
+}
 
+// Ajoute dans bindEvents() pour l'étape 2 :
+if (this.step === 2) {
+    // ... autres événements existants ...
+    
+    // Bouton téléchargement QR Code
+    document.getElementById('downloadQRBtn')?.addEventListener('click', () => {
+        this.downloadQRCode();
+    });
+}
     generateQRCode() {
         const url = `${window.location.origin}/LoveCraft/s/?id=${this.surpriseId}`;
         const qrContainer = document.getElementById('qrCode');
