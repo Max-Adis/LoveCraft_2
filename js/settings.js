@@ -1,3 +1,5 @@
+[file name]: settings.js
+[file content begin]
 import { auth, database, storage, ref, get, update, remove, signOut, onAuthStateChanged, storageRef, uploadBytes, getDownloadURL, updateProfile } from './firebase.js';
 
 class SettingsManager {
@@ -18,6 +20,7 @@ class SettingsManager {
             await this.loadSettings();
             this.render();
             this.bindEvents();
+            this.setupMobileMenu();
         });
     }
 
@@ -161,7 +164,8 @@ class SettingsManager {
                                         </label>
                                         <div class="flex gap-2">
                                             <input type="text" id="displayName" value="${this.user.displayName || ''}" 
-                                                   class="flex-grow px-4 py-2 border rounded-lg">
+                                                   class="flex-grow px-4 py-2 border rounded-lg text-gray-800 bg-white"
+                                                   style="color: #1f2937;">
                                             <button id="saveNameBtn" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
                                                 <i class="fas fa-save"></i>
                                             </button>
@@ -172,7 +176,7 @@ class SettingsManager {
                                             Email
                                         </label>
                                         <input type="email" value="${this.user.email}" disabled
-                                               class="w-full px-4 py-2 border rounded-lg bg-gray-50">
+                                               class="w-full px-4 py-2 border rounded-lg bg-gray-50 text-gray-600">
                                     </div>
                                 </div>
                             </div>
@@ -188,7 +192,7 @@ class SettingsManager {
                     <div class="space-y-6">
                         <div>
                             <h3 class="font-medium text-gray-700 mb-3">Langue</h3>
-                            <select id="languageSelect" class="w-full md:w-64 px-4 py-2 border rounded-lg">
+                            <select id="languageSelect" class="w-full md:w-64 px-4 py-2 border rounded-lg text-gray-800 bg-white">
                                 <option value="fr" ${this.settings.language === 'fr' ? 'selected' : ''}>Français</option>
                                 <option value="en" ${this.settings.language === 'en' ? 'selected' : ''}>English</option>
                             </select>
@@ -217,7 +221,7 @@ class SettingsManager {
                             <div class="space-y-3">
                                 <label class="flex items-center justify-between">
                                     <span>Surprises publiques</span>
-                                    <select id="privacySetting" class="border rounded-lg px-3 py-1">
+                                    <select id="privacySetting" class="border rounded-lg px-3 py-1 text-gray-800 bg-white">
                                         <option value="private" ${!this.settings.publicSurprises ? 'selected' : ''}>Privé</option>
                                         <option value="public" ${this.settings.publicSurprises ? 'selected' : ''}>Public</option>
                                     </select>
@@ -293,6 +297,26 @@ class SettingsManager {
         `;
     }
 
+    setupMobileMenu() {
+        // Navigation mobile pour settings
+        if (window.innerWidth < 768) {
+            const nav = document.querySelector('nav .flex.items-center');
+            if (nav) {
+                // Ajouter bouton retour
+                nav.innerHTML = `
+                    <div class="flex items-center w-full justify-between">
+                        <a href="dashboard.html" class="flex items-center">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            <span>Retour</span>
+                        </a>
+                        <div class="text-xl font-bold text-purple-600">Paramètres</div>
+                        <div class="w-6"></div> <!-- Pour l'alignement -->
+                    </div>
+                `;
+            }
+        }
+    }
+
     bindEvents() {
         // Upload photo
         document.getElementById('profileUpload').addEventListener('change', async (e) => {
@@ -303,13 +327,13 @@ class SettingsManager {
                 
                 const url = await this.uploadProfilePicture(file);
                 if (url) {
-                    document.getElementById('profileImage').src = url;
-                    if (!document.getElementById('profileImage').src) {
-                        const img = document.createElement('img');
-                        img.id = 'profileImage';
-                        img.className = 'w-full h-full object-cover';
-                        img.src = url;
-                        document.querySelector('.rounded-full .fa-user').replaceWith(img);
+                    const profileImg = document.getElementById('profileImage');
+                    if (profileImg) {
+                        profileImg.src = url;
+                    } else {
+                        // Créer l'image si elle n'existe pas
+                        const profileContainer = document.querySelector('.rounded-full');
+                        profileContainer.innerHTML = `<img src="${url}" id="profileImage" class="w-full h-full object-cover">`;
                     }
                 }
                 
@@ -512,3 +536,4 @@ class SettingsManager {
 }
 
 new SettingsManager();
+[file content end]
