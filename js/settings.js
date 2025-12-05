@@ -322,4 +322,193 @@ class SettingsManager {
             const newName = document.getElementById('displayName').value;
             const success = await this.updateDisplayName(newName);
             if (success) {
-                document.querySelector
+                document.querySelector('h3').textContent = newName || 'Non défini';
+            }
+        });
+
+        // Sauvegarder tous
+        document.getElementById('saveAll').addEventListener('click', () => {
+            this.updateSettingsFromUI();
+            this.saveSettings();
+        });
+
+        // Exporter données
+        document.getElementById('exportData').addEventListener('click', async () => {
+            await this.exportUserData();
+        });
+
+        // Supprimer données
+        document.getElementById('deleteAllData').addEventListener('click', async () => {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer TOUTES vos données ? Cette action est irréversible.')) {
+                return;
+            }
+            
+            await this.deleteAllUserData();
+        });
+
+        // Supprimer compte
+        document.getElementById('deleteAccount').addEventListener('click', async () => {
+            if (!confirm('Supprimer définitivement votre compte ? Toutes vos données seront perdues.')) {
+                return;
+            }
+            
+            await this.deleteUserAccount();
+        });
+
+        // Déconnexion
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Erreur déconnexion:', error);
+                this.showNotification('Erreur lors de la déconnexion', 'error');
+            }
+        });
+    }
+
+    updateSettingsFromUI() {
+        this.settings = {
+            notifications: document.getElementById('notifViews').checked,
+            publicSurprises: document.getElementById('privacySetting').value === 'public',
+            analytics: document.getElementById('analytics').checked,
+            newsletter: document.getElementById('newsletter').checked,
+            language: document.getElementById('languageSelect').value,
+            theme: 'light'
+        };
+    }
+
+    async exportUserData() {
+        try {
+            const promises = [
+                // Récupérer toutes les surprises
+                get(ref(database, 'surprises')).then(snapshot => {
+                    let userSurprises = [];
+                    if (snapshot.exists()) {
+                        const data = snapshot.val();
+                        Object.keys(data).forEach(key => {
+                            if (data[key].userId === this.user.uid) {
+                                userSurprises.push({
+                                    id: key,
+                                    ...data[key]
+                                });
+                            }
+                        });
+                    }
+                    return userSurprises;
+                }),
+                
+                // Récupérer les stats utilisateur
+                get(ref(database, `users/${this.user.uid}/stats`)).then(snapshot => {
+                    return snapshot.exists() ? snapshot.val() : {};
+                })
+            ];
+            
+            const [surprises, stats] = await Promise.all(promises);
+            
+            const exportData = {
+                user: {
+                    uid: this.user.uid,
+                    email: this.user.email,
+                    displayName: this.user.displayName,
+                    photoURL: this.user.photoURL,
+                    createdAt: this.user.metadata.creationTime,
+                    lastLogin: this.user.metadata.lastSignInTime
+                },
+                settings: this.settings,
+                surprises: surprises,
+                stats: stats,
+                exportedAt: new Date().toISOString(),
+                totalSurprises: surprises.length,
+                totalViews: surprises.reduce((sum, s) => sum + (s.views || 0), 0),
+                totalCompletions: surprises.reduce((sum, s) => sum + (s.completedViews || 0), 0)
+            };
+            
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `lovecraft_backup_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            this.showNotification('Données exportées avec succès', 'success');
+        } catch (error) {
+            console.error('Erreur export:', error);
+            this.showNotification('Erreur lors de l\'export', 'error');
+        }
+    }
+
+    async deleteAllUserData() {
+        try {
+            // Récupérer toutes les surprises de l'utilisateur
+            const surprisesRef = ref(database, 'surprises');
+            const snapshot = await get(surprisesRef);
+            
+            let deletePromises = [];
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                Object.keys(data).forEach(key => {
+                    if (data[key].userId === this.user.uid) {
+                        deletePromises.push(remove(ref(database, `surprises/${key}`)));
+                    }
+                });
+            }
+            
+            // Supprimer les données utilisateur
+            deletePromises.push(remove(ref(database, `users/${this.user.uid}`)));
+            
+            await Promise.all(deletePromises);
+            
+            this.showNotification('Toutes vos données ont été supprimées', 'success');
+            setTimeout(() => window.location.href = 'dashboard.html', 2000);
+        } catch (error) {
+            console.error('Erreur suppression:', error);
+            this.showNotification('Erreur lors de la suppression', 'error');
+        }
+    }
+
+    async deleteUserAccount() {
+        try {
+            // D'abord supprimer les données
+            await this.deleteAllUserData();
+            
+            // Puis supprimer le compte auth
+            await this.user.delete();
+            
+            this.showNotification('Compte supprimé avec succès', 'success');
+            setTimeout(() => window.location.href = 'index.html', 2000);
+        } catch (error) {
+            console.error('Erreur suppression compte:', error);
+            this.showNotification('Erreur lors de la suppression du compte', 'error');
+        }
+    }
+
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 px-6 py-4 rounded-lg shadow-lg z-50 transform transition-transform ${
+            type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' :
+            type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' :
+            'bg-blue-100 text-blue-800 border border-blue-200'
+        }`;
+        notification.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} mr-3"></i>
+                <div>${message}</div>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+}
+
+new SettingsManager();
