@@ -1,4 +1,3 @@
-// Firebase configuration
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 import { 
     getDatabase, 
@@ -17,9 +16,17 @@ import {
     signInWithEmailAndPassword,
     signInWithPopup,
     GoogleAuthProvider,
+    sendPasswordResetEmail,
+    updateProfile,
     signOut,
     onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+import { 
+    getStorage,
+    ref as storageRef,
+    uploadBytes,
+    getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.7.0/firebase-storage.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyB1hcyt4IVDtKcOw2JcVnCcLP5gOvPt4F0",
@@ -32,15 +39,16 @@ const firebaseConfig = {
     measurementId: "G-L1N4GTS1EL"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 const auth = getAuth(app);
+const storage = getStorage(app);
 const googleProvider = new GoogleAuthProvider();
 
 export { 
-    database, auth, googleProvider,
+    database, auth, storage, googleProvider,
     ref, set, get, update, remove, query, orderByChild, equalTo,
     createUserWithEmailAndPassword, signInWithEmailAndPassword,
-    signInWithPopup, signOut, onAuthStateChanged
+    signInWithPopup, sendPasswordResetEmail, updateProfile, signOut, onAuthStateChanged,
+    storageRef, uploadBytes, getDownloadURL
 };
