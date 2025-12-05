@@ -1,5 +1,4 @@
-[file name]: settings.js
-[file content begin]
+
 import { auth, database, storage, ref, get, update, remove, signOut, onAuthStateChanged, storageRef, uploadBytes, getDownloadURL, updateProfile } from './firebase.js';
 
 class SettingsManager {
@@ -536,4 +535,3 @@ class SettingsManager {
 }
 
 new SettingsManager();
-[file content end]
