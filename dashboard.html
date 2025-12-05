@@ -6,8 +6,6 @@ class DashboardManager {
     constructor() {
         this.user = null;
         this.surprises = [];
-        this.userStats = {};
-        this.badges = [];
         this.init();
     }
 
@@ -20,16 +18,25 @@ class DashboardManager {
             
             this.user = user;
             this.updateUserInfo();
-            await this.loadUserData();
+            await this.loadUserSurprises();
             this.updateStats();
-            this.updateBadges();
             this.bindEvents();
         });
     }
 
-    async loadUserData() {
+    updateUserInfo() {
+        const displayName = this.user.displayName || this.user.email.split('@')[0];
+        document.getElementById('userEmail').textContent = displayName;
+        
+        // Mettre à jour l'avatar si photo
+        const avatarContainer = document.querySelector('#userMenu .w-8.h-8');
+        if (this.user.photoURL && avatarContainer) {
+            avatarContainer.innerHTML = `<img src="${this.user.photoURL}" class="w-full h-full rounded-full object-cover">`;
+        }
+    }
+
+    async loadUserSurprises() {
         try {
-            // Charger toutes les surprises
             const surprisesRef = ref(database, 'surprises');
             const snapshot = await get(surprisesRef);
             
@@ -47,65 +54,24 @@ class DashboardManager {
                 });
             }
             
-            // Charger les stats utilisateur
-            const statsRef = ref(database, `users/${this.user.uid}/stats`);
-            const statsSnapshot = await get(statsRef);
-            
-            if (statsSnapshot.exists()) {
-                this.userStats = statsSnapshot.val();
-            } else {
-                this.userStats = {
-                    totalSurprises: 0,
-                    totalViews: 0,
-                    totalCompletions: 0,
-                    averageTimeSpent: 0,
-                    lastCreated: null,
-                    streak: 0,
-                    level: 1,
-                    xp: 0
-                };
-            }
-            
-            // Charger les badges
-            const badgesRef = ref(database, `users/${this.user.uid}/badges`);
-            const badgesSnapshot = await get(badgesRef);
-            
-            if (badgesSnapshot.exists()) {
-                this.badges = badgesSnapshot.val();
-            }
-            
             this.displaySurprises();
-            
         } catch (error) {
             console.error('Erreur chargement:', error);
             this.showNotification('Erreur de chargement', 'error');
         }
     }
 
-    updateUserInfo() {
-        const displayName = this.user.displayName || this.user.email.split('@')[0];
-        
-        document.getElementById('userEmail').textContent = displayName;
-        document.getElementById('userNameDisplay').textContent = displayName;
-        document.getElementById('userEmailDisplay').textContent = this.user.email;
-        document.getElementById('welcomeName').textContent = displayName;
-        
-        if (this.user.photoURL) {
-            const avatar = document.querySelector('#userMenu .rounded-full');
-            avatar.innerHTML = `<img src="${this.user.photoURL}" class="w-full h-full object-cover">`;
-            document.getElementById('userIcon').classList.add('hidden');
-        }
-    }
-
     displaySurprises() {
         const tbody = document.getElementById('surprisesTableBody');
+        
+        if (!tbody) return;
         
         if (this.surprises.length === 0) {
             tbody.innerHTML = `
                 <tr>
                     <td colspan="5" class="px-6 py-8 text-center text-gray-500">
                         <i class="fas fa-gift text-4xl mb-4 text-gray-300"></i>
-                        <p>Aucune surprise créée pour le moment</p>
+                        <p>Aucune surprise créée</p>
                         <a href="create.html" class="inline-block mt-4 text-purple-600 hover:text-purple-700">
                             Créer votre première surprise
                         </a>
@@ -115,251 +81,52 @@ class DashboardManager {
             return;
         }
         
+        // Trier par date
         this.surprises.sort((a, b) => 
             new Date(b.createdAt) - new Date(a.createdAt)
         );
         
+        // Prendre les 5 plus récentes
         const recentSurprises = this.surprises.slice(0, 5);
         
-        tbody.innerHTML = recentSurprises.map(surprise => {
-            const completionRate = surprise.views > 0 
-                ? Math.round((surprise.completedViews || 0) / surprise.views * 100) 
-                : 0;
-            
-            return `
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0 h-10 w-10 ${this.getThemeColor(surprise.theme)} rounded-full flex items-center justify-center">
-                                <i class="fas fa-heart ${this.getThemeTextColor(surprise.theme)}"></i>
-                            </div>
-                            <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900">${surprise.pourQui}</div>
-                                <div class="text-sm text-gray-500">${surprise.deLaPartDe}</div>
-                            </div>
+        tbody.innerHTML = recentSurprises.map(surprise => `
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 bg-pink-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-heart text-pink-600"></i>
                         </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">${new Date(surprise.createdAt).toLocaleDateString('fr-FR')}</div>
-                        <div class="text-xs text-gray-500">${new Date(surprise.createdAt).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">${surprise.views || 0} vues</div>
-                        <div class="text-xs text-gray-500">${surprise.completedViews || 0} complétions</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="w-24 bg-gray-200 rounded-full h-2 mr-2">
-                                <div class="h-2 rounded-full ${this.getCompletionColor(completionRate)}" style="width: ${Math.min(completionRate, 100)}%"></div>
-                            </div>
-                            <span class="text-xs font-medium">${completionRate}%</span>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <a href="../LoveCraft/s/?id=${surprise.id}" target="_blank" class="text-blue-600 hover:text-blue-900 mr-3" title="Voir">
-                            <i class="fas fa-eye"></i>
-                        </a>
-                        <button onclick="dashboard.editSurprise('${surprise.id}')" class="text-purple-600 hover:text-purple-900 mr-3" title="Éditer">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button onclick="dashboard.deleteSurprise('${surprise.id}', '${surprise.pourQui}')" class="text-red-600 hover:text-red-900" title="Supprimer">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-    }
-
-    updateStats() {
-        const totalSurprises = this.surprises.length;
-        const totalViews = this.surprises.reduce((sum, s) => sum + (s.views || 0), 0);
-        const totalCompletions = this.surprises.reduce((sum, s) => sum + (s.completedViews || 0), 0);
-        
-        // Calcul du pourcentage amélioré
-        let successRate = 0;
-        if (totalSurprises > 0) {
-            const surprisesWithViews = this.surprises.filter(s => (s.views || 0) > 0).length;
-            successRate = Math.round((surprisesWithViews / totalSurprises) * 100);
-        }
-        
-        // Mettre à jour l'UI
-        document.getElementById('totalSurprises').textContent = totalSurprises;
-        document.getElementById('totalViews').textContent = totalViews.toLocaleString();
-        
-        const rateElement = document.getElementById('successRate');
-        rateElement.textContent = successRate + '%';
-        
-        // Couleur selon le taux
-        if (successRate >= 80) {
-            rateElement.className = 'text-3xl font-bold text-green-600';
-        } else if (successRate >= 50) {
-            rateElement.className = 'text-3xl font-bold text-yellow-600';
-        } else {
-            rateElement.className = 'text-3xl font-bold text-red-600';
-        }
-        
-        // Tooltip explicatif
-        rateElement.title = `${this.surprises.filter(s => (s.views || 0) > 0).length} sur ${totalSurprises} surprises ont été vues`;
-        
-        // Mettre à jour les stats utilisateur
-        this.updateUserStats({
-            totalSurprises,
-            totalViews,
-            totalCompletions,
-            successRate
-        });
-    }
-
-    updateBadges() {
-        const badges = this.calculateBadges();
-        
-        if (badges.length > 0 && !this.badgesShown) {
-            this.showBadgesModal(badges);
-            this.badgesShown = true;
-        }
-    }
-
-    calculateBadges() {
-        const badges = [];
-        const totalSurprises = this.surprises.length;
-        const totalViews = this.surprises.reduce((sum, s) => sum + (s.views || 0), 0);
-        
-        // Badge 1 : Romantique Débutant
-        if (totalSurprises >= 1) {
-            badges.push({
-                id: 'beginner',
-                name: 'Romantique Débutant',
-                description: 'A créé sa première surprise',
-                icon: '🥰',
-                color: 'bg-pink-100 text-pink-800'
-            });
-        }
-        
-        // Badge 2 : Messager Fidèle
-        if (totalSurprises >= 5) {
-            badges.push({
-                id: 'messenger',
-                name: 'Messager Fidèle',
-                description: 'A créé 5 surprises différentes',
-                icon: '📬',
-                color: 'bg-blue-100 text-blue-800'
-            });
-        }
-        
-        // Badge 3 : Architecte de l'Amour
-        const longViews = this.surprises.filter(s => (s.averageTimeSpent || 0) > 300).length;
-        if (longViews > 0) {
-            badges.push({
-                id: 'architect',
-                name: 'Architecte de l\'Amour',
-                description: 'A créé une surprise engageante',
-                icon: '🏗️',
-                color: 'bg-purple-100 text-purple-800'
-            });
-        }
-        
-        // Badge 4 : Gardien de la Flamme
-        const today = new Date();
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-        
-        const recentSurprises = this.surprises.filter(s => {
-            const created = new Date(s.createdAt);
-            return created.toDateString() === today.toDateString() ||
-                   created.toDateString() === yesterday.toDateString();
-        });
-        
-        if (recentSurprises.length >= 2) {
-            badges.push({
-                id: 'keeper',
-                name: 'Gardien de la Flamme',
-                description: 'Créativité constante',
-                icon: '🔥',
-                color: 'bg-orange-100 text-orange-800'
-            });
-        }
-        
-        // Badge 5 : Flèche de Cupidon
-        const successfulSurprises = this.surprises.filter(s => (s.completedViews || 0) > 0);
-        if (successfulSurprises.length >= 10) {
-            badges.push({
-                id: 'cupid',
-                name: 'Flèche de Cupidon',
-                description: '10 surprises avec succès',
-                icon: '🏹',
-                color: 'bg-red-100 text-red-800'
-            });
-        }
-        
-        return badges;
-    }
-
-    showBadgesModal(badges) {
-        const modalHTML = `
-            <div id="badgesModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-                <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                    <div class="p-8">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-2xl font-bold text-gray-800">
-                                <i class="fas fa-trophy mr-2 text-yellow-500"></i>
-                                Vos badges de romantique
-                            </h3>
-                            <button onclick="dashboard.closeModal('badgesModal')" class="text-gray-400 hover:text-gray-600">
-                                <i class="fas fa-times text-xl"></i>
-                            </button>
-                        </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                            ${badges.map(badge => `
-                                <div class="border border-gray-200 rounded-xl p-6 flex items-center ${badge.color}">
-                                    <div class="text-4xl mr-4">${badge.icon}</div>
-                                    <div>
-                                        <h4 class="font-bold">${badge.name}</h4>
-                                        <p class="text-sm opacity-90">${badge.description}</p>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                        
-                        <div class="text-center">
-                            <button onclick="dashboard.closeModal('badgesModal')" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition">
-                                Continuer
-                            </button>
+                        <div class="ml-4">
+                            <div class="text-sm font-medium text-gray-900">${surprise.pourQui}</div>
+                            <div class="text-sm text-gray-500">${surprise.deLaPartDe}</div>
                         </div>
                     </div>
-                </div>
-            </div>
-        `;
-        
-        this.createModal('badgesModal', modalHTML);
-        setTimeout(() => {
-            document.getElementById('badgesModal').classList.remove('hidden');
-        }, 1000);
-    }
-
-    async updateUserStats(newStats) {
-        try {
-            const statsRef = ref(database, `users/${this.user.uid}/stats`);
-            
-            const updatedStats = {
-                ...this.userStats,
-                ...newStats,
-                updatedAt: new Date().toISOString(),
-                lastActive: new Date().toISOString()
-            };
-            
-            await update(statsRef, updatedStats);
-            this.userStats = updatedStats;
-            
-            // Vérifier les badges à débloquer
-            const badges = this.calculateBadges();
-            const badgesRef = ref(database, `users/${this.user.uid}/badges`);
-            await update(badgesRef, badges);
-            
-        } catch (error) {
-            console.error('Erreur mise à jour stats:', error);
-        }
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900">${new Date(surprise.createdAt).toLocaleDateString('fr-FR')}</div>
+                    <div class="text-sm text-gray-500">${new Date(surprise.createdAt).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900">${surprise.views || 0} vues</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${surprise.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+                        ${surprise.status === 'active' ? 'Actif' : 'Inactif'}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <a href="../LoveCraft/s/?id=${surprise.id}" target="_blank" class="text-blue-600 hover:text-blue-900 mr-3" title="Voir">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                    <button onclick="dashboard.editSurprise('${surprise.id}')" class="text-purple-600 hover:text-purple-900 mr-3" title="Éditer">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button onclick="dashboard.deleteSurprise('${surprise.id}', '${surprise.pourQui}')" class="text-red-600 hover:text-red-900" title="Supprimer">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
     }
 
     async deleteSurprise(id, name) {
@@ -372,7 +139,7 @@ class DashboardManager {
             await remove(ref(database, 'users/' + this.user.uid + '/surprises/' + id));
             
             this.showNotification('Surprise supprimée', 'success');
-            await this.loadUserData();
+            await this.loadUserSurprises();
             this.updateStats();
         } catch (error) {
             console.error('Erreur suppression:', error);
@@ -385,221 +152,76 @@ class DashboardManager {
         window.location.href = 'create.html?edit=' + id;
     }
 
-    // Helper functions
-    getThemeColor(theme) {
-        switch(theme) {
-            case 'romantique': return 'bg-pink-100';
-            case 'geek': return 'bg-blue-100';
-            case 'fun': return 'bg-yellow-100';
-            case 'classique': return 'bg-gray-100';
-            default: return 'bg-purple-100';
+    updateStats() {
+        const totalSurprises = this.surprises.length;
+        const totalViews = this.surprises.reduce((sum, s) => sum + (s.views || 0), 0);
+        
+        // Calcul du taux de succès
+        let successRate = 0;
+        if (totalSurprises > 0) {
+            const surprisesWithViews = this.surprises.filter(s => (s.views || 0) > 0).length;
+            successRate = Math.round((surprisesWithViews / totalSurprises) * 100);
         }
-    }
-
-    getThemeTextColor(theme) {
-        switch(theme) {
-            case 'romantique': return 'text-pink-600';
-            case 'geek': return 'text-blue-600';
-            case 'fun': return 'text-yellow-600';
-            case 'classique': return 'text-gray-600';
-            default: return 'text-purple-600';
+        
+        // Mettre à jour l'interface
+        const totalSurprisesEl = document.getElementById('totalSurprises');
+        const totalViewsEl = document.getElementById('totalViews');
+        const successRateEl = document.getElementById('successRate');
+        
+        if (totalSurprisesEl) totalSurprisesEl.textContent = totalSurprises;
+        if (totalViewsEl) totalViewsEl.textContent = totalViews;
+        if (successRateEl) {
+            successRateEl.textContent = successRate + '%';
+            // Couleur selon le taux
+            if (successRate >= 80) {
+                successRateEl.className = 'text-3xl font-bold text-green-600';
+            } else if (successRate >= 50) {
+                successRateEl.className = 'text-3xl font-bold text-yellow-600';
+            } else {
+                successRateEl.className = 'text-3xl font-bold text-red-600';
+            }
         }
-    }
-
-    getCompletionColor(rate) {
-        if (rate >= 80) return 'bg-green-500';
-        if (rate >= 50) return 'bg-yellow-500';
-        return 'bg-red-500';
     }
 
     bindEvents() {
         // Déconnexion
-        document.getElementById('logoutBtn')?.addEventListener('click', async () => {
-            try {
-                await signOut(auth);
-                window.location.href = 'index.html';
-            } catch (error) {
-                this.showNotification('Erreur lors de la déconnexion', 'error');
-            }
-        });
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async () => {
+                try {
+                    await signOut(auth);
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    console.error('Erreur déconnexion:', error);
+                    this.showNotification('Erreur déconnexion', 'error');
+                }
+            });
+        }
 
         // Bouton templates
-        document.getElementById('templateBtn')?.addEventListener('click', () => {
-            this.showTemplatesModal();
-        });
+        const templateBtn = document.getElementById('templateBtn');
+        if (templateBtn) {
+            templateBtn.addEventListener('click', () => {
+                this.showTemplatesModal();
+            });
+        }
 
         // Bouton stats
-        document.getElementById('statsBtn')?.addEventListener('click', () => {
-            this.showStatsModal();
-        });
+        const statsBtn = document.getElementById('statsBtn');
+        if (statsBtn) {
+            statsBtn.addEventListener('click', () => {
+                this.showStatsModal();
+            });
+        }
 
         // Voir tout
-        document.getElementById('viewAllBtn')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            this.showAllSurprises();
-        });
-
-        // Bouton badges
-        document.getElementById('badgesBtn')?.addEventListener('click', () => {
-            const badges = this.calculateBadges();
-            this.showBadgesModal(badges);
-        });
-    }
-    // Je reprends à la fin du bindEvents()...
-
-    showStatsModal() {
-        const totalTime = this.surprises.reduce((sum, s) => sum + (s.averageTimeSpent || 0), 0);
-        const avgTime = this.surprises.length > 0 ? Math.round(totalTime / this.surprises.length) : 0;
-        const successRate = this.surprises.length > 0 ? 
-            Math.round((this.surprises.filter(s => (s.views || 0) > 0).length / this.surprises.length) * 100) : 0;
-        
-        const modalHTML = `
-            <div id="statsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-                <div class="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                    <div class="p-8">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-2xl font-bold text-gray-800">Analytiques détaillés</h3>
-                            <button onclick="dashboard.closeModal('statsModal')" class="text-gray-400 hover:text-gray-600">
-                                <i class="fas fa-times text-xl"></i>
-                            </button>
-                        </div>
-                        
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-                            <div class="bg-blue-50 p-6 rounded-xl">
-                                <div class="text-3xl font-bold text-blue-600 mb-2">${this.surprises.length}</div>
-                                <div class="text-sm text-gray-600">Surprises créées</div>
-                            </div>
-                            <div class="bg-green-50 p-6 rounded-xl">
-                                <div class="text-3xl font-bold text-green-600 mb-2">${this.surprises.reduce((sum, s) => sum + (s.views || 0), 0)}</div>
-                                <div class="text-sm text-gray-600">Vues totales</div>
-                            </div>
-                            <div class="bg-purple-50 p-6 rounded-xl">
-                                <div class="text-3xl font-bold text-purple-600 mb-2">${successRate}%</div>
-                                <div class="text-sm text-gray-600">Taux de succès</div>
-                            </div>
-                            <div class="bg-yellow-50 p-6 rounded-xl">
-                                <div class="text-3xl font-bold text-yellow-600 mb-2">${avgTime}s</div>
-                                <div class="text-sm text-gray-600">Temps moyen</div>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-8">
-                            <h4 class="font-bold text-gray-800 mb-4">Performance par surprise</h4>
-                            <div class="space-y-4">
-                                ${this.surprises.map(surprise => {
-                                    const completionRate = surprise.views > 0 ? 
-                                        Math.round((surprise.completedViews || 0) / surprise.views * 100) : 0;
-                                    return `
-                                        <div class="flex items-center justify-between border-b pb-3">
-                                            <div class="flex-1">
-                                                <div class="font-medium">${surprise.pourQui} • ${surprise.theme}</div>
-                                                <div class="text-sm text-gray-500">${new Date(surprise.createdAt).toLocaleDateString('fr-FR')}</div>
-                                            </div>
-                                            <div class="flex-1 text-center">
-                                                <div class="font-medium">${surprise.views || 0} vues</div>
-                                                <div class="text-sm text-gray-500">${surprise.completedViews || 0} complétions</div>
-                                            </div>
-                                            <div class="flex-1 text-right">
-                                                <div class="font-medium">${completionRate}%</div>
-                                                <div class="text-sm text-gray-500">${surprise.averageTimeSpent || 0}s</div>
-                                            </div>
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                        </div>
-                        
-                        <div class="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-xl">
-                            <h4 class="font-bold text-gray-800 mb-3">
-                                <i class="fas fa-chart-line mr-2"></i>Vos statistiques
-                            </h4>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <p class="text-sm text-gray-600">Surprises avec vues :</p>
-                                    <p class="font-bold">${this.surprises.filter(s => (s.views || 0) > 0).length}/${this.surprises.length}</p>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-gray-600">Taux d'engagement :</p>
-                                    <p class="font-bold">${this.surprises.length > 0 ? Math.round((this.surprises.reduce((sum, s) => sum + (s.completedViews || 0), 0) / this.surprises.reduce((sum, s) => sum + (s.views || 0), 1)) * 100) : 0}%</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        this.createModal('statsModal', modalHTML);
-        document.getElementById('statsModal').classList.remove('hidden');
-    }
-
-    showAllSurprises() {
-        const modalHTML = `
-            <div id="allSurprisesModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-                <div class="bg-white rounded-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
-                    <div class="p-6">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-2xl font-bold text-gray-800">Toutes mes surprises (${this.surprises.length})</h3>
-                            <button onclick="dashboard.closeModal('allSurprisesModal')" class="text-gray-400 hover:text-gray-600">
-                                <i class="fas fa-times text-xl"></i>
-                            </button>
-                        </div>
-                        
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead>
-                                    <tr>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pour</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vues</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Complétions</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Taux</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-200">
-                                    ${this.surprises.map(surprise => {
-                                        const completionRate = surprise.views > 0 ? 
-                                            Math.round((surprise.completedViews || 0) / surprise.views * 100) : 0;
-                                        return `
-                                            <tr class="hover:bg-gray-50">
-                                                <td class="px-4 py-3">
-                                                    <div class="flex items-center">
-                                                        <div class="w-8 h-8 ${this.getThemeColor(surprise.theme)} rounded-full flex items-center justify-center mr-2">
-                                                            <i class="fas fa-heart ${this.getThemeTextColor(surprise.theme)} text-xs"></i>
-                                                        </div>
-                                                        <span>${surprise.pourQui}</span>
-                                                    </div>
-                                                </td>
-                                                <td class="px-4 py-3">${new Date(surprise.createdAt).toLocaleDateString('fr-FR')}</td>
-                                                <td class="px-4 py-3">${surprise.views || 0}</td>
-                                                <td class="px-4 py-3">${surprise.completedViews || 0}</td>
-                                                <td class="px-4 py-3">
-                                                    <span class="px-2 py-1 text-xs rounded-full ${completionRate >= 80 ? 'bg-green-100 text-green-800' : completionRate >= 50 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}">
-                                                        ${completionRate}%
-                                                    </span>
-                                                </td>
-                                                <td class="px-4 py-3">
-                                                    <a href="../LoveCraft/s/?id=${surprise.id}" target="_blank" class="text-blue-600 hover:text-blue-900 mr-3">
-                                                        <i class="fas fa-eye"></i>
-                                                    </a>
-                                                    <button onclick="dashboard.deleteSurprise('${surprise.id}', '${surprise.pourQui}')" class="text-red-600 hover:text-red-900">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        `;
-                                    }).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        this.createModal('allSurprisesModal', modalHTML);
-        document.getElementById('allSurprisesModal').classList.remove('hidden');
+        const viewAllBtn = document.getElementById('viewAllBtn');
+        if (viewAllBtn) {
+            viewAllBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.showAllSurprises();
+            });
+        }
     }
 
     showTemplatesModal() {
@@ -619,39 +241,23 @@ class DashboardManager {
                 description: 'Pour les amoureux de la tech',
                 question: 'Quel est ton bug préféré ? (moi)',
                 message: 'Tu es la meilleure ligne de code de ma vie. Sans toi, tout buggue.'
-            },
-            {
-                id: 'adventure',
-                name: 'Aventure',
-                icon: '🗺️',
-                description: 'Carte au trésor numérique',
-                question: 'Où irions-nous pour notre plus grande aventure ?',
-                message: 'Avec toi, chaque jour est une nouvelle aventure. Prêt(e) à découvrir le monde ensemble ?'
-            },
-            {
-                id: 'music',
-                name: 'Musical',
-                icon: '🎵',
-                description: 'Surprise avec paroles',
-                question: 'Quelle chanson nous représente le mieux ?',
-                message: 'Tu es la mélodie de mon cœur, la chanson qui ne s\'arrête jamais.'
             }
         ];
         
         const modalHTML = `
             <div id="templatesModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-                <div class="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="bg-white rounded-xl max-w-2xl w-full">
                     <div class="p-6">
                         <div class="flex justify-between items-center mb-6">
                             <h3 class="text-2xl font-bold text-gray-800">Choisissez un template</h3>
-                            <button onclick="dashboard.closeModal('templatesModal')" class="text-gray-400 hover:text-gray-600">
+                            <button onclick="this.parentElement.parentElement.parentElement.classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
                                 <i class="fas fa-times text-xl"></i>
                             </button>
                         </div>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div class="space-y-4 mb-8">
                             ${templates.map(template => `
-                                <div class="border border-gray-200 rounded-xl p-6 hover:border-purple-300 hover:shadow-md transition">
+                                <div class="border border-gray-200 rounded-xl p-6">
                                     <div class="flex items-start mb-4">
                                         <div class="text-3xl mr-4">${template.icon}</div>
                                         <div>
@@ -662,7 +268,7 @@ class DashboardManager {
                                     <div class="bg-gray-50 p-4 rounded-lg mb-4">
                                         <p class="text-sm text-gray-700"><strong>Question :</strong> ${template.question}</p>
                                     </div>
-                                    <button onclick="dashboard.useTemplate('${template.id}')" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition">
+                                    <button onclick="localStorage.setItem('selectedTemplate', JSON.stringify(${JSON.stringify(template)})); window.location.href='create.html';" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700">
                                         <i class="fas fa-magic mr-2"></i>Utiliser ce template
                                     </button>
                                 </div>
@@ -670,7 +276,7 @@ class DashboardManager {
                         </div>
                         
                         <div class="text-center">
-                            <a href="create.html" class="inline-block bg-gray-100 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-200 transition">
+                            <a href="create.html" class="bg-gray-100 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-200">
                                 <i class="fas fa-pen mr-2"></i>Créer personnalisé
                             </a>
                         </div>
@@ -679,64 +285,120 @@ class DashboardManager {
             </div>
         `;
         
-        this.createModal('templatesModal', modalHTML);
+        // Ajouter le modal
+        if (!document.getElementById('templatesModal')) {
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+        
         document.getElementById('templatesModal').classList.remove('hidden');
     }
 
-    useTemplate(templateId) {
-        const templates = {
-            'romantic': {
-                question1: 'Qui t\'aime plus que tout au monde ?',
-                messageFinal: 'Tu es l\'amour de ma vie, chaque jour avec toi est un cadeau.'
-            },
-            'geek': {
-                question1: 'Quel est ton bug préféré ? (moi)',
-                messageFinal: 'Tu es la meilleure ligne de code de ma vie. Sans toi, tout buggue.'
-            },
-            'adventure': {
-                question1: 'Où irions-nous pour notre plus grande aventure ?',
-                messageFinal: 'Avec toi, chaque jour est une nouvelle aventure. Prêt(e) à découvrir le monde ensemble ?'
-            },
-            'music': {
-                question1: 'Quelle chanson nous représente le mieux ?',
-                messageFinal: 'Tu es la mélodie de mon cœur, la chanson qui ne s\'arrête jamais.'
-            }
-        };
+    showStatsModal() {
+        const totalViews = this.surprises.reduce((sum, s) => sum + (s.views || 0), 0);
+        const totalCompletions = this.surprises.reduce((sum, s) => sum + (s.completedViews || 0), 0);
+        const conversionRate = totalViews > 0 ? Math.round((totalCompletions / totalViews) * 100) : 0;
         
-        const template = templates[templateId];
-        if (template) {
-            localStorage.setItem('selectedTemplate', JSON.stringify(template));
-            window.location.href = 'create.html?template=' + templateId;
-            this.closeModal('templatesModal');
+        const modalHTML = `
+            <div id="statsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+                <div class="bg-white rounded-xl max-w-2xl w-full">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-2xl font-bold text-gray-800">Vos statistiques</h3>
+                            <button onclick="this.parentElement.parentElement.parentElement.classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div class="bg-blue-50 p-4 rounded-xl">
+                                <div class="text-2xl font-bold text-blue-600">${this.surprises.length}</div>
+                                <div class="text-sm text-gray-600">Surprises</div>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-xl">
+                                <div class="text-2xl font-bold text-green-600">${totalViews}</div>
+                                <div class="text-sm text-gray-600">Vues totales</div>
+                            </div>
+                            <div class="bg-purple-50 p-4 rounded-xl">
+                                <div class="text-2xl font-bold text-purple-600">${conversionRate}%</div>
+                                <div class="text-sm text-gray-600">Taux conversion</div>
+                            </div>
+                            <div class="bg-yellow-50 p-4 rounded-xl">
+                                <div class="text-2xl font-bold text-yellow-600">${totalCompletions}</div>
+                                <div class="text-sm text-gray-600">Complétions</div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <p class="text-gray-600 text-sm">Continuez à créer des surprises !</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        if (!document.getElementById('statsModal')) {
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
         }
+        
+        document.getElementById('statsModal').classList.remove('hidden');
     }
 
-    createModal(id, content) {
-        if (!document.getElementById(id)) {
-            const modal = document.createElement('div');
-            modal.id = id;
-            modal.className = 'fixed inset-0 bg-black bg-opacity-50 hidden z-50 overflow-y-auto';
-            modal.innerHTML = content;
-            document.body.appendChild(modal);
-            
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    this.closeModal(id);
-                }
-            });
+    showAllSurprises() {
+        const modalHTML = `
+            <div id="allSurprisesModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+                <div class="bg-white rounded-xl max-w-4xl w-full max-h-[80vh] overflow-y-auto">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-2xl font-bold text-gray-800">Toutes mes surprises (${this.surprises.length})</h3>
+                            <button onclick="this.parentElement.parentElement.parentElement.classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead>
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pour</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vues</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    ${this.surprises.map(surprise => `
+                                        <tr>
+                                            <td class="px-4 py-3">${surprise.pourQui}</td>
+                                            <td class="px-4 py-3">${new Date(surprise.createdAt).toLocaleDateString('fr-FR')}</td>
+                                            <td class="px-4 py-3">${surprise.views || 0}</td>
+                                            <td class="px-4 py-3">
+                                                <a href="../LoveCraft/s/?id=${surprise.id}" target="_blank" class="text-blue-600 hover:text-blue-900 mr-3">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <button onclick="dashboard.deleteSurprise('${surprise.id}', '${surprise.pourQui}')" class="text-red-600 hover:text-red-900">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        if (!document.getElementById('allSurprisesModal')) {
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
         }
-    }
-
-    closeModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.classList.add('hidden');
-        }
+        
+        document.getElementById('allSurprisesModal').classList.remove('hidden');
     }
 
     showNotification(message, type = 'info') {
         const notification = document.createElement('div');
-        notification.className = `fixed top-4 right-4 px-6 py-4 rounded-lg shadow-lg z-50 transform transition-transform duration-300 ${
+        notification.className = `fixed top-4 right-4 px-6 py-4 rounded-lg shadow-lg z-50 ${
             type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' :
             type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' :
             'bg-blue-100 text-blue-800 border border-blue-200'
@@ -751,15 +413,12 @@ class DashboardManager {
         document.body.appendChild(notification);
         
         setTimeout(() => {
-            notification.style.transform = 'translateX(100%)';
+            notification.style.opacity = '0';
             setTimeout(() => notification.remove(), 300);
         }, 3000);
     }
 }
 
-// Créer instance globale
+// Initialiser
 const dashboard = new DashboardManager();
-
-// Exposer au global pour les onclick
 window.dashboard = dashboard;
-  
