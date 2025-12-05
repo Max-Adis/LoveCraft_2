@@ -1,3 +1,5 @@
+[file name]: localization.js
+[file content begin]
 class LocalizationManager {
     constructor() {
         this.currentLang = localStorage.getItem('lovecraft_lang') || 'fr';
@@ -13,7 +15,7 @@ class LocalizationManager {
 
     async loadTranslations() {
         try {
-            // Chemin RELATIF depuis le dossier racine
+            // Chemin relatif pour GitHub Pages
             const response = await fetch(`locales/${this.currentLang}.json`);
             
             if (!response.ok) {
@@ -33,7 +35,11 @@ class LocalizationManager {
                 },
                 'nav': {
                     'login': 'Connexion',
-                    'signup': 'Inscription'
+                    'signup': 'Inscription',
+                    'dashboard': 'Tableau de bord',
+                    'create': 'Créer',
+                    'settings': 'Paramètres',
+                    'logout': 'Déconnexion'
                 },
                 'hero': {
                     'title': 'Créez des surprises digitales<br>inoubliables',
@@ -45,9 +51,19 @@ class LocalizationManager {
                     'signup': 'Inscription',
                     'email': 'Email',
                     'password': 'Mot de passe',
+                    'confirmPassword': 'Confirmer le mot de passe',
                     'forgotPassword': 'Mot de passe oublié ?',
                     'or': 'ou',
-                    'google': 'Continuer avec Google'
+                    'google': 'Continuer avec Google',
+                    'noAccount': 'Pas de compte ?',
+                    'hasAccount': 'Déjà un compte ?'
+                },
+                'dashboard': {
+                    'welcome': 'Bonjour',
+                    'createSurprise': 'Créer une surprise',
+                    'mySurprises': 'Mes surprises',
+                    'stats': 'Statistiques',
+                    'noSurprises': 'Aucune surprise créée'
                 },
                 'footer': {
                     'copyright': '© 2025 LoveCraft - Conçu avec ❤️ par Max_Adis',
@@ -100,6 +116,9 @@ class LocalizationManager {
             langToggle.innerHTML = `<i class="fas fa-globe mr-1"></i>${this.currentLang === 'fr' ? 'EN' : 'FR'}`;
         }
         
+        // Stocker la langue
+        localStorage.setItem('lovecraft_lang', this.currentLang);
+        
         console.log(`✅ Langue appliquée: ${this.currentLang}`);
     }
 
@@ -107,10 +126,12 @@ class LocalizationManager {
         if (lang === this.currentLang) return;
         
         this.currentLang = lang;
-        localStorage.setItem('lovecraft_lang', lang);
         
         await this.loadTranslations();
         this.applyLanguage();
+        
+        // Notifier l'utilisateur
+        this.showNotification(`🌍 Langue changée en ${lang === 'fr' ? 'Français' : 'English'}`);
     }
 
     setupLanguageToggle() {
@@ -123,6 +144,19 @@ class LocalizationManager {
             });
         }
     }
+
+    showNotification(message) {
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-purple-100 text-purple-800 px-6 py-4 rounded-lg shadow-lg z-50';
+        notification.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas fa-check-circle mr-3"></i>
+                <div>${message}</div>
+            </div>
+        `;
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
+    }
 }
 
 // Créer une instance globale
@@ -130,3 +164,4 @@ const i18n = new LocalizationManager();
 
 // Exporter pour les autres fichiers
 export default i18n;
+[file content end]
