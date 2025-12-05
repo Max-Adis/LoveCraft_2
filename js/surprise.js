@@ -1,5 +1,4 @@
-[file name]: surprise.js
-[file content begin]
+
 import { database, ref, get, update } from './firebase.js';
 
 class SurpriseViewer {
@@ -538,4 +537,4 @@ class SurpriseViewer {
 document.addEventListener('DOMContentLoaded', () => {
     new SurpriseViewer();
 });
-[file content end]
+
