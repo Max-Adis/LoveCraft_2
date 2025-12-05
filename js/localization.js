@@ -1,5 +1,4 @@
-[file name]: localization.js
-[file content begin]
+
 class LocalizationManager {
     constructor() {
         this.currentLang = localStorage.getItem('lovecraft_lang') || 'fr';
@@ -164,4 +163,4 @@ const i18n = new LocalizationManager();
 
 // Exporter pour les autres fichiers
 export default i18n;
-[file content end]
+
