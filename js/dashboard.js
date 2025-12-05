@@ -1,45 +1,12 @@
-import { 
-    auth, database, ref, get, remove, onAuthStateChanged, signOut 
-} from './firebase.js';
+import { auth, database, ref, get, query, orderByChild, equalTo, onAuthStateChanged, signOut } from './firebase.js';
+import i18n from './localization.js';
 
 class DashboardManager {
     constructor() {
         this.user = null;
         this.surprises = [];
-        this.templates = [
-            {
-                id: 'romantic',
-                name: 'Romantique Classique',
-                icon: '❤️',
-                description: 'Fleurs, cœurs et poésie',
-                question: 'Qui t\'aime plus que tout au monde ?',
-                message: 'Tu es l\'amour de ma vie, chaque jour avec toi est un cadeau.'
-            },
-            {
-                id: 'geek',
-                name: 'Geek Love',
-                icon: '👨‍💻',
-                description: 'Pour les amoureux de la tech',
-                question: 'Quel est ton bug préféré ? (moi)',
-                message: 'Tu es la meilleure ligne de code de ma vie. Sans toi, tout buggue.'
-            },
-            {
-                id: 'adventure',
-                name: 'Aventure',
-                icon: '🗺️',
-                description: 'Carte au trésor numérique',
-                question: 'Où irions-nous pour notre plus grande aventure ?',
-                message: 'Avec toi, chaque jour est une nouvelle aventure. Prêt(e) à découvrir le monde ensemble ?'
-            },
-            {
-                id: 'music',
-                name: 'Musical',
-                icon: '🎵',
-                description: 'Surprise avec paroles',
-                question: 'Quelle chanson nous représente le mieux ?',
-                message: 'Tu es la mélodie de mon cœur, la chanson qui ne s\'arrête jamais.'
-            }
-        ];
+        this.stats = {};
+        this.badges = [];
         this.init();
     }
 
@@ -51,172 +18,447 @@ class DashboardManager {
             }
             
             this.user = user;
-            this.updateUserInfo();
-            await this.loadUserSurprises();
-            this.updateStats();
+            await this.loadUserData();
+            this.render();
             this.bindEvents();
         });
     }
 
-    updateUserInfo() {
-        const email = this.user.email;
-        const displayName = this.user.displayName || email.split('@')[0];
-        
-        document.getElementById('userEmail').textContent = displayName;
-        document.getElementById('userNameDisplay').textContent = displayName;
-        document.getElementById('userEmailDisplay').textContent = email;
-        document.getElementById('welcomeName').textContent = displayName;
-        
-        // Mettre à jour l'avatar si photo disponible
-        if (this.user.photoURL) {
-            const avatar = document.querySelector('#userMenu .rounded-full');
-            avatar.innerHTML = `<img src="${this.user.photoURL}" class="w-full h-full object-cover">`;
-            document.getElementById('userIcon').classList.add('hidden');
-        }
-    }
-
-    async loadUserSurprises() {
+    async loadUserData() {
         try {
+            // Charger les surprises de l'utilisateur
             const surprisesRef = ref(database, 'surprises');
-            const snapshot = await get(surprisesRef);
+            const snapshot = await get(query(surprisesRef, orderByChild('userId'), equalTo(this.user.uid)));
             
-            this.surprises = [];
             if (snapshot.exists()) {
                 const data = snapshot.val();
-                Object.keys(data).forEach(key => {
-                    const surprise = data[key];
-                    if (surprise.userId === this.user.uid) {
-                        this.surprises.push({
-                            id: key,
-                            ...surprise
-                        });
-                    }
-                });
+                this.surprises = Object.keys(data).map(key => ({
+                    id: key,
+                    ...data[key]
+                })).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             }
             
-            this.displaySurprises();
+            // Charger les stats
+            const statsRef = ref(database, `users/${this.user.uid}/stats`);
+            const statsSnap = await get(statsRef);
+            this.stats = statsSnap.exists() ? statsSnap.val() : {
+                totalSurprises: 0,
+                totalViews: 0,
+                totalCompletions: 0,
+                streak: 0,
+                level: 1,
+                xp: 0
+            };
+            
+            // Calculer les badges
+            this.calculateBadges();
+            
         } catch (error) {
-            console.error('Erreur chargement:', error);
-            this.showNotification('Erreur de chargement des surprises', 'error');
+            console.error('Erreur chargement dashboard:', error);
         }
     }
 
-    displaySurprises() {
-        const tbody = document.getElementById('surprisesTableBody');
+    calculateBadges() {
+        this.badges = [];
         
-        if (this.surprises.length === 0) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="5" class="px-6 py-8 text-center text-gray-500">
-                        <i class="fas fa-gift text-4xl mb-4 text-gray-300"></i>
-                        <p>Aucune surprise créée pour le moment</p>
-                        <a href="create.html" class="inline-block mt-4 text-purple-600 hover:text-purple-700">
-                            Créer votre première surprise
-                        </a>
-                    </td>
-                </tr>
-            `;
-            return;
+        // Badge 1: Romantique Débutant
+        if (this.stats.totalSurprises >= 1) {
+            this.badges.push({
+                id: 1,
+                name: 'Romantique Débutant',
+                icon: '❤️',
+                description: 'A créé sa première surprise',
+                unlocked: true,
+                color: 'bg-red-100 text-red-800'
+            });
         }
         
-        this.surprises.sort((a, b) => 
-            new Date(b.createdAt) - new Date(a.createdAt)
-        );
+        // Badge 2: Messager Fidèle
+        if (this.stats.totalSurprises >= 3) {
+            this.badges.push({
+                id: 2,
+                name: 'Messager Fidèle',
+                icon: '✉️',
+                description: '3 surprises créées',
+                unlocked: true,
+                color: 'bg-blue-100 text-blue-800'
+            });
+        }
         
-        const recentSurprises = this.surprises.slice(0, 5);
+        // Badge 3: Architecte de l'Amour
+        if (this.stats.totalViews >= 10) {
+            this.badges.push({
+                id: 3,
+                name: 'Architecte de l\'Amour',
+                icon: '🏛️',
+                description: '10 vues sur ses surprises',
+                unlocked: true,
+                color: 'bg-purple-100 text-purple-800'
+            });
+        }
         
-        tbody.innerHTML = recentSurprises.map(surprise => `
-            <tr class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 h-10 w-10 bg-pink-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-heart text-pink-600"></i>
+        // Badge 4: Gardien de la Flamme
+        if (this.stats.streak >= 7) {
+            this.badges.push({
+                id: 4,
+                name: 'Gardien de la Flamme',
+                icon: '🔥',
+                description: '7 jours de connexion',
+                unlocked: true,
+                color: 'bg-orange-100 text-orange-800'
+            });
+        }
+        
+        // Badge 5: Flèche de Cupidon
+        if (this.stats.totalCompletions >= 5) {
+            this.badges.push({
+                id: 5,
+                name: 'Flèche de Cupidon',
+                icon: '🏹',
+                description: '5 surprises complétées',
+                unlocked: true,
+                color: 'bg-pink-100 text-pink-800'
+            });
+        }
+        
+        // Badges verrouillés
+        const totalBadges = 5;
+        for (let i = this.badges.length + 1; i <= totalBadges; i++) {
+            const lockedBadges = [
+                { name: 'Romantique Débutant', icon: '❤️', requirement: 'Créer 1 surprise' },
+                { name: 'Messager Fidèle', icon: '✉️', requirement: 'Créer 3 surprises' },
+                { name: 'Architecte de l\'Amour', icon: '🏛️', requirement: '10 vues' },
+                { name: 'Gardien de la Flamme', icon: '🔥', requirement: '7 jours de streak' },
+                { name: 'Flèche de Cupidon', icon: '🏹', requirement: '5 surprises complétées' }
+            ];
+            
+            this.badges.push({
+                id: i,
+                name: lockedBadges[i-1].name,
+                icon: lockedBadges[i-1].icon,
+                description: lockedBadges[i-1].requirement,
+                unlocked: false,
+                color: 'bg-gray-100 text-gray-400'
+            });
+        }
+    }
+
+    render() {
+        const loading = document.getElementById('loadingDashboard');
+        if (loading) {
+            loading.style.display = 'none';
+        }
+        
+        const app = document.getElementById('app');
+        
+        app.innerHTML = `
+            <div class="space-y-8">
+                <!-- En-tête avec bienvenue -->
+                <div class="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-8 text-white">
+                    <div class="flex flex-col md:flex-row items-center justify-between">
+                        <div class="mb-6 md:mb-0">
+                            <div class="flex items-center mb-4">
+                                ${this.user.photoURL ? 
+                                    `<img src="${this.user.photoURL}" class="w-16 h-16 rounded-full border-4 border-white/50 mr-4 object-cover">` :
+                                    `<div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center border-4 border-white/50 mr-4">
+                                        <i class="fas fa-user text-2xl"></i>
+                                    </div>`
+                                }
+                                <div>
+                                    <h1 class="text-2xl font-bold">Bonjour, ${this.user.displayName || this.user.email} !</h1>
+                                    <p class="opacity-90">Bienvenue dans votre espace LoveCraft</p>
+                                </div>
+                            </div>
+                            <p class="text-lg">
+                                <i class="fas fa-quote-left opacity-70 mr-2"></i>
+                                "Eve a pleuré de joie quand elle a découvert ma première surprise"
+                                <i class="fas fa-quote-right opacity-70 ml-2"></i>
+                                <span class="block text-sm opacity-80 mt-1">— Max, créateur de LoveCraft</span>
+                            </p>
                         </div>
-                        <div class="ml-4">
-                            <div class="text-sm font-medium text-gray-900">${surprise.pourQui}</div>
-                            <div class="text-sm text-gray-500">${surprise.deLaPartDe}</div>
+                        <div class="text-center">
+                            <a href="create.html" class="inline-flex items-center bg-white text-purple-600 px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition shadow-lg">
+                                <i class="fas fa-plus mr-2"></i>Créer une surprise
+                            </a>
+                            <p class="text-sm opacity-80 mt-2">En 2 minutes chrono</p>
                         </div>
                     </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">${new Date(surprise.createdAt).toLocaleDateString('fr-FR')}</div>
-                    <div class="text-sm text-gray-500">${new Date(surprise.createdAt).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">${surprise.views || 0} vues</div>
-                    <div class="text-xs text-gray-500">${surprise.completedViews || 0} complétions</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${surprise.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
-                        ${surprise.status === 'active' ? 'Actif' : 'Inactif'}
-                    </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <a href="../LoveCraft/s/?id=${surprise.id}" target="_blank" class="text-blue-600 hover:text-blue-900 mr-3" title="Voir">
-                        <i class="fas fa-external-link-alt"></i>
-                    </a>
-                    <button onclick="dashboard.editSurprise('${surprise.id}')" class="text-purple-600 hover:text-purple-900 mr-3" title="Éditer">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button onclick="dashboard.deleteSurprise('${surprise.id}', '${surprise.pourQui}')" class="text-red-600 hover:text-red-900" title="Supprimer">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </td>
-            </tr>
-        `).join('');
+                </div>
+                
+                <!-- Statistiques principales -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="stat-card bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-sm text-gray-500">Surprises créées</p>
+                                <p class="text-3xl font-bold text-purple-600">${this.surprises.length}</p>
+                            </div>
+                            <div class="text-3xl text-purple-500">
+                                <i class="fas fa-gift"></i>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-purple-600 h-2 rounded-full progress-bar" style="width: ${Math.min((this.surprises.length / 10) * 100, 100)}%"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">${this.surprises.length}/10 pour le prochain badge</p>
+                    </div>
+                    
+                    <div class="stat-card bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-sm text-gray-500">Vues totales</p>
+                                <p class="text-3xl font-bold text-blue-600">${this.stats.totalViews || 0}</p>
+                            </div>
+                            <div class="text-3xl text-blue-500">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-600 h-2 rounded-full progress-bar" style="width: ${Math.min(((this.stats.totalViews || 0) / 50) * 100, 100)}%"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">${this.stats.totalViews || 0}/50 pour le prochain badge</p>
+                    </div>
+                    
+                    <div class="stat-card bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-sm text-gray-500">Taux d'engagement</p>
+                                <p class="text-3xl font-bold text-green-600">${this.calculateEngagementRate()}%</p>
+                            </div>
+                            <div class="text-3xl text-green-500">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-green-600 h-2 rounded-full progress-bar" style="width: ${this.calculateEngagementRate()}%"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">Personnes qui ont complété la surprise</p>
+                    </div>
+                </div>
+                
+                <!-- Graphiques -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">
+                            <i class="fas fa-chart-bar mr-2"></i>Activité récente
+                        </h3>
+                        <div class="h-64">
+                            <canvas id="activityChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">
+                            <i class="fas fa-heart mr-2"></i>Badges débloqués
+                        </h3>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            ${this.badges.map(badge => `
+                                <div class="${badge.color} rounded-lg p-4 text-center border ${badge.unlocked ? 'border-transparent' : 'border-gray-200'} ${badge.unlocked ? 'badge-glow' : 'opacity-70'}">
+                                    <div class="text-3xl mb-2">${badge.icon}</div>
+                                    <p class="font-bold text-sm mb-1">${badge.name}</p>
+                                    <p class="text-xs">${badge.description}</p>
+                                    ${badge.unlocked ? 
+                                        '<div class="mt-2 text-xs text-green-600"><i class="fas fa-check mr-1"></i>Débloqué</div>' :
+                                        '<div class="mt-2 text-xs text-gray-500"><i class="fas fa-lock mr-1"></i>À débloquer</div>'
+                                    }
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Liste des surprises -->
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-bold text-gray-800">
+                            <i class="fas fa-gifts mr-2"></i>Mes surprises
+                        </h3>
+                        <span class="text-sm text-gray-500">${this.surprises.length} au total</span>
+                    </div>
+                    
+                    ${this.surprises.length > 0 ? `
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead>
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pour qui</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vues</th>
+                                        <th class="px-4 py-3 text-left text-xs font-xs font-medium text-gray-500 uppercase tracking-wider">Complétions</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    ${this.surprises.map(surprise => `
+                                        <tr class="hover:bg-gray-50 transition">
+                                            <td class="px-4 py-4">
+                                                <div class="flex items-center">
+                                                    <div class="flex-shrink-0 h-10 w-10 rounded-full ${this.getThemeColor(surprise.theme)} flex items-center justify-center text-white mr-3">
+                                                        ${this.getThemeIcon(surprise.theme)}
+                                                    </div>
+                                                    <div>
+                                                        <div class="font-medium text-gray-900">${surprise.pourQui}</div>
+                                                        <div class="text-sm text-gray-500">De la part de ${surprise.deLaPartDe}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-4 text-sm text-gray-500">
+                                                ${new Date(surprise.createdAt).toLocaleDateString('fr-FR')}
+                                            </td>
+                                            <td class="px-4 py-4">
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-eye mr-2 text-gray-400"></i>
+                                                    <span class="font-medium">${surprise.views || 0}</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-4">
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-check-circle mr-2 text-gray-400"></i>
+                                                    <span class="font-medium">${surprise.completedViews || 0}</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-4">
+                                                <div class="flex space-x-2">
+                                                    <a href="s/?id=${surprise.id}" target="_blank" class="text-blue-600 hover:text-blue-700 text-sm">
+                                                        <i class="fas fa-external-link-alt mr-1"></i>Voir
+                                                    </a>
+                                                    <a href="create.html?edit=${surprise.id}" class="text-purple-600 hover:text-purple-700 text-sm">
+                                                        <i class="fas fa-edit mr-1"></i>Modifier
+                                                    </a>
+                                                    <a href="#" data-id="${surprise.id}" class="text-red-600 hover:text-red-700 text-sm delete-surprise">
+                                                        <i class="fas fa-trash mr-1"></i>Supprimer
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    ` : `
+                        <div class="text-center py-12">
+                            <div class="text-5xl mb-4 text-gray-300">🎁</div>
+                            <h4 class="text-lg font-medium text-gray-700 mb-2">Aucune surprise créée</h4>
+                            <p class="text-gray-500 mb-6">Commencez par créer votre première surprise !</p>
+                            <a href="create.html" class="inline-flex items-center bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-bold hover:opacity-90 transition">
+                                <i class="fas fa-plus mr-2"></i>Créer ma première surprise
+                            </a>
+                        </div>
+                    `}
+                </div>
+                
+                <!-- Conseils et astuces -->
+                <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-100">
+                    <h3 class="text-lg font-bold text-purple-800 mb-4">
+                        <i class="fas fa-lightbulb mr-2"></i>Conseils pour vos surprises
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-white/50 p-4 rounded-lg">
+                            <div class="text-purple-600 text-xl mb-2">💌</div>
+                            <p class="font-medium text-gray-800">Envoyez par SMS</p>
+                            <p class="text-sm text-gray-600">Le lien s'ouvre directement sur mobile</p>
+                        </div>
+                        <div class="bg-white/50 p-4 rounded-lg">
+                            <div class="text-purple-600 text-xl mb-2">🎨</div>
+                            <p class="font-medium text-gray-800">Utilisez des thèmes différents</p>
+                            <p class="text-sm text-gray-600">Adaptez la surprise à la personne</p>
+                        </div>
+                        <div class="bg-white/50 p-4 rounded-lg">
+                            <div class="text-purple-600 text-xl mb-2">⏰</div>
+                            <p class="font-medium text-gray-800">Planifiez l'envoi</p>
+                            <p class="text-sm text-gray-600">Envoyez à une date spéciale</p>
+                        </div>
+                        <div class="bg-white/50 p-4 rounded-lg">
+                            <div class="text-purple-600 text-xl mb-2">🤫</div>
+                            <p class="font-medium text-gray-800">Ajoutez un indice</p>
+                            <p class="text-sm text-gray-600">Rendez la découverte plus amusante</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Initialiser les graphiques
+        this.initCharts();
     }
 
-    async deleteSurprise(id, name) {
-        if (!confirm(`Supprimer la surprise pour ${name} ? Cette action est irréversible.`)) {
-            return;
-        }
+    calculateEngagementRate() {
+        if (!this.stats.totalViews || this.stats.totalViews === 0) return 0;
+        const completions = this.stats.totalCompletions || 0;
+        return Math.round((completions / this.stats.totalViews) * 100);
+    }
 
-        try {
-            await remove(ref(database, 'surprises/' + id));
-            await remove(ref(database, 'users/' + this.user.uid + '/surprises/' + id));
+    getThemeColor(theme) {
+        switch(theme) {
+            case 'romantique': return 'bg-gradient-to-r from-pink-500 to-red-500';
+            case 'geek': return 'bg-gradient-to-r from-blue-500 to-indigo-500';
+            case 'fun': return 'bg-gradient-to-r from-yellow-500 to-orange-500';
+            case 'classique': return 'bg-gradient-to-r from-gray-500 to-gray-700';
+            default: return 'bg-gradient-to-r from-purple-500 to-pink-500';
+        }
+    }
+
+    getThemeIcon(theme) {
+        switch(theme) {
+            case 'romantique': return '<i class="fas fa-heart text-sm"></i>';
+            case 'geek': return '<i class="fas fa-laptop-code text-sm"></i>';
+            case 'fun': return '<i class="fas fa-laugh text-sm"></i>';
+            case 'classique': return '<i class="fas fa-gem text-sm"></i>';
+            default: return '<i class="fas fa-star text-sm"></i>';
+        }
+    }
+
+    initCharts() {
+        // Graphique d'activité
+        const activityCtx = document.getElementById('activityChart');
+        if (activityCtx) {
+            // Données fictives pour la démo
+            const labels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+            const viewsData = [3, 5, 2, 8, 4, 6, 7];
+            const completionsData = [1, 2, 1, 3, 2, 4, 3];
             
-            this.showNotification('Surprise supprimée avec succès', 'success');
-            await this.loadUserSurprises();
-            this.updateStats();
-        } catch (error) {
-            console.error('Erreur suppression:', error);
-            this.showNotification('Erreur lors de la suppression', 'error');
+            new Chart(activityCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Vues',
+                            data: viewsData,
+                            borderColor: '#8b5cf6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Complétions',
+                            data: completionsData,
+                            borderColor: '#ec4899',
+                            backgroundColor: 'rgba(236, 72, 153, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 2
+                            }
+                        }
+                    }
+                }
+            });
         }
-    }
-
-    editSurprise(id) {
-        localStorage.setItem('editSurpriseId', id);
-        window.location.href = 'create.html?edit=' + id;
-    }
-
-    updateStats() {
-        const totalSurprises = this.surprises.length;
-        const totalViews = this.surprises.reduce((sum, s) => sum + (s.views || 0), 0);
-        const completedViews = this.surprises.reduce((sum, s) => sum + (s.completedViews || 0), 0);
-        
-        let successRate = '0%';
-        let rate = 0;
-        
-        if (totalViews > 0) {
-            rate = (completedViews / totalViews) * 100;
-            successRate = Math.round(rate) + '%';
-        }
-        
-        const rateElement = document.getElementById('successRate');
-        rateElement.textContent = successRate;
-        
-        if (rate >= 80) {
-            rateElement.className = 'text-3xl font-bold text-green-600';
-        } else if (rate >= 50) {
-            rateElement.className = 'text-3xl font-bold text-yellow-600';
-        } else {
-            rateElement.className = 'text-3xl font-bold text-red-600';
-        }
-        
-        document.getElementById('totalSurprises').textContent = totalSurprises;
-        document.getElementById('totalViews').textContent = totalViews;
-        
-        rateElement.title = `${completedViews} personnes sur ${totalViews} ont complété la surprise (${successRate})`;
     }
 
     bindEvents() {
@@ -227,412 +469,43 @@ class DashboardManager {
                 window.location.href = 'index.html';
             } catch (error) {
                 console.error('Erreur déconnexion:', error);
-                this.showNotification('Erreur lors de la déconnexion', 'error');
+                alert('Erreur lors de la déconnexion');
             }
         });
-
-        // Bouton templates
-        document.getElementById('templateBtn').addEventListener('click', () => {
-            this.showTemplatesModal();
-        });
-
-        // Bouton stats
-        document.getElementById('statsBtn').addEventListener('click', () => {
-            this.showStatsModal();
-        });
-
-        // Voir tout
-        document.getElementById('viewAllBtn').addEventListener('click', (e) => {
-            e.preventDefault();
-            this.showAllSurprises();
-        });
-    }
-
-    // Modals
-    showTemplatesModal() {
-        const modalHTML = `
-            <div id="templatesModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-                <div class="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                    <div class="p-6">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-2xl font-bold text-gray-800">Choisissez un template</h3>
-                            <button onclick="dashboard.closeModal('templatesModal')" class="text-gray-400 hover:text-gray-600">
-                                <i class="fas fa-times text-xl"></i>
-                            </button>
-                        </div>
+        
+        // Suppression de surprises
+        document.querySelectorAll('.delete-surprise').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const surpriseId = e.currentTarget.dataset.id;
+                const surprise = this.surprises.find(s => s.id === surpriseId);
+                
+                if (!surprise) return;
+                
+                if (confirm(`Supprimer la surprise pour ${surprise.pourQui} ?`)) {
+                    try {
+                        const surpriseRef = ref(database, 'surprises/' + surpriseId);
+                        await remove(surpriseRef);
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                            ${this.templates.map(template => `
-                                <div class="border border-gray-200 rounded-xl p-6 hover:border-purple-300 hover:shadow-md transition cursor-pointer group">
-                                    <div class="flex items-start mb-4">
-                                        <div class="text-3xl mr-4 group-hover:scale-110 transition">${template.icon}</div>
-                                        <div>
-                                            <h4 class="font-bold text-gray-800">${template.name}</h4>
-                                            <p class="text-sm text-gray-600">${template.description}</p>
-                                        </div>
-                                    </div>
-                                    <div class="bg-gray-50 p-4 rounded-lg mb-4">
-                                        <p class="text-sm text-gray-700"><strong>Question :</strong> ${template.question}</p>
-                                    </div>
-                                    <button onclick="dashboard.useTemplate('${template.id}')" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition">
-                                        <i class="fas fa-magic mr-2"></i>Utiliser ce template
-                                    </button>
-                                </div>
-                            `).join('')}
-                        </div>
+                        // Recharger les données
+                        await this.loadUserData();
+                        this.render();
                         
-                        <div class="text-center">
-                            <button onclick="window.location.href='create.html'" class="bg-gray-100 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-200 transition">
-                                <i class="fas fa-pen mr-2"></i>Créer personnalisé
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        this.createModal('templatesModal', modalHTML);
-        document.getElementById('templatesModal').classList.remove('hidden');
-    }
-
-    useTemplate(templateId) {
-        const template = this.templates.find(t => t.id === templateId);
-        if (template) {
-            localStorage.setItem('selectedTemplate', JSON.stringify(template));
-            window.location.href = 'create.html?template=' + templateId;
-        }
-    }
-
-    showStatsModal() {
-        const totalViews = this.surprises.reduce((sum, s) => sum + (s.views || 0), 0);
-        const completedViews = this.surprises.reduce((sum, s) => sum + (s.completedViews || 0), 0);
-        const conversionRate = totalViews > 0 ? ((completedViews / totalViews) * 100).toFixed(1) : 0;
-        
-        const modalHTML = `
-            <div id="statsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-                <div class="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                    <div class="p-8">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-2xl font-bold text-gray-800">Analytiques détaillés</h3>
-                            <button onclick="dashboard.closeModal('statsModal')" class="text-gray-400 hover:text-gray-600">
-                                <i class="fas fa-times text-xl"></i>
-                            </button>
-                        </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                            <div class="bg-blue-50 p-6 rounded-xl">
-                                <div class="text-3xl font-bold text-blue-600 mb-2">${this.surprises.length}</div>
-                                <div class="text-sm text-gray-600">Surprises créées</div>
-                            </div>
-                            <div class="bg-green-50 p-6 rounded-xl">
-                                <div class="text-3xl font-bold text-green-600 mb-2">${totalViews}</div>
-                                <div class="text-sm text-gray-600">Vues totales</div>
-                            </div>
-                            <div class="bg-purple-50 p-6 rounded-xl">
-                                <div class="text-3xl font-bold text-purple-600 mb-2">${conversionRate}%</div>
-                                <div class="text-sm text-gray-600">Taux de conversion</div>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-6">
-                            <h4 class="font-bold text-gray-800 mb-4">Performance par surprise</h4>
-                            <div class="space-y-4">
-                                ${this.surprises.map(surprise => `
-                                    <div class="flex items-center justify-between border-b pb-3">
-                                        <div>
-                                            <div class="font-medium">${surprise.pourQui}</div>
-                                            <div class="text-sm text-gray-500">${new Date(surprise.createdAt).toLocaleDateString('fr-FR')}</div>
-                                        </div>
-                                        <div class="text-right">
-                                            <div class="font-medium">${surprise.views || 0} vues</div>
-                                            <div class="text-sm text-gray-500">${surprise.completedViews || 0} complétions</div>
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        this.createModal('statsModal', modalHTML);
-        document.getElementById('statsModal').classList.remove('hidden');
-    }
-
-    showAllSurprises() {
-        const modalHTML = `
-            <div id="allSurprisesModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-                <div class="bg-white rounded-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
-                    <div class="p-6">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-2xl font-bold text-gray-800">Toutes mes surprises (${this.surprises.length})</h3>
-                            <button onclick="dashboard.closeModal('allSurprisesModal')" class="text-gray-400 hover:text-gray-600">
-                                <i class="fas fa-times text-xl"></i>
-                            </button>
-                        </div>
-                        
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead>
-                                    <tr>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pour</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vues</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Complétions</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-200">
-                                    ${this.surprises.map(surprise => `
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-4 py-3">${surprise.pourQui}</td>
-                                            <td class="px-4 py-3">${new Date(surprise.createdAt).toLocaleDateString('fr-FR')}</td>
-                                            <td class="px-4 py-3">${surprise.views || 0}</td>
-                                            <td class="px-4 py-3">${surprise.completedViews || 0}</td>
-                                            <td class="px-4 py-3">
-                                                <a href="../LoveCraft/s/?id=${surprise.id}" target="_blank" class="text-blue-600 hover:text-blue-900 mr-3">
-                                                    <i class="fas fa-external-link-alt"></i>
-                                                </a>
-                                                <button onclick="dashboard.deleteSurprise('${surprise.id}', '${surprise.pourQui}')" class="text-red-600 hover:text-red-900">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        this.createModal('allSurprisesModal', modalHTML);
-        document.getElementById('allSurprisesModal').classList.remove('hidden');
-    }
-
-    showPremiumModal() {
-        this.createModal('premiumModal', '');
-        document.getElementById('premiumModal').classList.remove('hidden');
-    }
-
-    showContactModal() {
-        this.createModal('contactModal', '');
-        document.getElementById('contactModal').classList.remove('hidden');
-    }
-
-    showTermsModal() {
-        const modalHTML = `
-            <div id="termsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-                <div class="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-                    <div class="p-8">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-2xl font-bold text-gray-800">Conditions d'utilisation</h3>
-                            <button onclick="dashboard.closeModal('termsModal')" class="text-gray-400 hover:text-gray-600">
-                                <i class="fas fa-times text-xl"></i>
-                            </button>
-                        </div>
-                        <div class="prose max-w-none">
-                            <h4>1. Acceptation des conditions</h4>
-                            <p>En utilisant LoveCraft, vous acceptez ces conditions d'utilisation...</p>
-                            <h4>2. Service fourni</h4>
-                            <p>LoveCraft est une plateforme permettant de créer des surprises digitales personnalisées...</p>
-                            <h4>3. Compte utilisateur</h4>
-                            <p>Vous êtes responsable de la confidentialité de votre compte...</p>
-                            <h4>4. Contenu</h4>
-                            <p>Vous conservez les droits sur le contenu que vous créez...</p>
-                            <h4>5. Limitations</h4>
-                            <p>LoveCraft ne peut être tenu responsable de l'utilisation du service...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        this.createModal('termsModal', modalHTML);
-        document.getElementById('termsModal').classList.remove('hidden');
-    }
-
-    showPrivacyModal() {
-        const modalHTML = `
-            <div id="privacyModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-                <div class="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-                    <div class="p-8">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-2xl font-bold text-gray-800">Politique de confidentialité</h3>
-                            <button onclick="dashboard.closeModal('privacyModal')" class="text-gray-400 hover:text-gray-600">
-                                <i class="fas fa-times text-xl"></i>
-                            </button>
-                        </div>
-                        <div class="prose max-w-none">
-                            <h4>Collecte des données</h4>
-                            <p>Nous collectons uniquement les données nécessaires au fonctionnement du service...</p>
-                            <h4>Utilisation des données</h4>
-                            <p>Vos données sont utilisées pour personnaliser votre expérience...</p>
-                            <h4>Protection des données</h4>
-                            <p>Nous protégeons vos données avec les standards de sécurité les plus élevés...</p>
-                            <h4>Vos droits</h4>
-                            <p>Vous pouvez à tout moment accéder, modifier ou supprimer vos données...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        this.createModal('privacyModal', modalHTML);
-        document.getElementById('privacyModal').classList.remove('hidden');
-    }
-
-    showCookiesModal() {
-        const modalHTML = `
-            <div id="cookiesModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-                <div class="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-                    <div class="p-8">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-2xl font-bold text-gray-800">Politique des cookies</h3>
-                            <button onclick="dashboard.closeModal('cookiesModal')" class="text-gray-400 hover:text-gray-600">
-                                <i class="fas fa-times text-xl"></i>
-                            </button>
-                        </div>
-                        <div class="prose max-w-none">
-                            <p>Nous utilisons des cookies pour améliorer votre expérience sur LoveCraft...</p>
-                            <h4>Cookies essentiels</h4>
-                            <p>Nécessaires au fonctionnement du site...</p>
-                            <h4>Cookies analytiques</h4>
-                            <p>Nous aident à comprendre comment vous utilisez le site...</p>
-                            <h4>Gestion des cookies</h4>
-                            <p>Vous pouvez gérer vos préférences dans les paramètres...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        this.createModal('cookiesModal', modalHTML);
-        document.getElementById('cookiesModal').classList.remove('hidden');
-    }
-
-    showSupportModal() {
-        const modalHTML = `
-            <div id="supportModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-                <div class="bg-white rounded-xl max-w-2xl w-full">
-                    <div class="p-8">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-2xl font-bold text-gray-800">Support LoveCraft</h3>
-                            <button onclick="dashboard.closeModal('supportModal')" class="text-gray-400 hover:text-gray-600">
-                                <i class="fas fa-times text-xl"></i>
-                            </button>
-                        </div>
-                        <div class="space-y-4">
-                            <p>Besoin d'aide ? Voici comment nous pouvons vous aider :</p>
-                            <div class="bg-gray-50 p-4 rounded-lg">
-                                <h4 class="font-bold mb-2">📧 Contact direct</h4>
-                                <p class="text-sm">Email : support@lovecraft.com</p>
-                            </div>
-                            <div class="bg-gray-50 p-4 rounded-lg">
-                                <h4 class="font-bold mb-2">📖 Centre d'aide</h4>
-                                <p class="text-sm">Consultez notre FAQ et tutoriels</p>
-                            </div>
-                            <div class="bg-gray-50 p-4 rounded-lg">
-                                <h4 class="font-bold mb-2">💬 Chat en direct</h4>
-                                <p class="text-sm">Disponible du lundi au vendredi, 9h-18h</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        this.createModal('supportModal', modalHTML);
-        document.getElementById('supportModal').classList.remove('hidden');
-    }
-
-    showBugModal() {
-        const modalHTML = `
-            <div id="bugModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-                <div class="bg-white rounded-xl max-w-2xl w-full">
-                    <div class="p-8">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-2xl font-bold text-gray-800">Signaler un problème</h3>
-                            <button onclick="dashboard.closeModal('bugModal')" class="text-gray-400 hover:text-gray-600">
-                                <i class="fas fa-times text-xl"></i>
-                            </button>
-                        </div>
-                        <form id="bugForm" action="https://formspree.io/f/mgvgzykk" method="POST">
-                            <input type="hidden" name="type" value="bug">
-                            <div class="space-y-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Description du problème</label>
-                                    <textarea name="message" rows="4" required class="w-full px-4 py-2 border rounded-lg" placeholder="Décrivez le problème rencontré..."></textarea>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Page concernée</label>
-                                    <input type="text" name="page" class="w-full px-4 py-2 border rounded-lg" placeholder="Ex: Dashboard, Création...">
-                                </div>
-                                <button type="submit" class="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700">
-                                    <i class="fas fa-bug mr-2"></i>Signaler le problème
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        this.createModal('bugModal', modalHTML);
-        document.getElementById('bugModal').classList.remove('hidden');
-    }
-
-    createModal(id, content) {
-        if (!document.getElementById(id)) {
-            const modal = document.createElement('div');
-            modal.id = id;
-            modal.className = 'fixed inset-0 bg-black bg-opacity-50 hidden z-50 overflow-y-auto';
-            modal.innerHTML = content;
-            document.body.appendChild(modal);
-            
-            // Fermer en cliquant en dehors
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    this.closeModal(id);
+                        alert('Surprise supprimée avec succès !');
+                    } catch (error) {
+                        console.error('Erreur suppression:', error);
+                        alert('Erreur lors de la suppression');
+                    }
                 }
             });
-        }
-    }
-
-    closeModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.classList.add('hidden');
-        }
-    }
-
-    showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.className = `fixed top-4 right-4 px-6 py-4 rounded-lg shadow-lg z-50 transform transition-transform duration-300 ${
-            type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' :
-            type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' :
-            'bg-blue-100 text-blue-800 border border-blue-200'
-        }`;
-        notification.innerHTML = `
-            <div class="flex items-center">
-                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} mr-3"></i>
-                <div>${message}</div>
-            </div>
-        `;
+        });
         
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            notification.style.transform = 'translateX(100%)';
-            setTimeout(() => notification.remove(), 300);
-        }, 3000);
+        // Écouter le changement de langue
+        document.addEventListener('languageChanged', async () => {
+            await this.loadUserData();
+            this.render();
+        });
     }
 }
 
-// Créer instance globale
-const dashboard = new DashboardManager();
-
-// Exposer au global pour les onclick
-window.dashboard = dashboard;
+new DashboardManager();
