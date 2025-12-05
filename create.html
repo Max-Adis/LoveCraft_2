@@ -6,14 +6,14 @@
     <title>Créer une surprise - LoveCraft</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- QR Code Library FIXED -->
+    <!-- QR Code Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        /* FIX pour les inputs de couleur */
-        .text-input-fix {
+        /* Force texte noir sur tous les inputs */
+        input, textarea, select {
             color: #1f2937 !important; /* gray-800 */
         }
-        .text-input-fix::placeholder {
+        input::placeholder, textarea::placeholder {
             color: #9ca3af !important; /* gray-400 */
         }
     </style>
@@ -25,7 +25,6 @@
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
                     <a href="dashboard.html" class="flex-shrink-0 flex items-center">
-                        <!-- LOGO ROND FIXÉ -->
                         <div class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center overflow-hidden mr-3 border-2 border-white shadow-lg">
                             <img src="assets/logo.png" alt="LoveCraft Logo" class="w-full h-full object-cover p-0.5">
                         </div>
@@ -42,7 +41,7 @@
     </nav>
 
     <div id="app" class="flex-grow max-w-4xl mx-auto px-4 md:px-8 py-8">
-        <!-- Chargement initial -->
+        <!-- Chargement -->
         <div id="loading" class="text-center py-12">
             <div class="inline-block animate-pulse">
                 <div class="w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center mb-4">
@@ -67,37 +66,34 @@
         </div>
     </footer>
 
-    <!-- Scripts -->
     <script type="module">
         import { auth, onAuthStateChanged } from './js/firebase.js';
-        
-        // Cache le loader initial
-        const loading = document.getElementById('loading');
         
         onAuthStateChanged(auth, (user) => {
             if (!user) {
                 window.location.href = 'index.html';
-            } else {
-                // Cache le loader
-                if (loading) loading.style.display = 'none';
-                
-                // Import dynamique pour éviter les erreurs
-                import('./js/creator.js').then(module => {
-                    new module.default(user.uid);
-                }).catch(error => {
-                    console.error('Erreur chargement creator.js:', error);
-                    document.getElementById('app').innerHTML = `
-                        <div class="text-center py-12">
-                            <div class="text-5xl mb-4">😢</div>
-                            <h2 class="text-2xl font-bold text-gray-800 mb-4">Erreur de chargement</h2>
-                            <p class="text-gray-600 mb-6">Impossible de charger le créateur de surprise</p>
-                            <a href="dashboard.html" class="text-purple-600 hover:text-purple-700">
-                                <i class="fas fa-arrow-left mr-2"></i>Retour au dashboard
-                            </a>
-                        </div>
-                    `;
-                });
+                return;
             }
+            
+            // Cache le loader
+            document.getElementById('loading').style.display = 'none';
+            
+            // Charge le créateur
+            import('./js/creator.js').then(module => {
+                new module.default(user.uid);
+            }).catch(error => {
+                console.error('Erreur:', error);
+                document.getElementById('app').innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="text-5xl mb-4">😢</div>
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Erreur</h2>
+                        <p class="text-gray-600 mb-6">Impossible de charger le créateur</p>
+                        <a href="dashboard.html" class="text-purple-600 hover:text-purple-700">
+                            Retour au dashboard
+                        </a>
+                    </div>
+                `;
+            });
         });
     </script>
 </body>
