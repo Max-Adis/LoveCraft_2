@@ -1,5 +1,4 @@
-[file name]: firebase.js
-[file content begin]
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 import { 
     getDatabase, 
@@ -77,4 +76,4 @@ export {
     uploadBytes, 
     getDownloadURL
 };
-[file content end]
+
