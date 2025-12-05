@@ -1,5 +1,4 @@
-[file name]: dashboard.js
-[file content begin]
+
 import { auth, database, ref, get, onAuthStateChanged, signOut, remove } from './firebase.js';
 
 class DashboardManager {
@@ -682,5 +681,4 @@ class DashboardManager {
 }
 
 // Démarrer l'application
-new DashboardManager();
-[file content end]
+
