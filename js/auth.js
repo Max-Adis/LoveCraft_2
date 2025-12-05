@@ -1,3 +1,5 @@
+[file name]: auth.js
+[file content begin]
 import { 
     auth, googleProvider,
     createUserWithEmailAndPassword, 
@@ -17,7 +19,7 @@ class AuthManager {
     init() {
         onAuthStateChanged(auth, (user) => {
             this.currentUser = user;
-            if (user) {
+            if (user && window.location.pathname.includes('index.html')) {
                 window.location.href = 'dashboard.html';
             }
         });
@@ -139,14 +141,16 @@ class AuthManager {
     }
 
     clearErrors() {
-        document.getElementById('loginError').classList.add('hidden');
-        document.getElementById('signupError').classList.add('hidden');
+        document.getElementById('loginError')?.classList.add('hidden');
+        document.getElementById('signupError')?.classList.add('hidden');
     }
 
     showError(elementId, message) {
         const errorElement = document.getElementById(elementId);
-        errorElement.textContent = message;
-        errorElement.classList.remove('hidden');
+        if (errorElement) {
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+        }
     }
 
     showSuccess(message) {
@@ -174,6 +178,7 @@ class AuthManager {
         try {
             await signInWithEmailAndPassword(auth, email, password);
             this.hideAuthModal();
+            this.showSuccess('Connexion réussie !');
         } catch (error) {
             let message = 'Erreur de connexion';
             switch (error.code) {
@@ -231,6 +236,7 @@ class AuthManager {
             localStorage.setItem('googleUserName', result.user.displayName);
             localStorage.setItem('googleUserPhoto', result.user.photoURL);
             this.hideAuthModal();
+            this.showSuccess('Connexion Google réussie !');
         } catch (error) {
             this.showError('loginError', 'Erreur avec Google : ' + error.message);
         }
@@ -264,3 +270,4 @@ class AuthManager {
 }
 
 new AuthManager();
+[file content end]
