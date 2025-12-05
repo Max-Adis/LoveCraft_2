@@ -1,5 +1,4 @@
-[file name]: auth.js
-[file content begin]
+
 import { 
     auth, googleProvider,
     createUserWithEmailAndPassword, 
@@ -270,4 +269,4 @@ class AuthManager {
 }
 
 new AuthManager();
-[file content end]
+
