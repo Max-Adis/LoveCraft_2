@@ -1,9 +1,11 @@
+[file name]: index.html
+[file content begin]
 <!DOCTYPE html>
 <html lang="fr" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="app.title">LoveCraft - Créez des surprises digitales</title>
+    <title>LoveCraft - Créez des surprises digitales</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -37,17 +39,13 @@
         .card-hover:hover {
             transform: translateY(-5px);
         }
-        .emoji-rating {
-            font-size: 2.5rem;
-            background: none;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            padding: 5px;
-            border-radius: 10px;
+        /* Forcer texte noir sur inputs */
+        input, textarea, select {
+            color: #1f2937 !important;
+            background: white !important;
         }
-        .emoji-rating:hover {
-            transform: scale(1.2);
+        input::placeholder, textarea::placeholder {
+            color: #9ca3af !important;
         }
     </style>
 </head>
@@ -58,8 +56,6 @@
         <div class="emoji-float top-20 right-10 animate-float delay-300">✨</div>
         <div class="emoji-float bottom-20 left-10 animate-float delay-500">🎉</div>
         <div class="emoji-float bottom-10 right-20 animate-pulse-glow delay-700">💖</div>
-        <div class="emoji-float top-1/3 left-1/4 animate-float delay-900">😊</div>
-        <div class="emoji-float top-1/4 right-1/4 animate-float delay-1100">🥰</div>
 
         <!-- Navigation -->
         <nav class="bg-white shadow-sm relative z-10">
@@ -76,13 +72,10 @@
                         </a>
                     </div>
                     <div class="flex items-center space-x-4">
-                        <a href="#" id="langToggle" class="text-gray-700 hover:text-purple-600 text-sm px-3 py-2 rounded-md hover:bg-purple-50 transition">
-                            <i class="fas fa-globe mr-1"></i>EN
-                        </a>
-                        <a href="#" id="loginBtn" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium hover:bg-purple-50 transition" data-i18n="nav.login">
+                        <a href="#" id="loginBtn" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium hover:bg-purple-50 transition">
                             Connexion
                         </a>
-                        <a href="#" id="signupBtn" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:opacity-90 transition shadow-md hover:shadow-lg" data-i18n="nav.signup">
+                        <a href="#" id="signupBtn" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:opacity-90 transition shadow-md hover:shadow-lg">
                             Inscription
                         </a>
                     </div>
@@ -101,7 +94,7 @@
                             </div>
                         </div>
                     </div>
-                    <h1 class="text-4xl md:text-6xl font-bold text-white mb-6 animate-fadeIn" data-i18n-html="hero.title">
+                    <h1 class="text-4xl md:text-6xl font-bold text-white mb-6 animate-fadeIn">
                         Créez des surprises digitales<br>inoubliables
                     </h1>
                     <p class="text-xl text-purple-100 mb-10 max-w-3xl mx-auto animate-fadeIn delay-200">
@@ -109,10 +102,10 @@
                     </p>
                     <div class="flex flex-col md:flex-row gap-4 justify-center animate-fadeIn delay-300">
                         <button id="ctaSignup" class="bg-white text-purple-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-purple-50 transition shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                            <i class="fas fa-heart mr-2"></i><span data-i18n="hero.cta1">Commencer gratuitement</span>
+                            <i class="fas fa-heart mr-2"></i>Commencer gratuitement
                         </button>
                         <a href="story.html" class="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-white/10 transition">
-                            <i class="fas fa-play mr-2"></i><span data-i18n="hero.cta2">Voir notre histoire</span>
+                            <i class="fas fa-play mr-2"></i>Voir notre histoire
                         </a>
                     </div>
                 </div>
@@ -154,19 +147,19 @@
                 </div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
                     <div>
-                        <div class="text-4xl font-bold mb-2" id="statSurprises">1,247+</div>
+                        <div class="text-4xl font-bold mb-2">1,247+</div>
                         <div class="opacity-90">Surprises créées</div>
                     </div>
                     <div>
-                        <div class="text-4xl font-bold mb-2" id="statUsers">500+</div>
+                        <div class="text-4xl font-bold mb-2">500+</div>
                         <div class="opacity-90">Utilisateurs heureux</div>
                     </div>
                     <div>
-                        <div class="text-4xl font-bold mb-2" id="statCountries">25+</div>
+                        <div class="text-4xl font-bold mb-2">25+</div>
                         <div class="opacity-90">Pays</div>
                     </div>
                     <div>
-                        <div class="text-4xl font-bold mb-2" id="statSuccess">98%</div>
+                        <div class="text-4xl font-bold mb-2">98%</div>
                         <div class="opacity-90">Taux de satisfaction</div>
                     </div>
                 </div>
@@ -189,7 +182,7 @@
                 </div>
                 
                 <div>
-                    <h3 class="font-bold text-lg mb-4" data-i18n="footer.navigation">Navigation</h3>
+                    <h3 class="font-bold text-lg mb-4">Navigation</h3>
                     <ul class="space-y-2">
                         <li><a href="index.html" class="text-gray-400 hover:text-white transition">Accueil</a></li>
                         <li><a href="story.html" class="text-gray-400 hover:text-white transition">Notre histoire</a></li>
@@ -199,7 +192,7 @@
                 </div>
                 
                 <div>
-                    <h3 class="font-bold text-lg mb-4" data-i18n="footer.legal">Légal</h3>
+                    <h3 class="font-bold text-lg mb-4">Légal</h3>
                     <ul class="space-y-2">
                         <li><a href="legal/terms.html" class="text-gray-400 hover:text-white transition">Conditions d'utilisation</a></li>
                         <li><a href="legal/privacy.html" class="text-gray-400 hover:text-white transition">Politique de confidentialité</a></li>
@@ -208,21 +201,11 @@
                 </div>
                 
                 <div>
-                    <h3 class="font-bold text-lg mb-4" data-i18n="footer.contact">Contact</h3>
+                    <h3 class="font-bold text-lg mb-4">Contact</h3>
                     <ul class="space-y-2">
                         <li>
-                            <a href="mailto:maxhounkpatin@gmail.com" class="text-gray-400 hover:text-white transition">
-                                <i class="fas fa-envelope mr-2"></i>contact@lovecraft.com
-                            </a>
-                        </li>
-                        <li>
-                            <button id="footerFeedbackBtn" class="text-gray-400 hover:text-white transition text-left w-full">
-                                <i class="fas fa-comment-alt mr-2"></i>Donnez votre avis
-                            </button>
-                        </li>
-                        <li>
                             <button id="footerSupportBtn" class="text-gray-400 hover:text-white transition text-left w-full">
-                                <i class="fas fa-headset mr-2"></i>Support
+                                <i class="fas fa-headset mr-2"></i>Contactez-nous
                             </button>
                         </li>
                     </ul>
@@ -230,8 +213,8 @@
             </div>
             
             <div class="border-t border-gray-700 mt-8 pt-8 text-center">
-                <p class="text-gray-400" data-i18n="footer.copyright">© 2025 LoveCraft - Conçu avec ❤️ par Max_Adis</p>
-                <p class="text-gray-500 text-sm mt-2" data-i18n="footer.story">Inspiré par une histoire vraie d'amour</p>
+                <p class="text-gray-400">© 2025 LoveCraft - Conçu avec ❤️ par Max_Adis</p>
+                <p class="text-gray-500 text-sm mt-2">Inspiré par une histoire vraie d'amour</p>
             </div>
         </div>
     </footer>
@@ -248,62 +231,62 @@
                 
                 <div class="flex border-b mb-6">
                     <button id="tabLogin" class="flex-1 py-2 text-center font-medium text-purple-600 border-b-2 border-purple-600">
-                        <span data-i18n="auth.login">Connexion</span>
+                        Connexion
                     </button>
                     <button id="tabSignup" class="flex-1 py-2 text-center font-medium text-gray-500">
-                        <span data-i18n="auth.signup">Inscription</span>
+                        Inscription
                     </button>
                 </div>
                 
                 <div id="loginForm">
                     <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" data-i18n="auth.email">Email</label>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
                         <input type="email" id="loginEmail" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-800" placeholder="votre@email.com">
                     </div>
                     <div class="mb-6">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" data-i18n="auth.password">Mot de passe</label>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Mot de passe</label>
                         <input type="password" id="loginPassword" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-800" placeholder="••••••••">
                         <div class="text-right mt-2">
-                            <button id="forgotPassword" class="text-sm text-purple-600 hover:text-purple-700" data-i18n="auth.forgotPassword">Mot de passe oublié ?</button>
+                            <button id="forgotPassword" class="text-sm text-purple-600 hover:text-purple-700">Mot de passe oublié ?</button>
                         </div>
                     </div>
                     <div id="loginError" class="text-red-500 text-sm mb-4 hidden"></div>
                     <button id="submitLogin" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition">
-                        <span data-i18n="auth.login">Se connecter</span>
+                        Se connecter
                     </button>
                     <div class="text-center my-4">
-                        <span class="text-gray-500" data-i18n="auth.or">ou</span>
+                        <span class="text-gray-500">ou</span>
                     </div>
                     <button id="googleLogin" class="w-full bg-white border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition flex items-center justify-center">
                         <img src="https://www.google.com/favicon.ico" class="w-5 h-5 mr-2">
-                        <span data-i18n="auth.google">Continuer avec Google</span>
+                        Continuer avec Google
                     </button>
                 </div>
                 
                 <div id="signupForm" class="hidden">
                     <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" data-i18n="auth.email">Email</label>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
                         <input type="email" id="signupEmail" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-800" placeholder="votre@email.com">
                     </div>
                     <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" data-i18n="auth.password">Mot de passe</label>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Mot de passe</label>
                         <input type="password" id="signupPassword" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-800" placeholder="••••••••">
                         <p class="text-xs text-gray-500 mt-1">Minimum 6 caractères</p>
                     </div>
                     <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" data-i18n="auth.confirmPassword">Confirmer le mot de passe</label>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Confirmer le mot de passe</label>
                         <input type="password" id="signupConfirm" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-800" placeholder="••••••••">
                     </div>
                     <div id="signupError" class="text-red-500 text-sm mb-4 hidden"></div>
                     <button id="submitSignup" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition">
-                        <span data-i18n="auth.signup">Créer un compte</span>
+                        Créer un compte
                     </button>
                     <div class="text-center my-4">
-                        <span class="text-gray-500" data-i18n="auth.or">ou</span>
+                        <span class="text-gray-500">ou</span>
                     </div>
                     <button id="googleSignup" class="w-full bg-white border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition flex items-center justify-center">
                         <img src="https://www.google.com/favicon.ico" class="w-5 h-5 mr-2">
-                        <span data-i18n="auth.google">S'inscrire avec Google</span>
+                        S'inscrire avec Google
                     </button>
                 </div>
             </div>
@@ -315,7 +298,7 @@
         <div class="min-h-screen flex items-center justify-center p-4">
             <div class="bg-white rounded-xl max-w-md w-full p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-bold text-gray-800" data-i18n="auth.forgotPassword">Mot de passe oublié</h3>
+                    <h3 class="text-xl font-bold text-gray-800">Mot de passe oublié</h3>
                     <button id="closeForgotModal" class="text-gray-400 hover:text-gray-600">
                         <i class="fas fa-times"></i>
                     </button>
@@ -331,243 +314,115 @@
         </div>
     </div>
 
-   <!-- Modal Contact -->
-<div id="contactModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50 overflow-y-auto">
-    <div class="min-h-screen flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl max-w-md w-full p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-gray-800">Contactez-nous</h3>
-                <button id="closeContactModal" class="text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <form id="contactForm" action="https://formspree.io/f/mgvgzykk" method="POST">
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Votre nom *</label>
-                    <input type="text" name="name" required
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-800"
-                           placeholder="Votre nom complet">
-                </div>
-                
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Votre email *</label>
-                    <input type="email" name="_replyto" required
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-800"
-                           placeholder="votre@email.com">
-                </div>
-                
-                <div class="mb-6">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Votre message *</label>
-                    <textarea name="message" rows="4" required
-                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-800"
-                              placeholder="Comment pouvons-nous vous aider ?"></textarea>
-                </div>
-                
-                <!-- Champ caché pour le sujet -->
-                <input type="hidden" name="_subject" value="Nouveau contact LoveCraft">
-                <input type="hidden" name="_format" value="plain">
-                
-                <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-bold hover:opacity-90 transition">
-                    <i class="fas fa-paper-plane mr-2"></i>Envoyer le message
-                </button>
-            </form>
-            
-            <div class="mt-6 pt-6 border-t border-gray-200">
-                <p class="text-sm text-gray-600">
-                    <i class="fas fa-envelope mr-2"></i>
-                    <strong>Email :</strong> contact@lovecraft.com
-                </p>
-                <p class="text-sm text-gray-600 mt-2">
-                    <i class="fas fa-clock mr-2"></i>
-                    Réponse sous 24-48h
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
-
-    <!-- Modal Feedback -->
-    <div id="feedbackModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50 overflow-y-auto">
+    <!-- Modal Contact -->
+    <div id="contactModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50 overflow-y-auto">
         <div class="min-h-screen flex items-center justify-center p-4">
             <div class="bg-white rounded-xl max-w-md w-full p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-bold text-gray-800">Votre avis compte !</h3>
-                    <button id="closeFeedbackModal" class="text-gray-400 hover:text-gray-600">
+                    <h3 class="text-xl font-bold text-gray-800">Contactez-nous</h3>
+                    <button id="closeContactModal" class="text-gray-400 hover:text-gray-600">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
                 
-                <form id="feedbackForm">
+                <form id="contactForm" action="https://formspree.io/f/mgvgzykk" method="POST">
+                    <input type="hidden" name="_replyto" value="maxhounkpatin001@gmail.com">
+                    <input type="hidden" name="_subject" value="Contact LoveCraft">
+                    
                     <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Comment évaluez-vous LoveCraft ?</label>
-                        <div class="flex justify-center space-x-2 my-3">
-                            <button type="button" class="emoji-rating" data-rating="1">😞</button>
-                            <button type="button" class="emoji-rating" data-rating="2">😐</button>
-                            <button type="button" class="emoji-rating" data-rating="3">🙂</button>
-                            <button type="button" class="emoji-rating" data-rating="4">😊</button>
-                            <button type="button" class="emoji-rating" data-rating="5">😍</button>
-                        </div>
-                        <input type="hidden" id="feedbackRating" value="0">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Votre nom *</label>
+                        <input type="text" name="name" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-800"
+                               placeholder="Votre nom complet">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Votre email *</label>
+                        <input type="email" name="email" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-800"
+                               placeholder="votre@email.com">
                     </div>
                     
                     <div class="mb-6">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Vos suggestions</label>
-                        <textarea id="feedbackText" rows="4" 
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Votre message *</label>
+                        <textarea name="message" rows="4" required
                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-800"
-                                  placeholder="Que pouvons-nous améliorer ?"></textarea>
+                                  placeholder="Comment pouvons-nous vous aider ?"></textarea>
                     </div>
                     
                     <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-bold hover:opacity-90 transition">
-                        <i class="fas fa-star mr-2"></i>Envoyer mon avis
+                        <i class="fas fa-paper-plane mr-2"></i>Envoyer le message
                     </button>
                 </form>
                 
-                <p class="text-center text-sm text-gray-500 mt-4">
-                    Merci de nous aider à améliorer LoveCraft ! ❤️
-                </p>
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <p class="text-sm text-gray-600">
+                        <i class="fas fa-envelope mr-2"></i>
+                        <strong>Email :</strong> maxhounkpatin001@gmail.com
+                    </p>
+                    <p class="text-sm text-gray-600 mt-2">
+                        <i class="fas fa-clock mr-2"></i>
+                        Réponse sous 24-48h
+                    </p>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Scripts -->
     <script type="module" src="js/auth.js"></script>
-    <script type="module" src="js/localization.js"></script>
     
-    <script type="module">
-        import i18n from './js/localization.js';
-        
-        // Footer interactions
-        document.getElementById('footerLogin')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            document.getElementById('authModal').classList.remove('hidden');
-            document.getElementById('tabLogin').click();
-        });
-        
-        document.getElementById('footerSignup')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            document.getElementById('authModal').classList.remove('hidden');
-            document.getElementById('tabSignup').click();
-        });
-        
-        // Gestion des modals contact/feedback
+    <script>
+        // Gestion des modals
         document.addEventListener('DOMContentLoaded', function() {
-            // Contact Modal
+            // Auth modal triggers
+            const authTriggers = [
+                document.getElementById('loginBtn'),
+                document.getElementById('signupBtn'),
+                document.getElementById('ctaSignup'),
+                document.getElementById('footerLogin'),
+                document.getElementById('footerSignup')
+            ];
+            
+            authTriggers.forEach(trigger => {
+                if (trigger) {
+                    trigger.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        document.getElementById('authModal').classList.remove('hidden');
+                        
+                        // Déterminer quelle tab ouvrir
+                        if (this.id === 'signupBtn' || this.id === 'footerSignup' || this.id === 'ctaSignup') {
+                            document.getElementById('tabSignup').click();
+                        } else {
+                            document.getElementById('tabLogin').click();
+                        }
+                    });
+                }
+            });
+            
+            // Contact modal
             const contactBtn = document.getElementById('footerSupportBtn');
             const contactModal = document.getElementById('contactModal');
             const closeContact = document.getElementById('closeContactModal');
             
             if (contactBtn && contactModal) {
-                contactBtn.addEventListener('click', (e) => {
+                contactBtn.addEventListener('click', function(e) {
                     e.preventDefault();
                     contactModal.classList.remove('hidden');
                 });
             }
             
             if (closeContact) {
-                closeContact.addEventListener('click', () => {
+                closeContact.addEventListener('click', function() {
                     contactModal.classList.add('hidden');
                 });
             }
             
-            // Feedback Modal
-            const feedbackBtn = document.getElementById('footerFeedbackBtn');
-            const feedbackModal = document.getElementById('feedbackModal');
-            const closeFeedback = document.getElementById('closeFeedbackModal');
-            
-            if (feedbackBtn && feedbackModal) {
-                feedbackBtn.addEventListener('click', (e) => {
+            // Gestion formulaire contact
+            const contactForm = document.getElementById('contactForm');
+            if (contactForm) {
+                contactForm.addEventListener('submit', async function(e) {
                     e.preventDefault();
-                    feedbackModal.classList.remove('hidden');
-                });
-            }
-            
-            if (closeFeedback) {
-                closeFeedback.addEventListener('click', () => {
-                    feedbackModal.classList.add('hidden');
-                });
-            }
-            
-            // Rating système
-            const ratingButtons = document.querySelectorAll('.emoji-rating');
-            const ratingInput = document.getElementById('feedbackRating');
-            
-            ratingButtons.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const rating = this.dataset.rating;
-                    ratingInput.value = rating;
-                    
-                    // Reset tous
-                    ratingButtons.forEach(b => {
-                        b.classList.remove('scale-125', 'ring-2', 'ring-purple-500');
-                    });
-                    
-                    // Activer sélectionné
-                    this.classList.add('scale-125', 'ring-2', 'ring-purple-500');
-                });
-            });
-            
-            // Formulaires
-           // Gestion du formulaire contact
-const contactForm = document.getElementById('contactForm');
-if (contactForm) {
-    contactForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        
-        // Désactiver le bouton
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Envoi en cours...';
-        submitBtn.disabled = true;
-        
-        try {
-            // Envoyer via Formspree
-            const formData = new FormData(this);
-            const response = await fetch(this.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'Accept': 'application/json'
-                }
-            });
-            
-            if (response.ok) {
-                // Succès
-                this.innerHTML = `
-                    <div class="text-center py-8">
-                        <div class="text-5xl text-green-500 mb-4">✅</div>
-                        <h4 class="text-xl font-bold text-gray-800 mb-2">Message envoyé !</h4>
-                        <p class="text-gray-600">Nous vous répondrons dans les plus brefs délais.</p>
-                        <button type="button" onclick="location.reload()" class="mt-6 text-purple-600 hover:text-purple-700">
-                            <i class="fas fa-times mr-1"></i>Fermer
-                        </button>
-                    </div>
-                `;
-            } else {
-                throw new Error('Erreur d\'envoi');
-            }
-            
-        } catch (error) {
-            console.error('Erreur:', error);
-            alert('Erreur lors de l\'envoi du message. Veuillez réessayer.');
-            
-            // Réactiver le bouton
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
-        }
-    });
-} 
-            
-            const feedbackForm = document.getElementById('feedbackForm');
-            if (feedbackForm) {
-                feedbackForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    
-                    if (ratingInput.value === '0') {
-                        alert('Veuillez donner une note');
-                        return;
-                    }
                     
                     const submitBtn = this.querySelector('button[type="submit"]');
                     const originalText = submitBtn.innerHTML;
@@ -575,29 +430,49 @@ if (contactForm) {
                     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Envoi en cours...';
                     submitBtn.disabled = true;
                     
-                    setTimeout(() => {
-                        alert('Merci beaucoup pour votre feedback ! ❤️');
-                        feedbackForm.reset();
-                        feedbackModal.classList.add('hidden');
+                    try {
+                        const formData = new FormData(this);
+                        formData.set('_replyto', 'maxhounkpatin001@gmail.com');
                         
-                        // Reset rating
-                        ratingButtons.forEach(b => {
-                            b.classList.remove('scale-125', 'ring-2', 'ring-purple-500');
+                        const response = await fetch(this.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'Accept': 'application/json'
+                            }
                         });
-                        ratingInput.value = '0';
+                        
+                        if (response.ok) {
+                            contactForm.innerHTML = `
+                                <div class="text-center py-8">
+                                    <div class="text-5xl text-green-500 mb-4">✅</div>
+                                    <h4 class="text-xl font-bold text-gray-800 mb-2">Message envoyé !</h4>
+                                    <p class="text-gray-600">Nous vous répondrons dans les plus brefs délais.</p>
+                                    <button type="button" onclick="location.reload()" class="mt-6 text-purple-600 hover:text-purple-700">
+                                        <i class="fas fa-times mr-1"></i>Fermer
+                                    </button>
+                                </div>
+                            `;
+                        } else {
+                            throw new Error('Erreur d\'envoi');
+                        }
+                        
+                    } catch (error) {
+                        console.error('Erreur:', error);
+                        alert('Erreur lors de l\'envoi du message. Veuillez réessayer.');
                         
                         submitBtn.innerHTML = originalText;
                         submitBtn.disabled = false;
-                    }, 1500);
+                    }
                 });
             }
             
-            // Close modals on outside click
-            [contactModal, feedbackModal].forEach(modal => {
+            // Fermer modals en cliquant à l'extérieur
+            [contactModal, document.getElementById('authModal'), document.getElementById('forgotPasswordModal')].forEach(modal => {
                 if (modal) {
-                    modal.addEventListener('click', (e) => {
-                        if (e.target === modal) {
-                            modal.classList.add('hidden');
+                    modal.addEventListener('click', function(e) {
+                        if (e.target === this) {
+                            this.classList.add('hidden');
                         }
                     });
                 }
@@ -606,3 +481,4 @@ if (contactForm) {
     </script>
 </body>
 </html>
+[file content end]
