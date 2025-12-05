@@ -1,3 +1,5 @@
+[file name]: dashboard.js
+[file content begin]
 import { auth, database, ref, get, onAuthStateChanged, signOut, remove } from './firebase.js';
 
 class DashboardManager {
@@ -20,6 +22,7 @@ class DashboardManager {
             await this.loadUserData();
             this.render();
             this.bindEvents();
+            this.setupMobileMenu();
         });
     }
 
@@ -111,7 +114,7 @@ class DashboardManager {
                 name: 'Gardien de la Flamme',
                 icon: '🔥',
                 description: '7 jours de connexion',
-                unlocked: false, // À implémenter plus tard
+                unlocked: false,
                 color: 'bg-orange-100 text-orange-800'
             },
             {
@@ -429,8 +432,68 @@ class DashboardManager {
         return 'bg-red-100 text-red-800';
     }
 
+    setupMobileMenu() {
+        // Ajouter photo profil dans la nav
+        const navRight = document.querySelector('.flex.items-center.space-x-4');
+        if (navRight && window.innerWidth < 768) {
+            // Mobile: montrer seulement photo profil
+            const userPhoto = this.user.photoURL ? 
+                `<img src="${this.user.photoURL}" class="w-10 h-10 rounded-full border-2 border-purple-300 object-cover" onerror="this.style.display='none'">` :
+                `<div class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center text-white">
+                    <i class="fas fa-user"></i>
+                </div>`;
+            
+            navRight.innerHTML = `
+                <div class="relative">
+                    <button id="mobileMenuBtn" class="focus:outline-none">
+                        ${userPhoto}
+                    </button>
+                    <div id="mobileMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-50 hidden border border-gray-200">
+                        <div class="py-2">
+                            <a href="create.html" class="block px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-purple-600">
+                                <i class="fas fa-plus mr-2"></i>Créer une surprise
+                            </a>
+                            <a href="settings.html" class="block px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-purple-600">
+                                <i class="fas fa-cog mr-2"></i>Paramètres
+                            </a>
+                            <hr class="my-1">
+                            <button id="mobileLogout" class="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Déconnexion
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Toggle menu mobile
+            document.getElementById('mobileMenuBtn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                const menu = document.getElementById('mobileMenu');
+                menu.classList.toggle('hidden');
+            });
+            
+            // Fermer menu en cliquant ailleurs
+            document.addEventListener('click', () => {
+                const menu = document.getElementById('mobileMenu');
+                if (menu && !menu.classList.contains('hidden')) {
+                    menu.classList.add('hidden');
+                }
+            });
+            
+            // Déconnexion mobile
+            document.getElementById('mobileLogout').addEventListener('click', async () => {
+                try {
+                    await signOut(auth);
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    console.error('Erreur déconnexion:', error);
+                }
+            });
+        }
+    }
+
     bindEvents() {
-        // Déconnexion
+        // Déconnexion desktop
         document.getElementById('logoutBtn')?.addEventListener('click', async () => {
             try {
                 await signOut(auth);
@@ -486,6 +549,7 @@ class DashboardManager {
             await this.loadUserData();
             this.render();
             this.bindEvents();
+            this.setupMobileMenu();
             
             this.showNotification('✅ Surprise supprimée avec succès');
         } catch (error) {
@@ -570,51 +634,4 @@ class DashboardManager {
                         <div class="text-gray-700">Surprises totales</div>
                     </div>
                     <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl">
-                        <div class="text-2xl font-bold text-blue-600">${this.stats.totalViews}</div>
-                        <div class="text-gray-700">Vues totales</div>
-                    </div>
-                    <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl">
-                        <div class="text-2xl font-bold text-green-600">${this.stats.engagementRate}%</div>
-                        <div class="text-gray-700">Taux d'engagement</div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // Bouton retour
-        document.getElementById('backToDashboard').addEventListener('click', (e) => {
-            e.preventDefault();
-            this.render();
-            this.bindEvents();
-        });
-    }
-
-    showNotification(message) {
-        const notification = document.createElement('div');
-        notification.className = 'fixed top-4 right-4 bg-green-100 border border-green-300 text-green-800 px-6 py-4 rounded-lg shadow-lg z-50';
-        notification.innerHTML = `
-            <div class="flex items-center">
-                <i class="fas fa-check-circle mr-3"></i>
-                <div>${message}</div>
-            </div>
-        `;
-        document.body.appendChild(notification);
-        setTimeout(() => notification.remove(), 3000);
-    }
-
-    showError(message) {
-        const notification = document.createElement('div');
-        notification.className = 'fixed top-4 right-4 bg-red-100 border border-red-300 text-red-800 px-6 py-4 rounded-lg shadow-lg z-50';
-        notification.innerHTML = `
-            <div class="flex items-center">
-                <i class="fas fa-exclamation-circle mr-3"></i>
-                <div>${message}</div>
-            </div>
-        `;
-        document.body.appendChild(notification);
-        setTimeout(() => notification.remove(), 3000);
-    }
-}
-
-// Démarrer l'application
-new DashboardManager();
+                        <div class="text-2xl font-bold text-blue-600">${this.stats.totalViews}</div
