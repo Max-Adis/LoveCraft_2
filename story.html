@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notre Histoire - LoveCraft</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .story-section {
+            scroll-margin-top: 2rem;
+        }
+        .timeline-item {
+            position: relative;
+            padding-left: 3rem;
+        }
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: 1rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #8B5CF6, #EC4899);
+        }
+        .timeline-dot {
+            position: absolute;
+            left: 0.75rem;
+            top: 0;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            background: #8B5CF6;
+            z-index: 1;
+        }
+        .parallax-bg {
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-50 to-pink-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="index.html" class="flex-shrink-0 flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center overflow-hidden mr-3">
+                            <img src="assets/logo.png" alt="LoveCraft Logo" class="w-full h-full object-cover">
+                        </div>
+                        <span class="text-2xl font-bold text-purple-600">LoveCraft</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="index.html" class="text-gray-700 hover:text-purple-600">Accueil</a>
+                    <a href="dashboard.html" class="text-gray-700 hover:text-purple-600">Dashboard</a>
+                    <a href="create.html" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
+                        Créer une surprise
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Histoire -->
+    <div class="max-w-4xl mx-auto px-4 py-12">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
+                L'histoire qui a inspiré LoveCraft
+            </h1>
+            <p class="text-xl text-gray-600">
+                Comment une simple idée est devenue une aventure d'amour
+            </p>
+        </div>
+
+        <!-- Timeline -->
+        <div class="space-y-16">
+            <!-- Étape 1 -->
+            <div class="timeline-item story-section">
+                <div class="timeline-dot"></div>
+                <div class="bg-white rounded-2xl shadow-xl p-8">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xl font-bold mr-4">
+                            1
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-800">L'étincelle</h2>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <p class="text-gray-700 text-lg mb-4">
+                                "C'était l'anniversaire d'Eve. Je cherchais un cadeau original, 
+                                quelque chose qui montre vraiment ce qu'elle représente pour moi."
+                            </p>
+                            <div class="bg-purple-50 p-6 rounded-xl">
+                                <p class="italic text-purple-700">
+                                    "Les fleurs fanent, les chocolats se mangent... 
+                                    Je voulais créer un souvenir durable."
+                                </p>
+                                <p class="text-right font-semibold mt-2">— Max</p>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-6xl mb-4 animate-bounce">💡</div>
+                            <p class="text-gray-600">
+                                L'idée : une surprise digitale personnalisée
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Étape 2 -->
+            <div class="timeline-item story-section">
+                <div class="timeline-dot"></div>
+                <div class="bg-white rounded-2xl shadow-xl p-8">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center text-xl font-bold mr-4">
+                            2
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-800">La création</h2>
+                    </div>
+                    <div class="mb-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Sur LoveCraft</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="bg-pink-50 p-4 rounded-lg text-center hover:scale-105 transition">
+                                <div class="text-2xl mb-2">👤</div>
+                                <p class="font-medium">Nom d'Eve</p>
+                            </div>
+                            <div class="bg-pink-50 p-4 rounded-lg text-center hover:scale-105 transition">
+                                <div class="text-2xl mb-2">💌</div>
+                                <p class="font-medium">Message personnalisé</p>
+                            </div>
+                            <div class="bg-pink-50 p-4 rounded-lg text-center hover:scale-105 transition">
+                                <div class="text-2xl mb-2">🎨</div>
+                                <p class="font-medium">Thème romantique</p>
+                            </div>
+                            <div class="bg-pink-50 p-4 rounded-lg text-center hover:scale-105 transition">
+                                <div class="text-2xl mb-2">📱</div>
+                                <p class="font-medium">QR Code généré</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Dans la vraie vie</h3>
+                        <div class="flex items-center space-x-4">
+                            <div class="text-4xl">📖</div>
+                            <div>
+                                <p class="text-gray-700">
+                                    Max imprime le QR Code, le cache dans le livre préféré d'Eve avec un mot : 
+                                    <span class="italic font-semibold">"Scanne-moi pour découvrir un secret..."</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Étape 3 -->
+            <div class="timeline-item story-section">
+                <div class="timeline-dot"></div>
+                <div class="bg-white rounded-2xl shadow-xl p-8">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xl font-bold mr-4">
+                            3
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-800">La révélation</h2>
+                    </div>
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-8 rounded-xl">
+                        <div class="flex flex-col md:flex-row items-center">
+                            <div class="md:w-1/3 mb-6 md:mb-0 text-center">
+                                <div class="text-6xl mb-4 animate-pulse">📱</div>
+                                <p class="text-gray-600 font-medium">Eve scanne le QR Code</p>
+                            </div>
+                            <div class="md:w-2/3">
+                                <div class="space-y-4">
+                                    <div class="flex items-center bg-white p-4 rounded-lg">
+                                        <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold mr-3">1</div>
+                                        <p>Elle entre son nom pour accéder à la surprise</p>
+                                    </div>
+                                    <div class="flex items-center bg-white p-4 rounded-lg">
+                                        <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold mr-3">2</div>
+                                        <p>Elle répond à la question personnelle</p>
+                                    </div>
+                                    <div class="flex items-center bg-white p-4 rounded-lg">
+                                        <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold mr-3">3</div>
+                                        <p class="font-semibold">Le message final s'affiche...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Étape 4 -->
+            <div class="timeline-item story-section">
+                <div class="timeline-dot"></div>
+                <div class="bg-white rounded-2xl shadow-xl p-8">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xl font-bold mr-4">
+                            4
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-800">L'émotion</h2>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-7xl mb-6 animate-pulse">😢❤️</div>
+                        <div class="max-w-2xl mx-auto">
+                            <blockquote class="text-2xl italic text-gray-700 mb-8 p-8 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl">
+                                "Les larmes coulaient sur ses joues. 'Personne n'a jamais fait 
+                                quelque chose d'aussi personnel pour moi', m'a-t-elle dit. 
+                                Le fait que ce soit interactif, que ce soit spécialement créé 
+                                pour elle... c'était magique."
+                            </blockquote>
+                            <p class="font-bold text-xl">— Max</p>
+                            <p class="text-gray-600 mt-2">Fondateur de LoveCraft</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Appel à l'action -->
+            <div class="text-center pt-8">
+                <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-12 text-white shadow-2xl">
+                    <h2 class="text-3xl font-bold mb-4">Créez votre propre histoire d'amour</h2>
+                    <p class="text-xl mb-8 max-w-2xl mx-auto">
+                        Comme Max pour Eve, créez une surprise unique et personnalisée 
+                        pour la personne que vous aimez.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="create.html" class="bg-white text-purple-600 px-8 py-4 rounded-lg text-lg font-bold hover:bg-gray-100 transition transform hover:-translate-y-1">
+                            <i class="fas fa-heart mr-2"></i>Commencer maintenant
+                        </a>
+                        <a href="dashboard.html" class="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg text-lg font-bold hover:bg-white/10 transition">
+                            <i class="fas fa-tachometer-alt mr-2"></i>Voir mon dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white mt-12">
+        <div class="max-w-7xl mx-auto px-4 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center overflow-hidden mr-3">
+                            <img src="assets/logo.png" alt="LoveCraft Logo" class="w-full h-full object-cover">
+                        </div>
+                        <span class="text-xl font-bold">LoveCraft</span>
+                    </div>
+                    <p class="text-gray-400">Inspiré par l'histoire vraie de Max & Eve.</p>
+                </div>
+                
+                <div>
+                    <h3 class="font-bold text-lg mb-4">Liens rapides</h3>
+                    <ul class="space-y-2">
+                        <li><a href="index.html" class="text-gray-400 hover:text-white">Accueil</a></li>
+                        <li><a href="create.html" class="text-gray-400 hover:text-white">Créer une surprise</a></li>
+                        <li><a href="dashboard.html" class="text-gray-400 hover:text-white">Dashboard</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white contact-footer">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="font-bold text-lg mb-4">Légal</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white terms-footer">Conditions</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white privacy-footer">Confidentialité</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white cookies-footer">Cookies</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="font-bold text-lg mb-4">Suivez-nous</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white text-xl"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white text-xl"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white text-xl"><i class="fab fa-facebook"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center">
+                <p class="text-gray-400">© 2025 LoveCraft - Conçu avec ❤️ par Max_Adis</p>
+                <p class="text-gray-500 text-sm mt-2">Toute reproduction interdite</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modals -->
+    <div id="contactModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl max-w-2xl w-full">
+                <div class="p-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-2xl font-bold text-gray-800">Contactez LoveCraft</h3>
+                        <button class="close-modal text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    
+                    <form action="https://formspree.io/f/mgvgzykk" method="POST">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nom</label>
+                                <input type="text" name="name" required class="w-full px-4 py-2 border rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                <input type="email" name="email" required class="w-full px-4 py-2 border rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                                <textarea name="message" rows="5" required class="w-full px-4 py-2 border rounded-lg"></textarea>
+                            </div>
+                            <button type="submit" class="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700">
+                                Envoyer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Gestion des modals
+        document.querySelectorAll('.contact-footer, .terms-footer, .privacy-footer, .cookies-footer').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const modalId = btn.classList.contains('contact-footer') ? 'contactModal' : 'termsModal';
+                const modal = document.getElementById(modalId);
+                if (modal) modal.classList.remove('hidden');
+            });
+        });
+
+        document.querySelectorAll('.close-modal').forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.closest('.fixed').classList.add('hidden');
+            });
+        });
+
+        // Form submission
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData
+                }).then(() => {
+                    alert('Message envoyé avec succès !');
+                    form.reset();
+                    document.getElementById('contactModal').classList.add('hidden');
+                }).catch(() => {
+                    alert('Erreur lors de l\'envoi.');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
