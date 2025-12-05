@@ -13,14 +13,50 @@ class LocalizationManager {
 
     async loadTranslations() {
         try {
-            const response = await fetch(`../locales/${this.currentLang}.json`);
+            // Chemin RELATIF depuis le dossier racine
+            const response = await fetch(`locales/${this.currentLang}.json`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
             this.translations = await response.json();
+            console.log(`✅ Traductions ${this.currentLang} chargées`);
+            
         } catch (error) {
-            console.error('Error loading translations:', error);
-            // Fallback to French
-            this.currentLang = 'fr';
-            const response = await fetch('../locales/fr.json');
-            this.translations = await response.json();
+            console.error('❌ Erreur chargement traductions:', error);
+            
+            // Fallback : traductions intégrées
+            this.translations = {
+                'app': {
+                    'title': 'LoveCraft - Créez des surprises digitales'
+                },
+                'nav': {
+                    'login': 'Connexion',
+                    'signup': 'Inscription'
+                },
+                'hero': {
+                    'title': 'Créez des surprises digitales<br>inoubliables',
+                    'cta1': 'Commencer gratuitement',
+                    'cta2': 'Voir notre histoire'
+                },
+                'auth': {
+                    'login': 'Connexion',
+                    'signup': 'Inscription',
+                    'email': 'Email',
+                    'password': 'Mot de passe',
+                    'forgotPassword': 'Mot de passe oublié ?',
+                    'or': 'ou',
+                    'google': 'Continuer avec Google'
+                },
+                'footer': {
+                    'copyright': '© 2025 LoveCraft - Conçu avec ❤️ par Max_Adis',
+                    'story': 'Inspiré par une histoire vraie d\'amour',
+                    'navigation': 'Navigation',
+                    'legal': 'Légal',
+                    'contact': 'Contact'
+                }
+            };
         }
     }
 
@@ -32,6 +68,7 @@ class LocalizationManager {
             if (value && value[k] !== undefined) {
                 value = value[k];
             } else {
+                console.warn(`Traduction manquante: ${key}`);
                 return defaultValue || key;
             }
         }
@@ -63,9 +100,7 @@ class LocalizationManager {
             langToggle.innerHTML = `<i class="fas fa-globe mr-1"></i>${this.currentLang === 'fr' ? 'EN' : 'FR'}`;
         }
         
-        // Appliquer la direction RTL pour certaines langues si besoin
-        document.documentElement.lang = this.currentLang;
-        document.documentElement.dir = this.currentLang === 'ar' ? 'rtl' : 'ltr';
+        console.log(`✅ Langue appliquée: ${this.currentLang}`);
     }
 
     async switchLanguage(lang) {
@@ -76,9 +111,6 @@ class LocalizationManager {
         
         await this.loadTranslations();
         this.applyLanguage();
-        
-        // Recharger les scripts qui dépendent de la langue
-        this.triggerLanguageChange();
     }
 
     setupLanguageToggle() {
@@ -91,40 +123,10 @@ class LocalizationManager {
             });
         }
     }
-
-    triggerLanguageChange() {
-        // Événement personnalisé pour informer d'autres scripts
-        document.dispatchEvent(new CustomEvent('languageChanged', {
-            detail: { language: this.currentLang }
-        }));
-    }
-
-    // Méthode pour traduire du texte dynamique
-    translate(text) {
-        // Simple mapping pour les textes communs
-        const mappings = {
-            'fr': {
-                'Bonjour': 'Hello',
-                'Connexion': 'Login',
-                'Inscription': 'Sign Up',
-                'Créer une surprise': 'Create a surprise',
-                'Email': 'Email',
-                'Mot de passe': 'Password'
-            },
-            'en': {
-                'Hello': 'Bonjour',
-                'Login': 'Connexion',
-                'Sign Up': 'Inscription',
-                'Create a surprise': 'Créer une surprise',
-                'Email': 'Email',
-                'Password': 'Mot de passe'
-            }
-        };
-        
-        return mappings[this.currentLang]?.[text] || text;
-    }
 }
 
-// Exporter une instance globale
+// Créer une instance globale
 const i18n = new LocalizationManager();
+
+// Exporter pour les autres fichiers
 export default i18n;
