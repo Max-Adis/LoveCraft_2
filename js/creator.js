@@ -1,21 +1,26 @@
-import { database, auth, ref, set, get, update, remove } from './firebase.js';
+import { database, auth, storage, ref, set, get, update, remove, storageRef, uploadBytes, getDownloadURL } from './firebase.js';
 
 class SurpriseCreator {
     constructor(userId) {
         this.userId = userId;
         this.user = auth.currentUser;
         this.step = 1;
+        
+        // INIT AVEC NOM GOOGLE SI DISPONIBLE
+        const googleName = localStorage.getItem('googleUserName') || this.user.displayName || '';
+        
         this.surprise = {
             pourQui: '',
-            deLaPartDe: '',
+            deLaPartDe: googleName,
             question1: 'Qui t\'aime plus que tout au monde ?',
-            reponse1: '',
+            reponse1: googleName,
             messageFinal: 'Je t\'aime plus que tout au monde...',
             theme: 'romantique',
             createdAt: new Date().toISOString(),
             views: 0,
             completedViews: 0
         };
+        
         this.surpriseId = null;
         this.editMode = false;
         this.init();
@@ -50,12 +55,12 @@ class SurpriseCreator {
         }
     }
 
-    checkEditMode() {
+    async checkEditMode() {
         const urlParams = new URLSearchParams(window.location.search);
         const editId = urlParams.get('edit');
         if (editId) {
             this.editMode = true;
-            this.loadSurpriseForEdit(editId);
+            await this.loadSurpriseForEdit(editId);
         }
     }
 
@@ -68,7 +73,6 @@ class SurpriseCreator {
                 const data = snapshot.val();
                 this.surpriseId = id;
                 this.surprise = { ...data };
-                console.log('Surprise chargée pour édition:', this.surprise);
             }
         } catch (error) {
             console.error('Erreur chargement édition:', error);
@@ -89,7 +93,7 @@ class SurpriseCreator {
                     </div>
                     <div class="flex items-center space-x-2">
                         ${this.user.photoURL ? 
-                            `<img src="${this.user.photoURL}" class="w-8 h-8 rounded-full">` :
+                            `<img src="${this.user.photoURL}" class="w-8 h-8 rounded-full object-cover">` :
                             `<div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white">
                                 <i class="fas fa-user"></i>
                             </div>`
@@ -161,11 +165,15 @@ class SurpriseCreator {
                                 <input 
                                     id="deLaPartDe" 
                                     type="text" 
-                                    value="${this.surprise.deLaPartDe || (this.user.displayName || '')}"
+                                    value="${this.surprise.deLaPartDe}"
                                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                                     placeholder="Ex: Max"
                                     required
                                 />
+                                <p class="text-sm text-gray-500 mt-2">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Ce nom sera affiché comme expéditeur
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -196,7 +204,7 @@ class SurpriseCreator {
                                 <input 
                                     id="reponse1" 
                                     type="text" 
-                                    value="${this.surprise.reponse1 || (this.user.displayName || '')}"
+                                    value="${this.surprise.reponse1}"
                                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition"
                                     placeholder="Ex: Max (sera utilisé comme indice)"
                                 />
@@ -227,7 +235,9 @@ class SurpriseCreator {
                                     <i class="fas fa-lightbulb mr-1"></i>
                                     Ce message sera révélé à la fin de la surprise
                                 </p>
-                                <span id="charCount" class="text-sm text-gray-500">${this.surprise.messageFinal.length}/500</span>
+                                <span id="charCount" class="text-sm ${this.surprise.messageFinal.length > 500 ? 'text-red-500' : 'text-gray-500'}">
+                                    ${this.surprise.messageFinal.length}/500
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -294,7 +304,7 @@ class SurpriseCreator {
                     <div class="mb-8">
                         <div class="bg-gradient-to-r from-purple-100 to-pink-100 p-8 rounded-2xl inline-block">
                             <div id="qrContainer" class="bg-white p-6 rounded-xl shadow-md">
-                                <div id="qrCode" class="mb-4"></div>
+                                <div id="qrCode" class="mb-4 min-h-[200px] flex items-center justify-center"></div>
                                 <p class="text-sm text-gray-600 font-medium">
                                     <i class="fas fa-qrcode mr-2"></i>
                                     Scannez-moi pour découvrir la surprise
@@ -384,19 +394,26 @@ class SurpriseCreator {
 
     bindEvents() {
         if (this.step === 1) {
-            // Mise à jour des données en temps réel
-            const inputs = ['pourQui', 'deLaPartDe', 'question1', 'reponse1'];
-            inputs.forEach(id => {
-                const input = document.getElementById(id);
-                if (input) {
-                    input.addEventListener('input', (e) => {
-                        this.surprise[id] = e.target.value;
-                        if (id === 'deLaPartDe' && !this.surprise.reponse1) {
-                            this.surprise.reponse1 = e.target.value;
-                            document.getElementById('reponse1').value = e.target.value;
-                        }
-                    });
+            // Mise à jour en temps réel
+            document.getElementById('pourQui')?.addEventListener('input', (e) => {
+                this.surprise.pourQui = e.target.value;
+            });
+
+            document.getElementById('deLaPartDe')?.addEventListener('input', (e) => {
+                this.surprise.deLaPartDe = e.target.value;
+                // Mettre à jour la réponse si vide
+                if (!this.surprise.reponse1 || this.surprise.reponse1 === localStorage.getItem('googleUserName')) {
+                    this.surprise.reponse1 = e.target.value;
+                    document.getElementById('reponse1').value = e.target.value;
                 }
+            });
+
+            document.getElementById('question1')?.addEventListener('input', (e) => {
+                this.surprise.question1 = e.target.value;
+            });
+
+            document.getElementById('reponse1')?.addEventListener('input', (e) => {
+                this.surprise.reponse1 = e.target.value;
             });
 
             // Compteur de caractères
@@ -406,53 +423,48 @@ class SurpriseCreator {
                     this.surprise.messageFinal = e.target.value;
                     const charCount = document.getElementById('charCount');
                     charCount.textContent = `${e.target.value.length}/500`;
-                    
-                    if (e.target.value.length > 500) {
-                        charCount.classList.add('text-red-500');
-                    } else {
-                        charCount.classList.remove('text-red-500');
-                    }
+                    charCount.classList.toggle('text-red-500', e.target.value.length > 500);
                 });
             }
 
-            // Boutons de thème
+            // Thèmes
             document.querySelectorAll('.theme-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const theme = e.currentTarget.dataset.theme;
                     this.surprise.theme = theme;
                     
+                    // Reset
                     document.querySelectorAll('.theme-btn').forEach(b => {
                         b.classList.remove('border-pink-500', 'border-blue-500', 'border-yellow-500', 'border-gray-500');
                         b.classList.remove('bg-pink-50', 'bg-blue-50', 'bg-yellow-50', 'bg-gray-50');
                         b.classList.add('border-gray-200', 'bg-white');
                     });
                     
+                    // Activer
                     e.currentTarget.classList.remove('border-gray-200', 'bg-white');
-                    if (theme === 'romantique') {
-                        e.currentTarget.classList.add('border-pink-500', 'bg-pink-50');
-                    } else if (theme === 'geek') {
-                        e.currentTarget.classList.add('border-blue-500', 'bg-blue-50');
-                    } else if (theme === 'fun') {
-                        e.currentTarget.classList.add('border-yellow-500', 'bg-yellow-50');
-                    } else {
-                        e.currentTarget.classList.add('border-gray-500', 'bg-gray-50');
-                    }
+                    const themeClasses = {
+                        romantique: ['border-pink-500', 'bg-pink-50'],
+                        geek: ['border-blue-500', 'bg-blue-50'],
+                        fun: ['border-yellow-500', 'bg-yellow-50'],
+                        classique: ['border-gray-500', 'bg-gray-50']
+                    };
+                    e.currentTarget.classList.add(...themeClasses[theme]);
                 });
             });
 
-            // Bouton de création/mise à jour
+            // Création
             document.getElementById('createBtn').addEventListener('click', () => {
                 this.saveSurprise();
             });
 
-            // Bouton de suppression
+            // Suppression
             if (this.editMode) {
                 document.getElementById('deleteBtn').addEventListener('click', () => {
                     this.deleteSurprise();
                 });
             }
 
-            // Entrée pour soumettre
+            // Enter pour valider
             document.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter' && this.step === 1) {
                     this.saveSurprise();
@@ -467,20 +479,21 @@ class SurpriseCreator {
     }
 
     async saveSurprise() {
-        // Validation
-        if (!this.surprise.pourQui || !this.surprise.deLaPartDe) {
-            this.showError('Veuillez remplir le nom de la personne et votre nom');
+        // Validation améliorée
+        if (!this.surprise.pourQui.trim()) {
+            this.showError('Veuillez entrer le nom de la personne');
+            document.getElementById('pourQui').focus();
+            return;
+        }
+
+        if (!this.surprise.deLaPartDe.trim()) {
+            this.showError('Veuillez entrer votre nom');
+            document.getElementById('deLaPartDe').focus();
             return;
         }
 
         if (this.surprise.messageFinal.length > 500) {
             this.showError('Le message est trop long (max 500 caractères)');
-            return;
-        }
-
-        if (!this.user) {
-            alert('Session expirée. Veuillez vous reconnecter.');
-            window.location.href = 'index.html';
             return;
         }
 
@@ -491,38 +504,26 @@ class SurpriseCreator {
         }
 
         try {
-            // Générer un ID si nouvelle surprise
             if (!this.editMode) {
                 this.surpriseId = `surprise_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
             }
 
             const surpriseData = {
-                // Données de base
                 pourQui: this.surprise.pourQui.trim(),
                 deLaPartDe: this.surprise.deLaPartDe.trim(),
                 question1: this.surprise.question1.trim(),
                 reponse1: this.surprise.reponse1.trim(),
                 messageFinal: this.surprise.messageFinal.trim(),
                 theme: this.surprise.theme,
-                
-                // Métadonnées utilisateur
                 userId: this.user.uid,
                 userEmail: this.user.email,
                 userName: this.user.displayName || this.surprise.deLaPartDe,
-                userPhoto: this.user.photoURL || '',
-                
-                // Dates
                 lastUpdated: new Date().toISOString(),
-                
-                // Statut
                 status: 'active',
                 isPublic: false,
-                
-                // Autres
-                version: '1.0'
+                version: '2.0'
             };
 
-            // Ajouter createdAt seulement pour nouvelle surprise
             if (!this.editMode) {
                 surpriseData.createdAt = new Date().toISOString();
                 surpriseData.createdTimestamp = Date.now();
@@ -530,13 +531,10 @@ class SurpriseCreator {
                 surpriseData.completedViews = 0;
             }
 
-            console.log('📝 Sauvegarde de la surprise:', surpriseData);
-            
-            // Sauvegarder dans Firebase
+            // Sauvegarde principale
             await set(ref(database, 'surprises/' + this.surpriseId), surpriseData);
-            console.log('✅ Surprise sauvegardée avec ID:', this.surpriseId);
             
-            // Si nouvelle surprise, ajouter à la liste utilisateur
+            // Ajout à la liste utilisateur si nouvelle
             if (!this.editMode) {
                 await set(ref(database, 'users/' + this.user.uid + '/surprises/' + this.surpriseId), {
                     id: this.surpriseId,
@@ -545,9 +543,8 @@ class SurpriseCreator {
                     theme: this.surprise.theme,
                     views: 0
                 });
-                console.log('✅ Ajoutée à la liste utilisateur');
-                
-                // Mettre à jour les stats utilisateur
+
+                // Mise à jour stats
                 const userStatsRef = ref(database, 'users/' + this.user.uid + '/stats');
                 const statsSnapshot = await get(userStatsRef);
                 const currentStats = statsSnapshot.exists() ? statsSnapshot.val() : {
@@ -573,6 +570,7 @@ class SurpriseCreator {
             console.error('❌ Erreur Firebase:', error);
             this.showError(`Erreur de sauvegarde: ${error.message}`);
             
+            const createBtn = document.getElementById('createBtn');
             if (createBtn) {
                 createBtn.innerHTML = `<i class="fas fa-${this.editMode ? 'save' : 'sparkles'} mr-2"></i>${this.editMode ? 'Mettre à jour la surprise' : 'Créer ma surprise'}`;
                 createBtn.disabled = false;
@@ -604,77 +602,74 @@ class SurpriseCreator {
         }
         
         const url = `${window.location.origin}/LoveCraft/s/?id=${this.surpriseId}`;
-        console.log('📱 URL de la surprise:', url);
         
-        // Mettre à jour le champ URL
+        // Mettre à jour URL
         const urlInput = document.getElementById('surpriseUrl');
         if (urlInput) {
             urlInput.value = url;
         }
         
-        // Vérifier si QRCode.js est chargé
+        // Vérifier librairie
         if (typeof QRCode === 'undefined') {
             console.error('❌ QRCode.js non chargé !');
+            this.loadQRCodeLibrary(url);
+            return;
+        }
+        
+        this.generateQRCode(url);
+    }
+
+    loadQRCodeLibrary(url) {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+        script.onload = () => {
+            console.log('✅ QRCode.js chargé');
+            this.generateQRCode(url);
+        };
+        script.onerror = () => {
+            console.error('❌ Échec chargement QRCode.js');
             document.getElementById('qrCode').innerHTML = `
-                <div class="text-red-500 text-center p-4">
-                    <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
-                    <p>Erreur: Librairie QRCode non chargée</p>
-                    <p class="text-sm">Rechargez la page</p>
+                <div class="text-center p-4">
+                    <p class="text-red-500 mb-2">QR Code non disponible</p>
+                    <p class="text-sm text-gray-600 break-all">${url}</p>
                 </div>
             `;
-            return;
-        }
-        
-        // Générer le QR Code
+        };
+        document.head.appendChild(script);
+    }
+
+    generateQRCode(url) {
         const qrElement = document.getElementById('qrCode');
-        if (!qrElement) {
-            console.error('❌ Element #qrCode non trouvé');
-            return;
-        }
+        if (!qrElement) return;
         
-        // Nettoyer l'élément
         qrElement.innerHTML = '';
         
         try {
-            QRCode.toCanvas(qrElement, url, {
+            new QRCode(qrElement, {
+                text: url,
                 width: 200,
                 height: 200,
-                margin: 1,
-                color: {
-                    dark: '#7C3AED',
-                    light: '#FFFFFF'
-                },
-                errorCorrectionLevel: 'H'
-            }, function (error) {
-                if (error) {
-                    console.error('❌ Erreur QR Code:', error);
-                    qrElement.innerHTML = `
-                        <div class="text-red-500 text-center p-4">
-                            <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
-                            <p>Erreur génération QR Code</p>
-                        </div>
-                    `;
-                } else {
-                    console.log('✅ QR Code généré avec succès');
-                }
+                colorDark: "#7C3AED",
+                colorLight: "#FFFFFF",
+                correctLevel: QRCode.CorrectLevel.H
             });
         } catch (error) {
-            console.error('❌ Exception QR Code:', error);
+            console.error('❌ Erreur génération QR:', error);
             qrElement.innerHTML = `
-                <div class="text-red-500 text-center p-4">
-                    <i class="fas fa-bug text-2xl mb-2"></i>
-                    <p>Exception: ${error.message}</p>
+                <div class="text-center p-4">
+                    <p class="text-red-500">Erreur génération QR Code</p>
+                    <p class="text-sm text-gray-600 mt-2 break-all">${url}</p>
                 </div>
             `;
         }
     }
 
     bindResultEvents() {
-        // Copier le lien
+        // Copier lien
         document.getElementById('copyLinkBtn').addEventListener('click', () => {
             const urlInput = document.getElementById('surpriseUrl');
             urlInput.select();
-            urlInput.setSelectionRange(0, 99999); // Pour mobile
+            urlInput.setSelectionRange(0, 99999);
             
             try {
                 navigator.clipboard.writeText(urlInput.value).then(() => {
@@ -689,7 +684,6 @@ class SurpriseCreator {
                     }, 2000);
                 });
             } catch (err) {
-                // Fallback pour anciens navigateurs
                 document.execCommand('copy');
                 const btn = document.getElementById('copyLinkBtn');
                 const originalText = btn.innerHTML;
@@ -706,7 +700,7 @@ class SurpriseCreator {
         // Télécharger PNG
         document.getElementById('downloadPNG').addEventListener('click', () => {
             if (typeof html2canvas === 'undefined') {
-                this.showError('html2canvas non chargé. Rechargez la page.');
+                this.showError('html2canvas non chargé');
                 return;
             }
             
@@ -729,70 +723,67 @@ class SurpriseCreator {
         
         // Télécharger PDF
         document.getElementById('downloadPDF').addEventListener('click', () => {
-            if (typeof jsPDF === 'undefined') {
-                this.showError('jsPDF non chargé. Rechargez la page.');
+            if (typeof jsPDF === 'undefined' || typeof html2canvas === 'undefined') {
+                this.showError('Librairies non chargées');
                 return;
             }
             
-            if (typeof html2canvas === 'undefined') {
-                this.showError('html2canvas non chargé. Rechargez la page.');
-                return;
-            }
+            const btn = document.getElementById('downloadPDF');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Génération...';
+            btn.disabled = true;
             
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF('p', 'mm', 'a4');
             
-            // Titre
+            // Contenu PDF
             pdf.setFontSize(24);
             pdf.setTextColor(124, 58, 237);
             pdf.text('✨ LoveCraft Surprise ✨', 105, 20, { align: 'center' });
             
-            // Sous-titre
             pdf.setFontSize(16);
             pdf.setTextColor(0, 0, 0);
             pdf.text(`Pour ${this.surprise.pourQui}`, 105, 30, { align: 'center' });
             pdf.text(`De la part de ${this.surprise.deLaPartDe}`, 105, 37, { align: 'center' });
             
             // QR Code
-            const qrContainer = document.getElementById('qrContainer');
-            html2canvas(qrContainer, { scale: 2 }).then(canvas => {
-                const imgData = canvas.toDataURL('image/png');
-                pdf.addImage(imgData, 'PNG', 60, 45, 90, 90);
-                
-                // Instructions
-                pdf.setFontSize(14);
-                pdf.text('Instructions :', 20, 150);
-                
-                pdf.setFontSize(11);
-                const instructions = [
-                    '1. Scannez le QR Code ci-dessus avec votre téléphone',
-                    '2. Ou visitez directement le lien ci-dessous',
-                    '3. Suivez les étapes pour découvrir la surprise',
-                    '',
-                    'Lien direct :',
-                    `${window.location.origin}/LoveCraft/s/?id=${this.surpriseId}`,
-                    '',
-                    '💡 Conseils :',
-                    `• Imprimez cette page et cachez-la dans un livre`,
-                    `• Montrez le QR Code sur votre téléphone`,
-                    `• Accompagnez-le d\'un petit mot personnalisé`
-                ];
-                
-                instructions.forEach((line, i) => {
-                    pdf.text(line, 20, 160 + (i * 6));
-                });
-                
-                // Footer
-                pdf.setFontSize(10);
-                pdf.setTextColor(100, 100, 100);
-                pdf.text('Crée avec ❤️ sur LoveCraft - Inspiré par Max & Eve', 105, 280, { align: 'center' });
-                
-                // Sauvegarder
-                pdf.save(`LoveCraft_Surprise_${this.surprise.pourQui}.pdf`);
-            }).catch(error => {
-                console.error('Erreur PDF:', error);
-                this.showError('Erreur lors de la génération du PDF');
+            const qrCanvas = document.querySelector('#qrCode canvas');
+            if (qrCanvas) {
+                const qrData = qrCanvas.toDataURL('image/png');
+                pdf.addImage(qrData, 'PNG', 60, 50, 90, 90);
+            }
+            
+            // Instructions
+            pdf.setFontSize(12);
+            pdf.text('Instructions :', 20, 150);
+            
+            const instructions = [
+                '1. Scannez le QR Code avec votre téléphone',
+                '2. Ou visitez directement le lien :',
+                `${window.location.origin}/LoveCraft/s/?id=${this.surpriseId}`,
+                '3. Suivez les étapes pour découvrir la surprise',
+                '',
+                '💡 Conseils pour la surprise :',
+                `• Cachez cette page sous un oreiller`,
+                `• Montrez le QR Code sur votre téléphone`,
+                `• Accompagnez d\'un petit mot personnalisé`,
+                `• Faites preuve de créativité !`
+            ];
+            
+            instructions.forEach((line, i) => {
+                pdf.text(line, 20, 160 + (i * 6));
             });
+            
+            // Footer
+            pdf.setFontSize(10);
+            pdf.setTextColor(100, 100, 100);
+            pdf.text('Crée avec ❤️ sur LoveCraft - Inspiré par Max & Eve', 105, 280, { align: 'center' });
+            
+            // Sauvegarde
+            pdf.save(`LoveCraft_Surprise_${this.surprise.pourQui}.pdf`);
+            
+            btn.innerHTML = originalText;
+            btn.disabled = false;
         });
     }
 
