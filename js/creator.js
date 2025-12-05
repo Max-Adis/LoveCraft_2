@@ -1,5 +1,4 @@
-[file name]: creator.js
-[file content begin]
+
 import { database, auth, ref, set, get, update } from './firebase.js';
 
 class SurpriseCreator {
@@ -878,4 +877,4 @@ class SurpriseCreator {
 }
 
 export default SurpriseCreator;
-[file content end]
+
