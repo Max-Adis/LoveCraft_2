@@ -1,66 +1,65 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Créer une surprise - LoveCraft</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- QR Code Library -->
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <!-- QR Code Library FIXED -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- HTML to Canvas -->
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <!-- PDF Generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
-<body class="bg-gradient-to-br from-pink-50 to-red-50 min-h-screen">
+<body class="min-h-screen flex flex-col bg-gradient-to-br from-pink-50 to-red-50">
     <!-- Navigation -->
     <nav class="bg-white shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
                     <a href="dashboard.html" class="flex-shrink-0 flex items-center">
-                        <div class="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center overflow-hidden mr-2 border-2 border-white shadow">
-                            <img src="assets/logo.png" alt="LoveCraft Logo" class="w-6 h-6 object-cover">
+                        <div class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center overflow-hidden mr-3 border-2 border-white shadow">
+                            <img src="assets/logo.png" alt="LoveCraft Logo" class="w-full h-full object-cover">
                         </div>
                         <span class="text-xl font-bold text-purple-600">LoveCraft</span>
                     </a>
                 </div>
                 <div class="flex items-center">
-                    <a href="dashboard.html" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium mr-2">
-                        <i class="fas fa-arrow-left mr-1"></i>Retour
+                    <a href="dashboard.html" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-arrow-left mr-1"></i>Retour au dashboard
                     </a>
                 </div>
             </div>
         </div>
     </nav>
 
-    <div id="app" class="max-w-4xl mx-auto p-4 md:p-8">
-      <!-- Après le div#app, avant les scripts -->
-<footer class="bg-gray-800 text-white mt-12">
-    <div class="max-w-7xl mx-auto px-4 py-8">
-        <div class="text-center">
-            <p class="text-gray-400">© 2025 LoveCraft - Conçu avec ❤️ par Max_Adis</p>
-            <div class="flex justify-center space-x-6 mt-4">
-                <a href="story.html" class="text-gray-400 hover:text-white text-sm">Notre histoire</a>
-                <a href="#" class="text-gray-400 hover:text-white text-sm">Contact</a>
-                <a href="#" class="text-gray-400 hover:text-white text-sm">Conditions</a>
+    <div id="app" class="flex-grow max-w-4xl mx-auto px-4 md:px-8 py-8">
+        <!-- Chargé par JavaScript -->
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white mt-auto">
+        <div class="max-w-7xl mx-auto px-4 py-8">
+            <div class="text-center">
+                <p class="text-gray-400">© 2025 LoveCraft - Conçu avec ❤️ par Max_Adis</p>
+                <div class="flex justify-center space-x-6 mt-4">
+                    <a href="legal/terms.html" class="text-gray-400 hover:text-white text-sm">Conditions</a>
+                    <a href="legal/privacy.html" class="text-gray-400 hover:text-white text-sm">Confidentialité</a>
+                    <a href="mailto:contact@lovecraft.com" class="text-gray-400 hover:text-white text-sm">Contact</a>
+                </div>
             </div>
         </div>
-    </div>
-</footer>  <!-- Contenu chargé par JavaScript -->
-    
-    </div>
+    </footer>
 
     <script type="module">
         import { auth, onAuthStateChanged } from './js/firebase.js';
         
-        // Vérifier l'authentification
         onAuthStateChanged(auth, (user) => {
             if (!user) {
                 window.location.href = 'index.html';
             } else {
-                // Charger le créateur
                 import('./js/creator.js').then(module => {
                     new module.default(user.uid);
                 });
