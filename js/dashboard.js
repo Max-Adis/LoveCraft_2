@@ -634,4 +634,53 @@ class DashboardManager {
                         <div class="text-gray-700">Surprises totales</div>
                     </div>
                     <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl">
-                        <div class="text-2xl font-bold text-blue-600">${this.stats.totalViews}</div
+                        <div class="text-2xl font-bold text-blue-600">${this.stats.totalViews}</div>
+                        <div class="text-gray-700">Vues totales</div>
+                    </div>
+                    <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl">
+                        <div class="text-2xl font-bold text-green-600">${this.stats.engagementRate}%</div>
+                        <div class="text-gray-700">Taux d'engagement</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Bouton retour
+        document.getElementById('backToDashboard').addEventListener('click', (e) => {
+            e.preventDefault();
+            this.render();
+            this.bindEvents();
+            this.setupMobileMenu();
+        });
+    }
+
+    showNotification(message) {
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-green-100 border border-green-300 text-green-800 px-6 py-4 rounded-lg shadow-lg z-50';
+        notification.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas fa-check-circle mr-3"></i>
+                <div>${message}</div>
+            </div>
+        `;
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
+    }
+
+    showError(message) {
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-red-100 border border-red-300 text-red-800 px-6 py-4 rounded-lg shadow-lg z-50';
+        notification.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-circle mr-3"></i>
+                <div>${message}</div>
+            </div>
+        `;
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
+    }
+}
+
+// Démarrer l'application
+new DashboardManager();
+[file content end]
