@@ -12,6 +12,15 @@
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <!-- PDF Generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        /* FIX pour les inputs de couleur */
+        .text-input-fix {
+            color: #1f2937 !important; /* gray-800 */
+        }
+        .text-input-fix::placeholder {
+            color: #9ca3af !important; /* gray-400 */
+        }
+    </style>
 </head>
 <body class="min-h-screen flex flex-col bg-gradient-to-br from-pink-50 to-red-50">
     <!-- Navigation -->
@@ -20,14 +29,15 @@
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
                     <a href="dashboard.html" class="flex-shrink-0 flex items-center">
-                        <div class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center overflow-hidden mr-3 border-2 border-white shadow">
-                            <img src="assets/logo.png" alt="LoveCraft Logo" class="w-full h-full object-cover">
+                        <!-- LOGO ROND FIXÉ -->
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center overflow-hidden mr-3 border-2 border-white shadow-lg">
+                            <img src="assets/logo.png" alt="LoveCraft Logo" class="w-full h-full object-cover p-0.5">
                         </div>
                         <span class="text-xl font-bold text-purple-600">LoveCraft</span>
                     </a>
                 </div>
                 <div class="flex items-center">
-                    <a href="dashboard.html" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">
+                    <a href="dashboard.html" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium hover:bg-purple-50 transition">
                         <i class="fas fa-arrow-left mr-1"></i>Retour au dashboard
                     </a>
                 </div>
@@ -45,9 +55,9 @@
             <div class="text-center">
                 <p class="text-gray-400">© 2025 LoveCraft - Conçu avec ❤️ par Max_Adis</p>
                 <div class="flex justify-center space-x-6 mt-4">
-                    <a href="legal/terms.html" class="text-gray-400 hover:text-white text-sm">Conditions</a>
-                    <a href="legal/privacy.html" class="text-gray-400 hover:text-white text-sm">Confidentialité</a>
-                    <a href="mailto:contact@lovecraft.com" class="text-gray-400 hover:text-white text-sm">Contact</a>
+                    <a href="legal/terms.html" class="text-gray-400 hover:text-white text-sm transition">Conditions</a>
+                    <a href="legal/privacy.html" class="text-gray-400 hover:text-white text-sm transition">Confidentialité</a>
+                    <a href="mailto:contact@lovecraft.com" class="text-gray-400 hover:text-white text-sm transition">Contact</a>
                 </div>
             </div>
         </div>
