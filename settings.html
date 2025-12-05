@@ -1,184 +1,63 @@
-<!-- settings.html -->
-<div class="max-w-4xl mx-auto">
-    <h1 class="text-3xl font-bold text-gray-800 mb-8">
-        <i class="fas fa-cog mr-3"></i>Paramètres
-    </h1>
-    
-    <div class="space-y-8">
-        <!-- 1. PROFIL UTILISATEUR -->
-        <div class="bg-white rounded-xl shadow-sm p-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">
-                <i class="fas fa-user-circle mr-2"></i>Profil
-            </h2>
-            <div class="space-y-4">
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paramètres - LoveCraft</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <div class="w-20 h-20 rounded-full bg-purple-100 flex items-center justify-center mr-6">
-                        ${user.photoURL ? 
-                            `<img src="${user.photoURL}" class="w-full h-full rounded-full">` :
-                            `<i class="fas fa-user text-purple-600 text-3xl"></i>`
-                        }
-                    </div>
-                    <div>
-                        <h3 class="font-bold">${user.displayName || 'Non défini'}</h3>
-                        <p class="text-gray-600">${user.email}</p>
-                        <button class="mt-2 text-purple-600 hover:text-purple-700 text-sm">
-                            <i class="fas fa-edit mr-1"></i>Modifier la photo
-                        </button>
-                    </div>
+                    <a href="dashboard.html" class="flex-shrink-0 flex items-center">
+                        <div class="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center overflow-hidden mr-2">
+                            <img src="assets/logo.png" alt="LoveCraft Logo" class="w-full h-full object-cover">
+                        </div>
+                        <span class="text-xl font-bold text-purple-600">LoveCraft</span>
+                    </a>
                 </div>
-                
-                <div class="grid md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Nom d'affichage
-                        </label>
-                        <input type="text" value="${user.displayName || ''}" 
-                               class="w-full px-4 py-2 border rounded-lg">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Email
-                        </label>
-                        <input type="email" value="${user.email}" disabled
-                               class="w-full px-4 py-2 border rounded-lg bg-gray-50">
-                    </div>
-                </div>
-                
-                <button class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
-                    <i class="fas fa-save mr-2"></i>Enregistrer les modifications
-                </button>
-            </div>
-        </div>
-        
-        <!-- 2. NOTIFICATIONS -->
-        <div class="bg-white rounded-xl shadow-sm p-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">
-                <i class="fas fa-bell mr-2"></i>Notifications
-            </h2>
-            <div class="space-y-3">
-                <label class="flex items-center">
-                    <input type="checkbox" class="rounded text-purple-600" checked>
-                    <span class="ml-3">Quand quelqu'un voit ma surprise</span>
-                </label>
-                <label class="flex items-center">
-                    <input type="checkbox" class="rounded text-purple-600" checked>
-                    <span class="ml-3">Quand quelqu'un finit le parcours</span>
-                </label>
-                <label class="flex items-center">
-                    <input type="checkbox" class="rounded text-purple-600">
-                    <span class="ml-3">Newsletter LoveCraft (conseils, idées)</span>
-                </label>
-                <label class="flex items-center">
-                    <input type="checkbox" class="rounded text-purple-600" checked>
-                    <span class="ml-3">Promotions et offres spéciales</span>
-                </label>
-            </div>
-        </div>
-        
-        <!-- 3. PRIVACITÉ -->
-        <div class="bg-white rounded-xl shadow-sm p-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">
-                <i class="fas fa-shield-alt mr-2"></i>Confidentialité
-            </h2>
-            <div class="space-y-4">
-                <div>
-                    <label class="flex items-center justify-between">
-                        <span class="font-medium">Surprises publiques</span>
-                        <select class="border rounded-lg px-3 py-1">
-                            <option value="private">Privé (seulement avec le lien)</option>
-                            <option value="public">Public (dans la galerie)</option>
-                        </select>
-                    </label>
-                    <p class="text-sm text-gray-500 mt-1">
-                        Les surprises publiques apparaissent dans la galerie LoveCraft
-                    </p>
-                </div>
-                
-                <div>
-                    <label class="flex items-center">
-                        <input type="checkbox" class="rounded text-purple-600">
-                        <span class="ml-3">Autoriser les statistiques anonymes</span>
-                    </label>
-                    <p class="text-sm text-gray-500 ml-7">
-                        Aide à améliorer LoveCraft pour tous
-                    </p>
-                </div>
-                
-                <div>
-                    <h3 class="font-medium mb-2">Suppression des données</h3>
-                    <button class="text-red-600 hover:text-red-700 text-sm">
-                        <i class="fas fa-trash-alt mr-1"></i>
-                        Supprimer toutes mes données
-                    </button>
-                    <p class="text-sm text-gray-500 mt-1">
-                        Cette action est irréversible
-                    </p>
+                <div class="flex items-center">
+                    <a href="dashboard.html" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-arrow-left mr-1"></i>Retour
+                    </a>
                 </div>
             </div>
         </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">
+            <i class="fas fa-cog mr-3"></i>Paramètres
+        </h1>
         
-        <!-- 4. TEMPLATES PRÉDÉFINIS -->
-        <div class="bg-white rounded-xl shadow-sm p-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">
-                <i class="fas fa-layer-group mr-2"></i>Mes templates
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="templatesList">
-                <!-- Templates seront chargés ici -->
-            </div>
-            
-            <div class="mt-6">
-                <h3 class="font-medium mb-3">Créer un nouveau template</h3>
-                <div class="flex gap-2">
-                    <input type="text" placeholder="Nom du template" 
-                           class="flex-grow px-4 py-2 border rounded-lg">
-                    <button class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
-                        <i class="fas fa-plus mr-2"></i>Créer
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 5. COMPTE PREMIUM -->
-        <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-6 text-white">
-            <h2 class="text-xl font-bold mb-2">
-                <i class="fas fa-crown mr-2"></i>Pass Premium
-            </h2>
-            <p class="mb-4">Débloquez toutes les fonctionnalités avancées</p>
-            <div class="grid md:grid-cols-3 gap-4 mb-6">
-                <div class="bg-white/20 p-4 rounded-lg">
-                    <div class="text-2xl font-bold mb-1">Illimité</div>
-                    <div class="text-sm">Surprises créées</div>
-                </div>
-                <div class="bg-white/20 p-4 rounded-lg">
-                    <div class="text-2xl font-bold mb-1">+10</div>
-                    <div class="text-sm">Templates exclusifs</div>
-                </div>
-                <div class="bg-white/20 p-4 rounded-lg">
-                    <div class="text-2xl font-bold mb-1">Analytiques</div>
-                    <div class="text-sm">Avancés</div>
-                </div>
-            </div>
-            <button class="bg-white text-purple-600 px-6 py-3 rounded-lg font-bold hover:bg-gray-100">
-                <i class="fas fa-bolt mr-2"></i>Passer à Premium - 4,99€/mois
-            </button>
-        </div>
-        
-        <!-- 6. DANGER ZONE -->
-        <div class="bg-red-50 border border-red-200 rounded-xl p-6">
-            <h2 class="text-xl font-bold text-red-800 mb-4">
-                <i class="fas fa-exclamation-triangle mr-2"></i>Zone de danger
-            </h2>
-            <div class="space-y-4">
-                <button id="logoutBtn" class="text-red-600 hover:text-red-700">
-                    <i class="fas fa-sign-out-alt mr-2"></i>Déconnexion
-                </button>
-                <button id="deleteAccountBtn" class="text-red-600 hover:text-red-700 block">
-                    <i class="fas fa-user-slash mr-2"></i>Supprimer mon compte
-                </button>
-                <button id="exportDataBtn" class="text-blue-600 hover:text-blue-700 block">
-                    <i class="fas fa-file-export mr-2"></i>Exporter toutes mes données
-                </button>
+        <div id="settingsApp" class="space-y-8">
+            <!-- Chargement... -->
+            <div class="text-center py-12">
+                <i class="fas fa-spinner fa-spin text-4xl text-purple-600 mb-4"></i>
+                <p>Chargement des paramètres...</p>
             </div>
         </div>
     </div>
-</div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white mt-12">
+        <div class="max-w-7xl mx-auto px-4 py-8">
+            <div class="text-center">
+                <p class="text-gray-400">© 2025 LoveCraft - Conçu avec ❤️ par Max_Adis</p>
+                <div class="flex justify-center space-x-6 mt-4">
+                    <a href="#" class="text-gray-400 hover:text-white text-sm">Conditions d'utilisation</a>
+                    <a href="#" class="text-gray-400 hover:text-white text-sm">Confidentialité</a>
+                    <a href="#" class="text-gray-400 hover:text-white text-sm">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script type="module" src="js/settings.js"></script>
+</body>
+</html>
