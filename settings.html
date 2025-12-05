@@ -1,3 +1,5 @@
+[file name]: settings.html
+[file content begin]
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -6,6 +8,16 @@
     <title>Paramètres - LoveCraft</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Forcer texte noir sur inputs */
+        input, textarea, select {
+            color: #1f2937 !important;
+            background: white !important;
+        }
+        input::placeholder, textarea::placeholder {
+            color: #9ca3af !important;
+        }
+    </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
     <!-- Navigation -->
@@ -14,7 +26,7 @@
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
                     <a href="dashboard.html" class="flex-shrink-0 flex items-center">
-                        <div class="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center overflow-hidden mr-2">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center overflow-hidden mr-2">
                             <img src="assets/logo.png" alt="LoveCraft Logo" class="w-full h-full object-cover">
                         </div>
                         <span class="text-xl font-bold text-purple-600">LoveCraft</span>
@@ -49,15 +61,151 @@
             <div class="text-center">
                 <p class="text-gray-400">© 2025 LoveCraft - Conçu avec ❤️ par Max_Adis</p>
                 <div class="flex justify-center space-x-6 mt-4">
-                    <a href="#" class="text-gray-400 hover:text-white text-sm">Conditions d'utilisation</a>
-                    <a href="#" class="text-gray-400 hover:text-white text-sm">Confidentialité</a>
-                    <a href="#" class="text-gray-400 hover:text-white text-sm">Contact</a>
+                    <a href="legal/terms.html" class="text-gray-400 hover:text-white text-sm">Conditions</a>
+                    <a href="legal/privacy.html" class="text-gray-400 hover:text-white text-sm">Confidentialité</a>
+                    <a href="mailto:maxhounkpatin001@gmail.com" class="text-gray-400 hover:text-white text-sm contact-footer">Contact</a>
                 </div>
             </div>
         </div>
     </footer>
 
+    <!-- Modal Contact -->
+    <div id="contactModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50 overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl max-w-md w-full p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-800">Contactez-nous</h3>
+                    <button id="closeContactModal" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <form id="contactForm" action="https://formspree.io/f/mgvgzykk" method="POST">
+                    <input type="hidden" name="_replyto" value="maxhounkpatin001@gmail.com">
+                    <input type="hidden" name="_subject" value="Contact LoveCraft">
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Votre nom *</label>
+                        <input type="text" name="name" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-800"
+                               placeholder="Votre nom complet">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Votre email *</label>
+                        <input type="email" name="email" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-800"
+                               placeholder="votre@email.com">
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Votre message *</label>
+                        <textarea name="message" rows="4" required
+                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-800"
+                                  placeholder="Comment pouvons-nous vous aider ?"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-bold hover:opacity-90 transition">
+                        <i class="fas fa-paper-plane mr-2"></i>Envoyer le message
+                    </button>
+                </form>
+                
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <p class="text-sm text-gray-600">
+                        <i class="fas fa-envelope mr-2"></i>
+                        <strong>Email :</strong> maxhounkpatin001@gmail.com
+                    </p>
+                    <p class="text-sm text-gray-600 mt-2">
+                        <i class="fas fa-clock mr-2"></i>
+                        Réponse sous 24-48h
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script type="module" src="js/settings.js"></script>
+    
+    <script>
+        // Gestion du modal contact
+        document.addEventListener('DOMContentLoaded', function() {
+            const contactLinks = document.querySelectorAll('.contact-footer');
+            const contactModal = document.getElementById('contactModal');
+            const closeContact = document.getElementById('closeContactModal');
+            
+            contactLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    contactModal.classList.remove('hidden');
+                });
+            });
+            
+            if (closeContact) {
+                closeContact.addEventListener('click', function() {
+                    contactModal.classList.add('hidden');
+                });
+            }
+            
+            // Gestion formulaire contact
+            const contactForm = document.getElementById('contactForm');
+            if (contactForm) {
+                contactForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.innerHTML;
+                    
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Envoi en cours...';
+                    submitBtn.disabled = true;
+                    
+                    try {
+                        const formData = new FormData(this);
+                        formData.set('_replyto', 'maxhounkpatin001@gmail.com');
+                        
+                        const response = await fetch(this.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'Accept': 'application/json'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            contactForm.innerHTML = `
+                                <div class="text-center py-8">
+                                    <div class="text-5xl text-green-500 mb-4">✅</div>
+                                    <h4 class="text-xl font-bold text-gray-800 mb-2">Message envoyé !</h4>
+                                    <p class="text-gray-600">Nous vous répondrons dans les plus brefs délais.</p>
+                                    <button type="button" onclick="location.reload()" class="mt-6 text-purple-600 hover:text-purple-700">
+                                        <i class="fas fa-times mr-1"></i>Fermer
+                                    </button>
+                                </div>
+                            `;
+                        } else {
+                            throw new Error('Erreur d\'envoi');
+                        }
+                        
+                    } catch (error) {
+                        console.error('Erreur:', error);
+                        alert('Erreur lors de l\'envoi du message. Veuillez réessayer.');
+                        
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    }
+                });
+            }
+            
+            // Fermer modal en cliquant à l'extérieur
+            if (contactModal) {
+                contactModal.addEventListener('click', function(e) {
+                    if (e.target === contactModal) {
+                        contactModal.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
+[file content end]
