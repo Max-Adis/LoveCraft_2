@@ -1,0 +1,46 @@
+{
+    "app": {
+        "title": "LoveCraft - Create Digital Surprises",
+        "logoAlt": "LoveCraft Logo",
+        "tagline": "Like Max for Eve, create unique love declarations in minutes."
+    },
+    "nav": {
+        "login": "Login",
+        "signup": "Sign Up",
+        "dashboard": "Dashboard",
+        "create": "Create",
+        "settings": "Settings",
+        "logout": "Logout"
+    },
+    "hero": {
+        "title": "Create unforgettable<br>digital surprises",
+        "cta1": "Start Free",
+        "cta2": "See Our Story"
+    },
+    "auth": {
+        "login": "Login",
+        "signup": "Sign Up",
+        "email": "Email",
+        "password": "Password",
+        "confirmPassword": "Confirm Password",
+        "forgotPassword": "Forgot Password?",
+        "or": "or",
+        "google": "Continue with Google",
+        "noAccount": "No account?",
+        "hasAccount": "Already have an account?"
+    },
+    "dashboard": {
+        "welcome": "Hello",
+        "createSurprise": "Create a Surprise",
+        "mySurprises": "My Surprises",
+        "stats": "Statistics",
+        "noSurprises": "No surprises created"
+    },
+    "footer": {
+        "copyright": "© 2025 LoveCraft - Made with ❤️ by Max_Adis",
+        "story": "Inspired by a true love story",
+        "navigation": "Navigation",
+        "legal": "Legal",
+        "contact": "Contact"
+    }
+}
