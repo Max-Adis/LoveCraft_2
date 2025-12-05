@@ -3,6 +3,7 @@ import {
     createUserWithEmailAndPassword, 
     signInWithEmailAndPassword,
     signInWithPopup,
+    sendPasswordResetEmail,
     signOut,
     onAuthStateChanged
 } from './firebase.js';
@@ -14,16 +15,14 @@ class AuthManager {
     }
 
     init() {
-        // Écouter les changements d'authentification
         onAuthStateChanged(auth, (user) => {
             this.currentUser = user;
             if (user) {
-                // Rediriger vers le dashboard si connecté
                 window.location.href = 'dashboard.html';
             }
         });
 
-        // Gestion des boutons
+        // Boutons navigation
         document.getElementById('loginBtn')?.addEventListener('click', (e) => {
             e.preventDefault();
             this.showAuthModal('login');
@@ -38,12 +37,7 @@ class AuthManager {
             this.showAuthModal('signup');
         });
 
-        document.getElementById('demoBtn')?.addEventListener('click', () => {
-            // Mode démo avec compte temporaire
-            this.demoMode();
-        });
-
-        // Gestion des tabs
+        // Tabs modal
         document.getElementById('tabLogin')?.addEventListener('click', () => {
             this.switchTab('login');
         });
@@ -52,9 +46,13 @@ class AuthManager {
             this.switchTab('signup');
         });
 
-        // Fermer modal
+        // Fermer modals
         document.getElementById('closeModal')?.addEventListener('click', () => {
             this.hideAuthModal();
+        });
+
+        document.getElementById('closeForgotModal')?.addEventListener('click', () => {
+            this.hideForgotModal();
         });
 
         // Connexion email/password
@@ -66,7 +64,7 @@ class AuthManager {
             this.signupWithEmail();
         });
 
-        // Connexion Google
+        // Google
         document.getElementById('googleLogin')?.addEventListener('click', () => {
             this.loginWithGoogle();
         });
@@ -75,7 +73,17 @@ class AuthManager {
             this.loginWithGoogle();
         });
 
-        // Enter key pour les formulaires
+        // Mot de passe oublié
+        document.getElementById('forgotPassword')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.showForgotModal();
+        });
+
+        document.getElementById('submitReset')?.addEventListener('click', () => {
+            this.resetPassword();
+        });
+
+        // Enter key
         document.getElementById('loginPassword')?.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.loginWithEmail();
         });
@@ -95,6 +103,15 @@ class AuthManager {
         const modal = document.getElementById('authModal');
         modal.classList.add('hidden');
         this.clearErrors();
+    }
+
+    showForgotModal() {
+        this.hideAuthModal();
+        document.getElementById('forgotPasswordModal').classList.remove('hidden');
+    }
+
+    hideForgotModal() {
+        document.getElementById('forgotPasswordModal').classList.add('hidden');
     }
 
     switchTab(tab) {
@@ -132,6 +149,19 @@ class AuthManager {
         errorElement.classList.remove('hidden');
     }
 
+    showSuccess(message) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'fixed top-4 right-4 bg-green-100 text-green-800 px-6 py-4 rounded-lg shadow-lg z-50';
+        alertDiv.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas fa-check-circle mr-3"></i>
+                <div>${message}</div>
+            </div>
+        `;
+        document.body.appendChild(alertDiv);
+        setTimeout(() => alertDiv.remove(), 3000);
+    }
+
     async loginWithEmail() {
         const email = document.getElementById('loginEmail').value;
         const password = document.getElementById('loginPassword').value;
@@ -147,20 +177,11 @@ class AuthManager {
         } catch (error) {
             let message = 'Erreur de connexion';
             switch (error.code) {
-                case 'auth/invalid-email':
-                    message = 'Email invalide';
-                    break;
-                case 'auth/user-disabled':
-                    message = 'Compte désactivé';
-                    break;
-                case 'auth/user-not-found':
-                    message = 'Compte non trouvé';
-                    break;
-                case 'auth/wrong-password':
-                    message = 'Mot de passe incorrect';
-                    break;
-                default:
-                    message = error.message;
+                case 'auth/invalid-email': message = 'Email invalide'; break;
+                case 'auth/user-disabled': message = 'Compte désactivé'; break;
+                case 'auth/user-not-found': message = 'Compte non trouvé'; break;
+                case 'auth/wrong-password': message = 'Mot de passe incorrect'; break;
+                default: message = error.message;
             }
             this.showError('loginError', message);
         }
@@ -189,23 +210,15 @@ class AuthManager {
         try {
             await createUserWithEmailAndPassword(auth, email, password);
             this.hideAuthModal();
+            this.showSuccess('Compte créé avec succès !');
         } catch (error) {
             let message = "Erreur d'inscription";
             switch (error.code) {
-                case 'auth/email-already-in-use':
-                    message = 'Cet email est déjà utilisé';
-                    break;
-                case 'auth/invalid-email':
-                    message = 'Email invalide';
-                    break;
-                case 'auth/operation-not-allowed':
-                    message = 'Opération non autorisée';
-                    break;
-                case 'auth/weak-password':
-                    message = 'Mot de passe trop faible';
-                    break;
-                default:
-                    message = error.message;
+                case 'auth/email-already-in-use': message = 'Cet email est déjà utilisé'; break;
+                case 'auth/invalid-email': message = 'Email invalide'; break;
+                case 'auth/operation-not-allowed': message = 'Opération non autorisée'; break;
+                case 'auth/weak-password': message = 'Mot de passe trop faible'; break;
+                default: message = error.message;
             }
             this.showError('signupError', message);
         }
@@ -213,29 +226,30 @@ class AuthManager {
 
     async loginWithGoogle() {
         try {
-            await signInWithPopup(auth, googleProvider);
+            const result = await signInWithPopup(auth, googleProvider);
+            // Stocker le nom Google pour pré-remplissage
+            localStorage.setItem('googleUserName', result.user.displayName);
+            localStorage.setItem('googleUserPhoto', result.user.photoURL);
             this.hideAuthModal();
         } catch (error) {
             this.showError('loginError', 'Erreur avec Google : ' + error.message);
         }
     }
 
-    async demoMode() {
-        // Compte démo temporaire
-        const demoEmail = 'demo@lovecraft.com';
-        const demoPassword = 'demo123';
+    async resetPassword() {
+        const email = document.getElementById('resetEmail').value;
+        
+        if (!email) {
+            alert('Veuillez entrer votre email');
+            return;
+        }
 
         try {
-            await signInWithEmailAndPassword(auth, demoEmail, demoPassword);
+            await sendPasswordResetEmail(auth, email);
+            this.showSuccess('Email de réinitialisation envoyé ! Vérifiez votre boîte mail.');
+            this.hideForgotModal();
         } catch (error) {
-            if (error.code === 'auth/user-not-found') {
-                // Créer le compte démo
-                try {
-                    await createUserWithEmailAndPassword(auth, demoEmail, demoPassword);
-                } catch (createError) {
-                    this.showError('loginError', 'Impossible de créer le compte démo');
-                }
-            }
+            alert('Erreur : ' + error.message);
         }
     }
 
@@ -244,10 +258,9 @@ class AuthManager {
             await signOut(auth);
             window.location.href = 'index.html';
         } catch (error) {
-            console.error('Erreur de déconnexion:', error);
+            console.error('Erreur déconnexion:', error);
         }
     }
 }
 
-// Initialiser l'authentification
 new AuthManager();
