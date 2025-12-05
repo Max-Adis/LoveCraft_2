@@ -1,3 +1,5 @@
+[file name]: s/index.html
+[file content begin]
 <!DOCTYPE html>
 <html lang="fr" class="h-full">
 <head>
@@ -34,12 +36,21 @@
         .bg-gradient-classic {
             background: linear-gradient(135deg, #d1d5db 0%, #9ca3af 50%, #6b7280 100%);
         }
+        /* Forcer texte noir sur inputs */
+        input, textarea {
+            color: #1f2937 !important;
+            background: rgba(255, 255, 255, 0.2) !important;
+        }
+        input::placeholder, textarea::placeholder {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col bg-gradient-to-br from-pink-100 to-purple-100">
     <!-- Audio pour son romantique -->
     <audio id="romanticSound" preload="auto">
         <source src="../assets/sounds/romantic.mp3" type="audio/mpeg">
+        Votre navigateur ne supporte pas l'audio.
     </audio>
 
     <div id="surprise-app" class="flex-grow p-4 md:p-8 flex items-center justify-center">
@@ -70,6 +81,18 @@
         if (id) {
             localStorage.setItem('surpriseId', id);
         }
+        
+        // Tester l'audio
+        document.addEventListener('click', function() {
+            const audio = document.getElementById('romanticSound');
+            if (audio) {
+                audio.volume = 0.3;
+                audio.play().catch(e => {
+                    console.log('Audio nécessite interaction utilisateur');
+                });
+            }
+        }, { once: true });
     </script>
 </body>
 </html>
+[file content end]
