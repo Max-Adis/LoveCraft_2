@@ -1,3 +1,5 @@
+[file name]: creator.js
+[file content begin]
 import { database, auth, ref, set, get, update } from './firebase.js';
 
 class SurpriseCreator {
@@ -6,6 +8,7 @@ class SurpriseCreator {
         this.user = auth.currentUser;
         this.step = 1;
         
+        // Récupérer nom Google depuis localStorage ou Firebase
         const googleName = localStorage.getItem('googleUserName') || this.user.displayName || '';
         
         this.surprise = {
@@ -96,6 +99,7 @@ class SurpriseCreator {
                                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-800"
                                             placeholder="Ex: Eve"
                                             required
+                                            style="color: #1f2937; background: white;"
                                         />
                                     </div>
                                     <div>
@@ -109,6 +113,7 @@ class SurpriseCreator {
                                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-800"
                                             placeholder="Ex: Max"
                                             required
+                                            style="color: #1f2937; background: white;"
                                         />
                                     </div>
                                 </div>
@@ -130,6 +135,7 @@ class SurpriseCreator {
                                         value="${this.surprise.question1}"
                                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800"
                                         placeholder="Ex: Qui t'aime plus que tout ?"
+                                        style="color: #1f2937; background: white;"
                                     />
                                 </div>
                                 <div>
@@ -142,6 +148,7 @@ class SurpriseCreator {
                                         value="${this.surprise.reponse1}"
                                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800"
                                         placeholder="Ex: Max (sera utilisé comme indice)"
+                                        style="color: #1f2937; background: white;"
                                     />
                                     <p class="text-sm text-gray-500 mt-2">
                                         <i class="fas fa-info-circle mr-1"></i>
@@ -165,6 +172,7 @@ class SurpriseCreator {
                                         rows="5"
                                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-800"
                                         placeholder="Écrivez votre message le plus touchant..."
+                                        style="color: #1f2937; background: white;"
                                     >${this.surprise.messageFinal}</textarea>
                                     <div class="flex justify-between mt-2">
                                         <p class="text-sm text-gray-500">
@@ -244,12 +252,19 @@ class SurpriseCreator {
                                 <i class="fas fa-qrcode mr-2 text-purple-600"></i>
                                 QR Code de votre surprise
                             </h2>
-                            <div id="qrCode" class="inline-block p-6 bg-gray-50 rounded-xl mb-6">
+                            <div id="qrCode" class="inline-block p-6 bg-gray-50 rounded-xl mb-6 qr-appear">
                                 <!-- QR Code généré ici -->
+                                <div class="text-center text-gray-500">
+                                    <i class="fas fa-spinner fa-spin text-3xl mb-2"></i>
+                                    <p>Génération du QR Code...</p>
+                                </div>
                             </div>
-                            <div class="mt-6">
-                                <button id="downloadQRBtn" class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-lg font-bold hover:opacity-90 transition">
+                            <div class="mt-6 space-x-4">
+                                <button id="downloadQRBtn" class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-lg font-bold hover:opacity-90 transition shadow-md">
                                     <i class="fas fa-download mr-2"></i>Télécharger JPG
+                                </button>
+                                <button id="shareQRBtn" class="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-6 py-3 rounded-lg font-bold hover:opacity-90 transition shadow-md">
+                                    <i class="fas fa-share-alt mr-2"></i>Partager sur réseaux
                                 </button>
                             </div>
                         </div>
@@ -267,7 +282,8 @@ class SurpriseCreator {
                                 id="surpriseUrl"
                                 value="${window.location.origin}/LoveCraft/s/?id=${this.surpriseId}"
                                 readonly
-                                class="flex-grow px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
+                                class="flex-grow px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800"
+                                style="color: #1f2937;"
                             />
                             <button id="copyLinkBtn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
                                 <i class="fas fa-copy mr-2"></i>Copier
@@ -279,23 +295,74 @@ class SurpriseCreator {
                         </p>
                     </div>
 
+                    <!-- Partage social -->
+                    <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-8 mb-8 border border-purple-200">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">
+                            <i class="fas fa-share-alt mr-2 text-purple-600"></i>
+                            Partagez votre surprise
+                        </h2>
+                        <p class="text-gray-600 mb-6">Créez une story Instagram/TikTok/WhatsApp avec votre QR Code personnalisé :</p>
+                        
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                            <button class="share-social-btn bg-gradient-to-r from-pink-500 to-purple-500 text-white p-4 rounded-xl text-center hover:opacity-90 transition" data-platform="instagram">
+                                <div class="text-3xl mb-2">
+                                    <i class="fab fa-instagram"></i>
+                                </div>
+                                <div class="font-bold">Instagram</div>
+                                <div class="text-sm opacity-90">Story</div>
+                            </button>
+                            
+                            <button class="share-social-btn bg-gradient-to-r from-blue-400 to-blue-600 text-white p-4 rounded-xl text-center hover:opacity-90 transition" data-platform="facebook">
+                                <div class="text-3xl mb-2">
+                                    <i class="fab fa-facebook"></i>
+                                </div>
+                                <div class="font-bold">Facebook</div>
+                                <div class="text-sm opacity-90">Story</div>
+                            </button>
+                            
+                            <button class="share-social-btn bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-xl text-center hover:opacity-90 transition" data-platform="whatsapp">
+                                <div class="text-3xl mb-2">
+                                    <i class="fab fa-whatsapp"></i>
+                                </div>
+                                <div class="font-bold">WhatsApp</div>
+                                <div class="text-sm opacity-90">Message</div>
+                            </button>
+                            
+                            <button class="share-social-btn bg-gradient-to-r from-black to-gray-800 text-white p-4 rounded-xl text-center hover:opacity-90 transition" data-platform="tiktok">
+                                <div class="text-3xl mb-2">
+                                    <i class="fab fa-tiktok"></i>
+                                </div>
+                                <div class="font-bold">TikTok</div>
+                                <div class="text-sm opacity-90">Story</div>
+                            </button>
+                        </div>
+                        
+                        <div class="bg-white/70 p-4 rounded-lg">
+                            <p class="text-sm text-gray-600">
+                                <i class="fas fa-info-circle text-purple-600 mr-2"></i>
+                                <strong>Astuce :</strong> L'image téléchargée contient déjà le watermark "Créé sur LoveCraft" 
+                                pour créditer la plateforme.
+                            </p>
+                        </div>
+                    </div>
+
                     <!-- Actions -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                        <a href="dashboard.html" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-6 rounded-xl text-center hover:opacity-90 transition">
+                        <a href="dashboard.html" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-6 rounded-xl text-center hover:opacity-90 transition shadow-lg">
                             <div class="text-3xl mb-3">
                                 <i class="fas fa-tachometer-alt"></i>
                             </div>
                             <div class="font-bold">Dashboard</div>
                             <div class="text-sm opacity-90 mt-1">Voir mes surprises</div>
                         </a>
-                        <a href="create.html" class="bg-white border-2 border-purple-200 text-purple-600 p-6 rounded-xl text-center hover:border-purple-400 transition">
+                        <a href="create.html" class="bg-white border-2 border-purple-200 text-purple-600 p-6 rounded-xl text-center hover:border-purple-400 transition shadow">
                             <div class="text-3xl mb-3">
                                 <i class="fas fa-plus"></i>
                             </div>
                             <div class="font-bold">Créer une autre</div>
                             <div class="text-sm text-gray-500 mt-1">Nouvelle surprise</div>
                         </a>
-                        <a href="s/?id=${this.surpriseId}" target="_blank" class="bg-white border-2 border-blue-200 text-blue-600 p-6 rounded-xl text-center hover:border-blue-400 transition">
+                        <a href="s/?id=${this.surpriseId}" target="_blank" class="bg-white border-2 border-blue-200 text-blue-600 p-6 rounded-xl text-center hover:border-blue-400 transition shadow">
                             <div class="text-3xl mb-3">
                                 <i class="fas fa-eye"></i>
                             </div>
@@ -336,12 +403,14 @@ class SurpriseCreator {
             const messageInput = document.getElementById('messageFinal');
             const charCount = document.getElementById('charCount');
             
-            messageInput.addEventListener('input', (e) => {
-                this.surprise.messageFinal = e.target.value;
-                const count = e.target.value.length;
-                charCount.textContent = `${count}/500`;
-                charCount.className = `text-sm ${count > 500 ? 'text-red-500' : 'text-gray-500'}`;
-            });
+            if (messageInput) {
+                messageInput.addEventListener('input', (e) => {
+                    this.surprise.messageFinal = e.target.value;
+                    const count = e.target.value.length;
+                    charCount.textContent = `${count}/500`;
+                    charCount.className = `text-sm ${count > 500 ? 'text-red-500' : 'text-gray-500'}`;
+                });
+            }
             
             // Thèmes
             document.querySelectorAll('[data-theme]').forEach(btn => {
@@ -369,9 +438,12 @@ class SurpriseCreator {
             });
             
             // Bouton création
-            document.getElementById('createBtn').addEventListener('click', () => {
-                this.saveSurprise();
-            });
+            const createBtn = document.getElementById('createBtn');
+            if (createBtn) {
+                createBtn.addEventListener('click', () => {
+                    this.saveSurprise();
+                });
+            }
             
         } else if (this.step === 2) {
             // Copier lien
@@ -396,6 +468,19 @@ class SurpriseCreator {
             // Télécharger QR Code
             document.getElementById('downloadQRBtn').addEventListener('click', () => {
                 this.downloadQRCode();
+            });
+            
+            // Partager QR Code
+            document.getElementById('shareQRBtn').addEventListener('click', () => {
+                this.showShareOptions();
+            });
+            
+            // Boutons partage social
+            document.querySelectorAll('.share-social-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const platform = e.currentTarget.dataset.platform;
+                    this.shareOnSocial(platform);
+                });
             });
         }
     }
@@ -488,9 +573,12 @@ class SurpriseCreator {
         
         if (!qrContainer) return;
         
+        // Effacer contenu
         qrContainer.innerHTML = '';
         
+        // Vérifier si QRCode.js est chargé
         if (typeof QRCode === 'undefined') {
+            console.error('QRCode.js non chargé');
             qrContainer.innerHTML = `
                 <div class="text-center p-4">
                     <p class="text-red-500 mb-2">QR Code non disponible</p>
@@ -505,16 +593,28 @@ class SurpriseCreator {
                 text: url,
                 width: 200,
                 height: 200,
-                colorDark: "#7C3AED",
+                colorDark: "#7C3AED", // Purple
                 colorLight: "#FFFFFF",
                 correctLevel: QRCode.CorrectLevel.H
             });
+            
+            // Ajouter watermark discret
+            setTimeout(() => {
+                const canvas = qrContainer.querySelector('canvas');
+                if (canvas) {
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = 'rgba(124, 58, 237, 0.1)';
+                    ctx.font = '8px Arial';
+                    ctx.fillText('LoveCraft', 160, 195);
+                }
+            }, 100);
+            
         } catch (error) {
-            console.error('Erreur QR:', error);
+            console.error('Erreur génération QR:', error);
             qrContainer.innerHTML = `
                 <div class="text-center p-4">
                     <p class="text-red-500">Erreur génération QR</p>
-                    <a href="${url}" class="text-blue-600 text-sm">${url}</a>
+                    <a href="${url}" class="text-blue-600 text-sm break-all">${url}</a>
                 </div>
             `;
         }
@@ -522,11 +622,14 @@ class SurpriseCreator {
 
     downloadQRCode() {
         const qrContainer = document.getElementById('qrCode');
-        if (!qrContainer) return;
+        if (!qrContainer) {
+            this.showNotification('QR Code non trouvé', 'error');
+            return;
+        }
         
         const canvas = qrContainer.querySelector('canvas');
         if (!canvas) {
-            alert('QR Code non généré');
+            this.showNotification('QR Code non généré', 'error');
             return;
         }
         
@@ -540,11 +643,11 @@ class SurpriseCreator {
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, downloadCanvas.width, downloadCanvas.height);
         
-        // En-tête
+        // En-tête LoveCraft
         ctx.fillStyle = '#7C3AED';
         ctx.fillRect(0, 0, downloadCanvas.width, 150);
         
-        // Logo/text
+        // Logo/text LoveCraft
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 36px Arial';
         ctx.textAlign = 'center';
@@ -556,7 +659,7 @@ class SurpriseCreator {
         ctx.font = '40px Arial';
         ctx.fillText('❤️', downloadCanvas.width / 2, 140);
         
-        // Pour qui
+        // Pour qui / De qui
         ctx.fillStyle = '#1f2937';
         ctx.font = 'bold 28px Arial';
         ctx.fillText(`Pour ${this.surprise.pourQui}`, downloadCanvas.width / 2, 200);
@@ -570,7 +673,7 @@ class SurpriseCreator {
         const qrY = 270;
         ctx.drawImage(canvas, qrX, qrY, qrSize, qrSize);
         
-        // Cadre
+        // Cadre autour QR
         ctx.strokeStyle = '#7C3AED';
         ctx.lineWidth = 3;
         ctx.strokeRect(qrX - 5, qrY - 5, qrSize + 10, qrSize + 10);
@@ -592,34 +695,187 @@ class SurpriseCreator {
             ctx.fillText(text, downloadCanvas.width / 2, 590 + (index * 25));
         });
         
-        // Footer
+        // Watermark discret en bas
         ctx.fillStyle = '#9ca3af';
-        ctx.font = '14px Arial';
-        ctx.fillText('Crée avec ❤️ sur LoveCraft', downloadCanvas.width / 2, 680);
+        ctx.font = 'italic 14px Arial';
+        ctx.fillText('Créé sur LoveCraft - lovecraft.com', downloadCanvas.width / 2, 680);
         
         // Télécharger
         const link = document.createElement('a');
-        link.download = `LoveCraft_${this.surprise.pourQui}.jpg`;
+        link.download = `LoveCraft_${this.surprise.pourQui}_${new Date().toISOString().split('T')[0]}.jpg`;
         link.href = downloadCanvas.toDataURL('image/jpeg', 0.9);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         
-        this.showNotification('✅ QR Code téléchargé !');
+        this.showNotification('✅ QR Code téléchargé avec watermark !');
     }
 
-    showNotification(message) {
+    showShareOptions() {
+        const shareModal = document.createElement('div');
+        shareModal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+        shareModal.innerHTML = `
+            <div class="bg-white rounded-2xl max-w-md w-full p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-800">
+                        <i class="fas fa-share-alt mr-2 text-purple-600"></i>
+                        Partager votre surprise
+                    </h3>
+                    <button class="close-share-modal text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="bg-purple-50 p-4 rounded-lg">
+                        <p class="text-sm text-purple-800 mb-2">
+                            <i class="fas fa-lightbulb mr-1"></i>
+                            <strong>Idée créative :</strong> Cachez le QR Code dans un livre, sur un miroir, ou envoyez-le par message !
+                        </p>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <button class="share-action bg-gradient-to-r from-pink-500 to-purple-500 text-white p-4 rounded-lg hover:opacity-90" data-action="sms">
+                            <div class="text-2xl mb-2">
+                                <i class="fas fa-sms"></i>
+                            </div>
+                            <div class="font-bold">SMS</div>
+                        </button>
+                        
+                        <button class="share-action bg-gradient-to-r from-blue-500 to-indigo-500 text-white p-4 rounded-lg hover:opacity-90" data-action="email">
+                            <div class="text-2xl mb-2">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="font-bold">Email</div>
+                        </button>
+                        
+                        <button class="share-action bg-gradient-to-r from-green-500 to-emerald-500 text-white p-4 rounded-lg hover:opacity-90" data-action="whatsapp">
+                            <div class="text-2xl mb-2">
+                                <i class="fab fa-whatsapp"></i>
+                            </div>
+                            <div class="font-bold">WhatsApp</div>
+                        </button>
+                        
+                        <button class="share-action bg-gradient-to-r from-gray-700 to-gray-900 text-white p-4 rounded-lg hover:opacity-90" data-action="copy">
+                            <div class="text-2xl mb-2">
+                                <i class="fas fa-copy"></i>
+                            </div>
+                            <div class="font-bold">Copier lien</div>
+                        </button>
+                    </div>
+                    
+                    <p class="text-center text-sm text-gray-500 mt-4">
+                        L'image contient déjà le watermark "Créé sur LoveCraft" ✅
+                    </p>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(shareModal);
+        
+        // Fermer modal
+        shareModal.querySelector('.close-share-modal').addEventListener('click', () => {
+            shareModal.remove();
+        });
+        
+        // Actions de partage
+        shareModal.querySelectorAll('.share-action').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const action = e.currentTarget.dataset.action;
+                this.performShareAction(action);
+                shareModal.remove();
+            });
+        });
+        
+        // Fermer en cliquant à l'extérieur
+        shareModal.addEventListener('click', (e) => {
+            if (e.target === shareModal) {
+                shareModal.remove();
+            }
+        });
+    }
+
+    performShareAction(action) {
+        const url = `${window.location.origin}/LoveCraft/s/?id=${this.surpriseId}`;
+        const message = `✨ ${this.surprise.deLaPartDe} t'a préparé une surprise spéciale sur LoveCraft ! ✨\n\n${url}\n\nScanne le QR Code pour découvrir le message secret 💖`;
+        
+        switch(action) {
+            case 'sms':
+                window.open(`sms:?body=${encodeURIComponent(message)}`);
+                break;
+                
+            case 'email':
+                window.open(`mailto:?subject=Surprise de ${this.surprise.deLaPartDe}&body=${encodeURIComponent(message)}`);
+                break;
+                
+            case 'whatsapp':
+                window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
+                break;
+                
+            case 'copy':
+                navigator.clipboard.writeText(message).then(() => {
+                    this.showNotification('✅ Message copié dans le presse-papier !');
+                });
+                break;
+        }
+    }
+
+    shareOnSocial(platform) {
+        const url = `${window.location.origin}/LoveCraft/s/?id=${this.surpriseId}`;
+        const message = `✨ ${this.surprise.deLaPartDe} t'a préparé une surprise spéciale sur LoveCraft ! ✨`;
+        
+        let shareUrl = '';
+        const fullMessage = `${message}\n\n${url}`;
+        
+        switch(platform) {
+            case 'instagram':
+                // Instagram ne permet pas de partage direct, on suggère de télécharger l'image
+                this.downloadQRCode();
+                this.showNotification('📸 Téléchargez l\'image et partagez-la dans votre story Instagram !');
+                return;
+                
+            case 'facebook':
+                shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(message)}`;
+                break;
+                
+            case 'whatsapp':
+                shareUrl = `https://wa.me/?text=${encodeURIComponent(fullMessage)}`;
+                break;
+                
+            case 'tiktok':
+                // TikTok ne permet pas de partage direct non plus
+                this.downloadQRCode();
+                this.showNotification('🎵 Téléchargez l\'image et utilisez-la dans votre vidéo TikTok !');
+                return;
+        }
+        
+        if (shareUrl) {
+            window.open(shareUrl, '_blank', 'width=600,height=400');
+        }
+    }
+
+    showNotification(message, type = 'success') {
         const notification = document.createElement('div');
-        notification.className = 'fixed top-4 right-4 bg-green-100 border border-green-300 text-green-800 px-6 py-4 rounded-lg shadow-lg z-50';
+        notification.className = `fixed top-4 right-4 px-6 py-4 rounded-lg shadow-lg z-50 ${
+            type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' :
+            type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' :
+            'bg-blue-100 text-blue-800 border border-blue-200'
+        }`;
         notification.innerHTML = `
             <div class="flex items-center">
-                <i class="fas fa-check-circle mr-3"></i>
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} mr-3"></i>
                 <div>${message}</div>
             </div>
         `;
+        
         document.body.appendChild(notification);
-        setTimeout(() => notification.remove(), 3000);
+        
+        setTimeout(() => {
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
     }
 }
 
 export default SurpriseCreator;
+[file content end]
