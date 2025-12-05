@@ -1,312 +1,424 @@
-<!DOCTYPE html>
-<html lang="fr" class="h-full">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LoveCraft - Créez des surprises digitales</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-        @keyframes pulse-glow {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-        .animate-float { animation: float 3s ease-in-out infinite; }
-        .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .emoji-float {
-            position: absolute;
-            font-size: 2rem;
-            z-index: 1;
-            pointer-events: none;
-        }
-    </style>
-</head>
-<body class="min-h-screen flex flex-col bg-gray-50">
-    <div id="app" class="flex-grow">
-        <!-- Décorations flottantes -->
-        <div class="emoji-float top-10 left-5 animate-float delay-100">❤️</div>
-        <div class="emoji-float top-20 right-10 animate-float delay-300">✨</div>
-        <div class="emoji-float bottom-20 left-10 animate-float delay-500">🎉</div>
-        <div class="emoji-float bottom-10 right-20 animate-pulse-glow delay-700">💖</div>
-        <div class="emoji-float top-1/3 left-1/4 animate-float delay-900">😊</div>
-        <div class="emoji-float top-1/4 right-1/4 animate-float delay-1100">🥰</div>
+import { 
+    auth, database, ref, get, remove, onAuthStateChanged, signOut 
+} from './firebase.js';
 
-        <!-- Navigation -->
-        <nav class="bg-white shadow-sm relative z-10">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 flex items-center">
-                            <div class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center overflow-hidden mr-3 border-2 border-white shadow">
-                                <img src="assets/logo.png" alt="LoveCraft Logo" class="w-full h-full object-cover">
-                            </div>
-                            <span class="text-2xl font-bold text-purple-600">LoveCraft</span>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <a href="#" id="langToggle" class="text-gray-700 hover:text-purple-600 text-sm">
-                            <i class="fas fa-globe mr-1"></i>EN
-                        </a>
-                        <a href="#" id="loginBtn" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">
-                            Connexion
-                        </a>
-                        <a href="#" id="signupBtn" class="bg-purple-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-purple-700">
-                            Inscription
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </nav>
+class DashboardManager {
+    constructor() {
+        this.user = null;
+        this.surprises = [];
+        this.init();
+    }
 
-        <!-- Hero Section -->
-        <div class="gradient-bg relative overflow-hidden">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 relative z-10">
-                <div class="text-center">
-                    <div class="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-6 animate-float">
-                        <div class="w-16 h-16 rounded-full bg-white flex items-center justify-center">
-                            <img src="assets/logo.png" alt="LoveCraft" class="w-12 h-12 object-cover">
-                        </div>
-                    </div>
-                    <h1 class="text-4xl md:text-6xl font-bold text-white mb-6">
-                        Créez des surprises digitales<br>inoubliables
-                    </h1>
-                    <p class="text-xl text-purple-100 mb-10 max-w-3xl mx-auto">
-                        <span class="font-bold">Comme Max pour Eve</span>, créez des déclarations d'amour uniques en quelques minutes.
-                    </p>
-                    <div class="flex flex-col md:flex-row gap-4 justify-center">
-                        <button id="ctaSignup" class="bg-white text-purple-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-purple-50 transition shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                            <i class="fas fa-heart mr-2"></i>Commencer gratuitement
-                        </button>
-                        <a href="story.html" class="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-white/10 transition">
-                            <i class="fas fa-play mr-2"></i>Voir notre histoire
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Features -->
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-gray-800 mb-4">Comment ça marche ?</h2>
-                <p class="text-gray-600 max-w-2xl mx-auto">3 étapes simples pour créer une surprise magique</p>
-            </div>
+    async init() {
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="bg-white p-8 rounded-2xl shadow-lg text-center hover:shadow-xl transition card-hover">
-                    <div class="text-4xl mb-4 text-purple-600">1️⃣</div>
-                    <h3 class="text-xl font-bold text-gray-800 mb-3">Personnalisez</h3>
-                    <p class="text-gray-600">Créez votre message unique avec le nom de votre bien-aimé(e)</p>
-                </div>
-                <div class="bg-white p-8 rounded-2xl shadow-lg text-center hover:shadow-xl transition card-hover">
-                    <div class="text-4xl mb-4 text-pink-600">2️⃣</div>
-                    <h3 class="text-xl font-bold text-gray-800 mb-3">Générez</h3>
-                    <p class="text-gray-600">Obtenez un QR Code et un lien à partager</p>
-                </div>
-                <div class="bg-white p-8 rounded-2xl shadow-lg text-center hover:shadow-xl transition card-hover">
-                    <div class="text-4xl mb-4 text-blue-600">3️⃣</div>
-                    <h3 class="text-xl font-bold text-gray-800 mb-3">Surprenez</h3>
-                    <p class="text-gray-600">Regardez la réaction quand ils découvrent votre surprise</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Stats -->
-        <div class="bg-gradient-to-r from-purple-500 to-pink-500 text-white py-16">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center mb-12">
-                    <h2 class="text-3xl font-bold mb-4">Rejoignez notre communauté d'amoureux</h2>
-                    <p class="text-xl opacity-90">Des milliers de surprises créées avec amour</p>
-                </div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-                    <div>
-                        <div class="text-4xl font-bold mb-2" id="statSurprises">1,247+</div>
-                        <div class="opacity-90">Surprises créées</div>
-                    </div>
-                    <div>
-                        <div class="text-4xl font-bold mb-2" id="statUsers">500+</div>
-                        <div class="opacity-90">Utilisateurs heureux</div>
-                    </div>
-                    <div>
-                        <div class="text-4xl font-bold mb-2" id="statCountries">25+</div>
-                        <div class="opacity-90">Pays</div>
-                    </div>
-                    <div>
-                        <div class="text-4xl font-bold mb-2" id="statSuccess">98%</div>
-                        <div class="opacity-90">Taux de satisfaction</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white mt-auto">
-        <div class="max-w-7xl mx-auto px-4 py-12">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div>
-                    <div class="flex items-center mb-4">
-                        <div class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center overflow-hidden mr-3">
-                            <img src="assets/logo.png" alt="LoveCraft Logo" class="w-full h-full object-cover">
-                        </div>
-                        <span class="text-xl font-bold">LoveCraft</span>
-                    </div>
-                    <p class="text-gray-400">Créez des surprises digitales uniques pour ceux que vous aimez.</p>
-                </div>
-                
-                <div>
-                    <h3 class="font-bold text-lg mb-4">Navigation</h3>
-                    <ul class="space-y-2">
-                        <li><a href="index.html" class="text-gray-400 hover:text-white">Accueil</a></li>
-                        <li><a href="story.html" class="text-gray-400 hover:text-white">Notre histoire</a></li>
-                        <li><a href="#" id="footerLogin" class="text-gray-400 hover:text-white">Connexion</a></li>
-                        <li><a href="#" id="footerSignup" class="text-gray-400 hover:text-white">Inscription</a></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h3 class="font-bold text-lg mb-4">Légal</h3>
-                    <ul class="space-y-2">
-                        <li><a href="legal/terms.html" class="text-gray-400 hover:text-white">Conditions d'utilisation</a></li>
-                        <li><a href="legal/privacy.html" class="text-gray-400 hover:text-white">Politique de confidentialité</a></li>
-                        <li><a href="legal/cookies.html" class="text-gray-400 hover:text-white">Cookies</a></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h3 class="font-bold text-lg mb-4">Contact</h3>
-                    <ul class="space-y-2">
-                        <li><a href="mailto:contact@lovecraft.com" class="text-gray-400 hover:text-white">contact@lovecraft.com</a></li>
-                        <li><a href="#" id="feedbackBtn" class="text-gray-400 hover:text-white">Donnez votre avis</a></li>
-                        <li><a href="#" id="supportBtn" class="text-gray-400 hover:text-white">Support</a></li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="border-t border-gray-700 mt-8 pt-8 text-center">
-                <p class="text-gray-400">© 2025 LoveCraft - Conçu avec ❤️ par Max_Adis</p>
-                <p class="text-gray-500 text-sm mt-2">Inspiré par une histoire vraie d'amour</p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Modals -->
-    <div id="authModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3">
-                <div class="flex justify-end">
-                    <button id="closeModal" class="text-gray-400 hover:text-gray-500">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                
-                <div class="flex border-b mb-6">
-                    <button id="tabLogin" class="flex-1 py-2 text-center font-medium text-purple-600 border-b-2 border-purple-600">
-                        Connexion
-                    </button>
-                    <button id="tabSignup" class="flex-1 py-2 text-center font-medium text-gray-500">
-                        Inscription
-                    </button>
-                </div>
-                
-                <div id="loginForm">
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
-                        <input type="email" id="loginEmail" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="votre@email.com">
-                    </div>
-                    <div class="mb-6">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Mot de passe</label>
-                        <input type="password" id="loginPassword" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="••••••••">
-                        <div class="text-right mt-2">
-                            <button id="forgotPassword" class="text-sm text-purple-600 hover:text-purple-700">Mot de passe oublié ?</button>
-                        </div>
-                    </div>
-                    <div id="loginError" class="text-red-500 text-sm mb-4 hidden"></div>
-                    <button id="submitLogin" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition">
-                        Se connecter
-                    </button>
-                    <div class="text-center my-4">
-                        <span class="text-gray-500">ou</span>
-                    </div>
-                    <button id="googleLogin" class="w-full bg-white border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition flex items-center justify-center">
-                        <img src="https://www.google.com/favicon.ico" class="w-5 h-5 mr-2">
-                        Continuer avec Google
-                    </button>
-                </div>
-                
-                <div id="signupForm" class="hidden">
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
-                        <input type="email" id="signupEmail" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="votre@email.com">
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Mot de passe</label>
-                        <input type="password" id="signupPassword" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="••••••••">
-                        <p class="text-xs text-gray-500 mt-1">Minimum 6 caractères</p>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Confirmer le mot de passe</label>
-                        <input type="password" id="signupConfirm" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="••••••••">
-                    </div>
-                    <div id="signupError" class="text-red-500 text-sm mb-4 hidden"></div>
-                    <button id="submitSignup" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition">
-                        Créer un compte
-                    </button>
-                    <div class="text-center my-4">
-                        <span class="text-gray-500">ou</span>
-                    </div>
-                    <button id="googleSignup" class="w-full bg-white border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition flex items-center justify-center">
-                        <img src="https://www.google.com/favicon.ico" class="w-5 h-5 mr-2">
-                        S'inscrire avec Google
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Forgot Password Modal -->
-    <div id="forgotPasswordModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50 overflow-y-auto">
-        <div class="min-h-screen flex items-center justify-center p-4">
-            <div class="bg-white rounded-xl max-w-md w-full p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-bold text-gray-800">Mot de passe oublié</h3>
-                    <button id="closeForgotModal" class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="mb-4">
-                    <p class="text-gray-600 mb-4">Entrez votre email pour recevoir un lien de réinitialisation :</p>
-                    <input type="email" id="resetEmail" placeholder="votre@email.com" class="w-full px-4 py-2 border rounded-lg mb-4">
-                    <button id="submitReset" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700">
-                        Envoyer le lien
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Scripts -->
-    <script type="module" src="js/auth.js"></script>
-    <script>
-        // Footer interactions
-        document.getElementById('footerLogin')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            document.getElementById('authModal').classList.remove('hidden');
-            document.getElementById('tabLogin').click();
+            this.user = user;
+            this.updateUserInfo();
+            await this.loadUserSurprises();
+            this.updateStats();
+            this.bindEvents();
         });
+    }
+
+    updateUserInfo() {
+        const displayName = this.user.displayName || this.user.email.split('@')[0];
+        document.getElementById('userEmail').textContent = displayName;
         
-        document.getElementById('footerSignup')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            document.getElementById('authModal').classList.remove('hidden');
-            document.getElementById('tabSignup').click();
-        });
-    </script>
-</body>
-</html>
+        // Mettre à jour l'avatar si photo
+        const avatarContainer = document.querySelector('#userMenu .w-8.h-8');
+        if (this.user.photoURL && avatarContainer) {
+            avatarContainer.innerHTML = `<img src="${this.user.photoURL}" class="w-full h-full rounded-full object-cover">`;
+        }
+    }
+
+    async loadUserSurprises() {
+        try {
+            const surprisesRef = ref(database, 'surprises');
+            const snapshot = await get(surprisesRef);
+            
+            this.surprises = [];
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                Object.keys(data).forEach(key => {
+                    const surprise = data[key];
+                    if (surprise.userId === this.user.uid) {
+                        this.surprises.push({
+                            id: key,
+                            ...surprise
+                        });
+                    }
+                });
+            }
+            
+            this.displaySurprises();
+        } catch (error) {
+            console.error('Erreur chargement:', error);
+            this.showNotification('Erreur de chargement', 'error');
+        }
+    }
+
+    displaySurprises() {
+        const tbody = document.getElementById('surprisesTableBody');
+        
+        if (!tbody) return;
+        
+        if (this.surprises.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                        <i class="fas fa-gift text-4xl mb-4 text-gray-300"></i>
+                        <p>Aucune surprise créée</p>
+                        <a href="create.html" class="inline-block mt-4 text-purple-600 hover:text-purple-700">
+                            Créer votre première surprise
+                        </a>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        // Trier par date
+        this.surprises.sort((a, b) => 
+            new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        
+        // Prendre les 5 plus récentes
+        const recentSurprises = this.surprises.slice(0, 5);
+        
+        tbody.innerHTML = recentSurprises.map(surprise => `
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 bg-pink-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-heart text-pink-600"></i>
+                        </div>
+                        <div class="ml-4">
+                            <div class="text-sm font-medium text-gray-900">${surprise.pourQui}</div>
+                            <div class="text-sm text-gray-500">${surprise.deLaPartDe}</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900">${new Date(surprise.createdAt).toLocaleDateString('fr-FR')}</div>
+                    <div class="text-sm text-gray-500">${new Date(surprise.createdAt).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900">${surprise.views || 0} vues</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${surprise.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+                        ${surprise.status === 'active' ? 'Actif' : 'Inactif'}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <a href="../LoveCraft/s/?id=${surprise.id}" target="_blank" class="text-blue-600 hover:text-blue-900 mr-3" title="Voir">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                    <button onclick="dashboard.editSurprise('${surprise.id}')" class="text-purple-600 hover:text-purple-900 mr-3" title="Éditer">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button onclick="dashboard.deleteSurprise('${surprise.id}', '${surprise.pourQui}')" class="text-red-600 hover:text-red-900" title="Supprimer">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    async deleteSurprise(id, name) {
+        if (!confirm(`Supprimer la surprise pour ${name} ?`)) {
+            return;
+        }
+
+        try {
+            await remove(ref(database, 'surprises/' + id));
+            await remove(ref(database, 'users/' + this.user.uid + '/surprises/' + id));
+            
+            this.showNotification('Surprise supprimée', 'success');
+            await this.loadUserSurprises();
+            this.updateStats();
+        } catch (error) {
+            console.error('Erreur suppression:', error);
+            this.showNotification('Erreur lors de la suppression', 'error');
+        }
+    }
+
+    editSurprise(id) {
+        localStorage.setItem('editSurpriseId', id);
+        window.location.href = 'create.html?edit=' + id;
+    }
+
+    updateStats() {
+        const totalSurprises = this.surprises.length;
+        const totalViews = this.surprises.reduce((sum, s) => sum + (s.views || 0), 0);
+        
+        // Calcul du taux de succès
+        let successRate = 0;
+        if (totalSurprises > 0) {
+            const surprisesWithViews = this.surprises.filter(s => (s.views || 0) > 0).length;
+            successRate = Math.round((surprisesWithViews / totalSurprises) * 100);
+        }
+        
+        // Mettre à jour l'interface
+        const totalSurprisesEl = document.getElementById('totalSurprises');
+        const totalViewsEl = document.getElementById('totalViews');
+        const successRateEl = document.getElementById('successRate');
+        
+        if (totalSurprisesEl) totalSurprisesEl.textContent = totalSurprises;
+        if (totalViewsEl) totalViewsEl.textContent = totalViews;
+        if (successRateEl) {
+            successRateEl.textContent = successRate + '%';
+            // Couleur selon le taux
+            if (successRate >= 80) {
+                successRateEl.className = 'text-3xl font-bold text-green-600';
+            } else if (successRate >= 50) {
+                successRateEl.className = 'text-3xl font-bold text-yellow-600';
+            } else {
+                successRateEl.className = 'text-3xl font-bold text-red-600';
+            }
+        }
+    }
+
+    bindEvents() {
+        // Déconnexion
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async () => {
+                try {
+                    await signOut(auth);
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    console.error('Erreur déconnexion:', error);
+                    this.showNotification('Erreur déconnexion', 'error');
+                }
+            });
+        }
+
+        // Bouton templates
+        const templateBtn = document.getElementById('templateBtn');
+        if (templateBtn) {
+            templateBtn.addEventListener('click', () => {
+                this.showTemplatesModal();
+            });
+        }
+
+        // Bouton stats
+        const statsBtn = document.getElementById('statsBtn');
+        if (statsBtn) {
+            statsBtn.addEventListener('click', () => {
+                this.showStatsModal();
+            });
+        }
+
+        // Voir tout
+        const viewAllBtn = document.getElementById('viewAllBtn');
+        if (viewAllBtn) {
+            viewAllBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.showAllSurprises();
+            });
+        }
+    }
+
+    showTemplatesModal() {
+        const templates = [
+            {
+                id: 'romantic',
+                name: 'Romantique Classique',
+                icon: '❤️',
+                description: 'Fleurs, cœurs et poésie',
+                question: 'Qui t\'aime plus que tout au monde ?',
+                message: 'Tu es l\'amour de ma vie, chaque jour avec toi est un cadeau.'
+            },
+            {
+                id: 'geek',
+                name: 'Geek Love',
+                icon: '👨‍💻',
+                description: 'Pour les amoureux de la tech',
+                question: 'Quel est ton bug préféré ? (moi)',
+                message: 'Tu es la meilleure ligne de code de ma vie. Sans toi, tout buggue.'
+            }
+        ];
+        
+        const modalHTML = `
+            <div id="templatesModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+                <div class="bg-white rounded-xl max-w-2xl w-full">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-2xl font-bold text-gray-800">Choisissez un template</h3>
+                            <button onclick="this.parentElement.parentElement.parentElement.classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-4 mb-8">
+                            ${templates.map(template => `
+                                <div class="border border-gray-200 rounded-xl p-6">
+                                    <div class="flex items-start mb-4">
+                                        <div class="text-3xl mr-4">${template.icon}</div>
+                                        <div>
+                                            <h4 class="font-bold text-gray-800">${template.name}</h4>
+                                            <p class="text-sm text-gray-600">${template.description}</p>
+                                        </div>
+                                    </div>
+                                    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                                        <p class="text-sm text-gray-700"><strong>Question :</strong> ${template.question}</p>
+                                    </div>
+                                    <button onclick="localStorage.setItem('selectedTemplate', JSON.stringify(${JSON.stringify(template)})); window.location.href='create.html';" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700">
+                                        <i class="fas fa-magic mr-2"></i>Utiliser ce template
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="text-center">
+                            <a href="create.html" class="bg-gray-100 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-200">
+                                <i class="fas fa-pen mr-2"></i>Créer personnalisé
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Ajouter le modal
+        if (!document.getElementById('templatesModal')) {
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+        
+        document.getElementById('templatesModal').classList.remove('hidden');
+    }
+
+    showStatsModal() {
+        const totalViews = this.surprises.reduce((sum, s) => sum + (s.views || 0), 0);
+        const totalCompletions = this.surprises.reduce((sum, s) => sum + (s.completedViews || 0), 0);
+        const conversionRate = totalViews > 0 ? Math.round((totalCompletions / totalViews) * 100) : 0;
+        
+        const modalHTML = `
+            <div id="statsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+                <div class="bg-white rounded-xl max-w-2xl w-full">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-2xl font-bold text-gray-800">Vos statistiques</h3>
+                            <button onclick="this.parentElement.parentElement.parentElement.classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div class="bg-blue-50 p-4 rounded-xl">
+                                <div class="text-2xl font-bold text-blue-600">${this.surprises.length}</div>
+                                <div class="text-sm text-gray-600">Surprises</div>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-xl">
+                                <div class="text-2xl font-bold text-green-600">${totalViews}</div>
+                                <div class="text-sm text-gray-600">Vues totales</div>
+                            </div>
+                            <div class="bg-purple-50 p-4 rounded-xl">
+                                <div class="text-2xl font-bold text-purple-600">${conversionRate}%</div>
+                                <div class="text-sm text-gray-600">Taux conversion</div>
+                            </div>
+                            <div class="bg-yellow-50 p-4 rounded-xl">
+                                <div class="text-2xl font-bold text-yellow-600">${totalCompletions}</div>
+                                <div class="text-sm text-gray-600">Complétions</div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <p class="text-gray-600 text-sm">Continuez à créer des surprises !</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        if (!document.getElementById('statsModal')) {
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+        
+        document.getElementById('statsModal').classList.remove('hidden');
+    }
+
+    showAllSurprises() {
+        const modalHTML = `
+            <div id="allSurprisesModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+                <div class="bg-white rounded-xl max-w-4xl w-full max-h-[80vh] overflow-y-auto">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-2xl font-bold text-gray-800">Toutes mes surprises (${this.surprises.length})</h3>
+                            <button onclick="this.parentElement.parentElement.parentElement.classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead>
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pour</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vues</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    ${this.surprises.map(surprise => `
+                                        <tr>
+                                            <td class="px-4 py-3">${surprise.pourQui}</td>
+                                            <td class="px-4 py-3">${new Date(surprise.createdAt).toLocaleDateString('fr-FR')}</td>
+                                            <td class="px-4 py-3">${surprise.views || 0}</td>
+                                            <td class="px-4 py-3">
+                                                <a href="../LoveCraft/s/?id=${surprise.id}" target="_blank" class="text-blue-600 hover:text-blue-900 mr-3">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <button onclick="dashboard.deleteSurprise('${surprise.id}', '${surprise.pourQui}')" class="text-red-600 hover:text-red-900">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        if (!document.getElementById('allSurprisesModal')) {
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+        
+        document.getElementById('allSurprisesModal').classList.remove('hidden');
+    }
+
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 px-6 py-4 rounded-lg shadow-lg z-50 ${
+            type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' :
+            type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' :
+            'bg-blue-100 text-blue-800 border border-blue-200'
+        }`;
+        notification.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} mr-3"></i>
+                <div>${message}</div>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+}
+
+// Initialiser
+const dashboard = new DashboardManager();
+window.dashboard = dashboard;
