@@ -1,3 +1,5 @@
+[file name]: firebase.js
+[file content begin]
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 import { 
     getDatabase, 
@@ -8,7 +10,8 @@ import {
     remove,
     query,
     orderByChild,
-    equalTo
+    equalTo,
+    push
 } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
 import { 
     getAuth, 
@@ -28,6 +31,7 @@ import {
     getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-storage.js";
 
+// CONFIGURATION FIREBASE
 const firebaseConfig = {
     apiKey: "AIzaSyB1hcyt4IVDtKcOw2JcVnCcLP5gOvPt4F0",
     authDomain: "lovecraft-web.firebaseapp.com",
@@ -39,16 +43,38 @@ const firebaseConfig = {
     measurementId: "G-L1N4GTS1EL"
 };
 
+// INITIALISATION
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 const googleProvider = new GoogleAuthProvider();
 
+// EXPORTS
 export { 
-    database, auth, storage, googleProvider,
-    ref, set, get, update, remove, query, orderByChild, equalTo,
-    createUserWithEmailAndPassword, signInWithEmailAndPassword,
-    signInWithPopup, sendPasswordResetEmail, updateProfile, signOut, onAuthStateChanged,
-    storageRef, uploadBytes, getDownloadURL
+    app,
+    database, 
+    auth, 
+    storage, 
+    googleProvider,
+    ref, 
+    set, 
+    get, 
+    update, 
+    remove, 
+    push,
+    query, 
+    orderByChild, 
+    equalTo,
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword,
+    signInWithPopup, 
+    sendPasswordResetEmail, 
+    updateProfile, 
+    signOut, 
+    onAuthStateChanged,
+    storageRef, 
+    uploadBytes, 
+    getDownloadURL
 };
+[file content end]
