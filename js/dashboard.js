@@ -1,67 +1,5 @@
-
-import { auth, database, ref, get, onAuthStateChanged, signOut, remove } from './firebase.js';
-
-class DashboardManager {
-    constructor() {
-        this.user = null;
-        this.surprises = [];
-        this.stats = {};
-        this.badges = [];
-        this.init();
-    }
-
-    async init() {
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                window.location.href = 'index.html';
-                return;
-            }
-            
-            this.user = user;
-            await this.loadUserData();
-            this.render();
-            this.bindEvents();
-            this.setupMobileMenu();
-        });
-    }
-
-    async loadUserData() {
-        try {
-            console.log('🔍 Chargement des données pour:', this.user.email);
-            
-            // Charger TOUTES les surprises
-            const surprisesRef = ref(database, 'surprises');
-            const snapshot = await get(surprisesRef);
-            
-            this.surprises = [];
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-                
-                // Filtrer seulement les surprises de cet utilisateur
-                Object.keys(data).forEach(key => {
-                    const surprise = data[key];
-                    if (surprise.userId === this.user.uid) {
-                        this.surprises.push({
-                            id: key,
-                            ...surprise
-                        });
-                    }
-                });
-                
-                // Trier par date (plus récent d'abord)
-                this.surprises.sort((a, b) => {
-                    return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
-                });
-                
-                console.log(`✅ ${this.surprises.length} surprises trouvées`);
-            }
-            
-            // Calculer les stats
-            this.calculateStats();
-            
-            // Calculer les badges
-            this.calculateBadges();
-            
+[file name]: dashboard.js (suite et fin)
+[file content begin]
         } catch (error) {
             console.error('❌ Erreur chargement données:', error);
             this.showError('Impossible de charger les données');
@@ -276,35 +214,6 @@ class DashboardManager {
                         `).join('')}
                     </div>
                 </div>
-                
-                <!-- Conseils -->
-                <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-100">
-                    <h3 class="text-lg font-bold text-purple-800 mb-4">
-                        <i class="fas fa-lightbulb mr-2"></i>Conseils pour vos surprises
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="bg-white/70 p-4 rounded-lg">
-                            <div class="text-purple-600 text-xl mb-2">💌</div>
-                            <p class="font-medium text-gray-800">Envoyez par SMS</p>
-                            <p class="text-sm text-gray-600">Le lien s'ouvre directement sur mobile</p>
-                        </div>
-                        <div class="bg-white/70 p-4 rounded-lg">
-                            <div class="text-purple-600 text-xl mb-2">🎨</div>
-                            <p class="font-medium text-gray-800">Utilisez des thèmes différents</p>
-                            <p class="text-sm text-gray-600">Adaptez la surprise à la personne</p>
-                        </div>
-                        <div class="bg-white/70 p-4 rounded-lg">
-                            <div class="text-purple-600 text-xl mb-2">⏰</div>
-                            <p class="font-medium text-gray-800">Planifiez l'envoi</p>
-                            <p class="text-sm text-gray-600">Envoyez à une date spéciale</p>
-                        </div>
-                        <div class="bg-white/70 p-4 rounded-lg">
-                            <div class="text-purple-600 text-xl mb-2">🤫</div>
-                            <p class="font-medium text-gray-800">Ajoutez un indice</p>
-                            <p class="text-sm text-gray-600">Rendez la découverte plus amusante</p>
-                        </div>
-                    </div>
-                </div>
             </div>
         `;
     }
@@ -432,10 +341,9 @@ class DashboardManager {
     }
 
     setupMobileMenu() {
-        // Ajouter photo profil dans la nav
+        // Mobile: montrer seulement photo profil
         const navRight = document.querySelector('.flex.items-center.space-x-4');
         if (navRight && window.innerWidth < 768) {
-            // Mobile: montrer seulement photo profil
             const userPhoto = this.user.photoURL ? 
                 `<img src="${this.user.photoURL}" class="w-10 h-10 rounded-full border-2 border-purple-300 object-cover" onerror="this.style.display='none'">` :
                 `<div class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center text-white">
@@ -554,6 +462,36 @@ class DashboardManager {
         } catch (error) {
             console.error('Erreur suppression:', error);
             this.showError('❌ Erreur lors de la suppression');
+        }
+    }
+
+    async loadSurprisesFromDatabase() {
+        try {
+            const surprisesRef = ref(database, 'surprises');
+            const snapshot = await get(surprisesRef);
+            
+            this.surprises = [];
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                
+                // Filtrer seulement les surprises de cet utilisateur
+                Object.keys(data).forEach(key => {
+                    const surprise = data[key];
+                    if (surprise.userId === this.user.uid) {
+                        this.surprises.push({
+                            id: key,
+                            ...surprise
+                        });
+                    }
+                });
+                
+                // Trier par date (plus récent d'abord)
+                this.surprises.sort((a, b) => {
+                    return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+                });
+            }
+        } catch (error) {
+            console.error('Erreur chargement surprises:', error);
         }
     }
 
@@ -681,4 +619,5 @@ class DashboardManager {
 }
 
 // Démarrer l'application
-
+new DashboardManager();
+[file content end]
