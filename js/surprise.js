@@ -1,4 +1,3 @@
-
 import { database, ref, get, update } from './firebase.js';
 
 class SurpriseViewer {
@@ -36,7 +35,6 @@ class SurpriseViewer {
                     views: currentViews + 1
                 });
                 
-                console.log('✅ Surprise chargée:', this.surprise);
             } else {
                 this.showError('Cette surprise n\'existe plus');
             }
@@ -88,10 +86,18 @@ class SurpriseViewer {
                     ${this.renderStep()}
                 </div>
                 
-                <!-- Bouton partage social -->
-                ${this.step === 3 ? this.renderShareButtons() : ''}
+                <!-- Bouton partage social (apparaît seulement à l'étape 3) -->
+                ${this.step === 3 ? this.renderShareSection() : ''}
             </div>
         `;
+        
+        // Pour l'étape 3, on attend que le DOM soit prêt
+        if (this.step === 3) {
+            setTimeout(() => {
+                this.startRevealAnimation();
+                this.playRomanticSound();
+            }, 100);
+        }
     }
 
     renderStep() {
@@ -156,7 +162,7 @@ class SurpriseViewer {
             return `
                 <div class="text-center">
                     <div id="countdown" class="hidden">
-                        <div class="text-8xl mb-6">3</div>
+                        <div class="text-8xl mb-6 animate-pulse">3</div>
                         <p class="text-xl">Préparez-vous...</p>
                     </div>
                     
@@ -165,9 +171,9 @@ class SurpriseViewer {
                         <h1 class="text-3xl font-bold mb-2">Félicitations ${this.userName} !</h1>
                         <p class="opacity-90 mb-6">Voici votre message secret</p>
                         
-                        <div class="bg-white/20 p-6 rounded-xl mb-8 animate-pulse">
+                        <div class="bg-white/20 p-6 rounded-xl mb-8">
                             <p class="text-lg mb-3">Message de <span class="font-bold">${this.surprise.deLaPartDe}</span> :</p>
-                            <p class="text-2xl italic font-semibold animate-flash">
+                            <p class="text-2xl italic font-semibold" id="finalMessage">
                                 "${this.surprise.messageFinal}"
                             </p>
                         </div>
@@ -183,6 +189,11 @@ class SurpriseViewer {
                                 <i class="fas fa-heart mr-2"></i>Créer une surprise
                             </a>
                             
+                            <button id="shareStoryBtn" 
+                                    class="block w-full bg-white/30 hover:bg-white/40 px-6 py-3 rounded-lg font-bold transition">
+                                <i class="fas fa-plus-circle mr-2"></i>Créer une Story Instagram
+                            </button>
+                            
                             <button id="shareSurpriseBtn" 
                                     class="block w-full bg-white/30 hover:bg-white/40 px-6 py-3 rounded-lg font-bold transition">
                                 <i class="fas fa-share-alt mr-2"></i>Partager cette surprise
@@ -194,23 +205,23 @@ class SurpriseViewer {
         }
     }
 
-    renderShareButtons() {
+    renderShareSection() {
         return `
             <div class="mt-6 bg-white/10 rounded-xl p-6">
                 <h3 class="font-bold text-lg mb-4 text-center">
-                    <i class="fas fa-share-alt mr-2"></i>Partagez l'amour
+                    <i class="fas fa-share-alt mr-2"></i>Partagez l'amour ❤️
                 </h3>
                 <div class="grid grid-cols-4 gap-3">
-                    <button class="social-share bg-gradient-to-r from-pink-500 to-purple-500 text-white p-3 rounded-lg hover:opacity-90" data-platform="whatsapp">
+                    <button class="social-share bg-gradient-to-r from-pink-500 to-purple-500 text-white p-3 rounded-lg hover:opacity-90 transition" data-platform="whatsapp">
                         <i class="fab fa-whatsapp text-xl"></i>
                     </button>
-                    <button class="social-share bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 rounded-lg hover:opacity-90" data-platform="facebook">
+                    <button class="social-share bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 rounded-lg hover:opacity-90 transition" data-platform="facebook">
                         <i class="fab fa-facebook text-xl"></i>
                     </button>
-                    <button class="social-share bg-gradient-to-r from-pink-400 to-red-500 text-white p-3 rounded-lg hover:opacity-90" data-platform="instagram">
+                    <button class="social-share bg-gradient-to-r from-pink-400 to-red-500 text-white p-3 rounded-lg hover:opacity-90 transition" data-platform="instagram">
                         <i class="fab fa-instagram text-xl"></i>
                     </button>
-                    <button class="social-share bg-gradient-to-r from-gray-800 to-black text-white p-3 rounded-lg hover:opacity-90" data-platform="copy">
+                    <button class="social-share bg-gradient-to-r from-gray-800 to-black text-white p-3 rounded-lg hover:opacity-90 transition" data-platform="copy">
                         <i class="fas fa-copy text-xl"></i>
                     </button>
                 </div>
@@ -260,13 +271,18 @@ class SurpriseViewer {
         }
         
         if (this.step === 3) {
-            // Jouer son piano romantique
-            this.playRomanticSound();
-            
             // Animation de révélations
             this.startRevealAnimation();
             
-            // Bouton partage
+            // Bouton Story Instagram - FONCTIONNEL
+            const shareStoryBtn = document.getElementById('shareStoryBtn');
+            if (shareStoryBtn) {
+                shareStoryBtn.addEventListener('click', () => {
+                    this.createInstagramStory();
+                });
+            }
+            
+            // Bouton partage général - FONCTIONNEL
             const shareBtn = document.getElementById('shareSurpriseBtn');
             if (shareBtn) {
                 shareBtn.addEventListener('click', () => {
@@ -274,13 +290,15 @@ class SurpriseViewer {
                 });
             }
             
-            // Boutons sociaux
-            document.querySelectorAll('.social-share').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const platform = e.currentTarget.dataset.platform;
-                    this.shareSurprise(platform);
+            // Boutons sociaux - FONCTIONNEL
+            setTimeout(() => {
+                document.querySelectorAll('.social-share').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const platform = e.currentTarget.dataset.platform;
+                        this.shareSurprise(platform);
+                    });
                 });
-            });
+            }, 300);
         }
     }
 
@@ -338,7 +356,7 @@ class SurpriseViewer {
             let count = 3;
             const countdownInterval = setInterval(() => {
                 countdownEl.innerHTML = `
-                    <div class="text-8xl mb-6 animate-countdown">${count}</div>
+                    <div class="text-8xl mb-6 animate-pulse">${count}</div>
                     <p class="text-xl">Préparez-vous...</p>
                 `;
                 
@@ -351,26 +369,29 @@ class SurpriseViewer {
                     
                     // Jouer son après révélation
                     this.playRomanticSound();
+                    this.bindEvents();
                 }
             }, 1000);
         }
     }
 
     startRevealAnimation() {
-        // Animation flash
-        setTimeout(() => {
-            const messageEl = document.querySelector('.animate-flash');
-            if (messageEl) {
+        // Animation flash sur le message
+        const messageEl = document.getElementById('finalMessage');
+        if (messageEl) {
+            setTimeout(() => {
+                messageEl.classList.add('animate-flash');
                 messageEl.style.animation = 'flash 0.5s ease-in-out 3';
-            }
-        }, 500);
+            }, 500);
+        }
     }
 
     playRomanticSound() {
         try {
             const audio = document.getElementById('romanticSound');
             if (audio) {
-                audio.volume = 0.5;
+                audio.volume = 0.3;
+                audio.currentTime = 0;
                 audio.play().catch(e => {
                     console.log('Son automatique bloqué, clic requis');
                 });
@@ -378,6 +399,111 @@ class SurpriseViewer {
         } catch (error) {
             console.log('Erreur lecture audio:', error);
         }
+    }
+
+    createInstagramStory() {
+        // Créer un canvas pour la story Instagram
+        const canvas = document.createElement('canvas');
+        canvas.width = 1080;
+        canvas.height = 1920;
+        const ctx = canvas.getContext('2d');
+        
+        // Fond gradient selon le thème
+        let gradient;
+        switch(this.surprise.theme) {
+            case 'geek':
+                gradient = ctx.createLinearGradient(0, 0, 1080, 1920);
+                gradient.addColorStop(0, '#3b82f6');
+                gradient.addColorStop(1, '#1e40af');
+                break;
+            case 'fun':
+                gradient = ctx.createLinearGradient(0, 0, 1080, 1920);
+                gradient.addColorStop(0, '#f59e0b');
+                gradient.addColorStop(1, '#d97706');
+                break;
+            case 'classique':
+                gradient = ctx.createLinearGradient(0, 0, 1080, 1920);
+                gradient.addColorStop(0, '#6b7280');
+                gradient.addColorStop(1, '#374151');
+                break;
+            default: // romantique
+                gradient = ctx.createLinearGradient(0, 0, 1080, 1920);
+                gradient.addColorStop(0, '#ec4899');
+                gradient.addColorStop(1, '#db2777');
+        }
+        
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 1080, 1920);
+        
+        // Logo LoveCraft en haut
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 72px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('LoveCraft', 540, 200);
+        
+        // Cœur
+        ctx.font = '100px Arial';
+        ctx.fillText('❤️', 540, 320);
+        
+        // Message principal
+        ctx.font = 'bold 64px Arial';
+        ctx.fillText('J\'ai reçu une', 540, 500);
+        ctx.fillText('surprise magique !', 540, 600);
+        
+        // Message personnalisé
+        ctx.font = 'italic 52px Arial';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        
+        // Découper le message en lignes
+        const message = `"${this.surprise.messageFinal}"`;
+        const maxWidth = 900;
+        const lineHeight = 70;
+        let y = 750;
+        
+        let words = message.split(' ');
+        let line = '';
+        
+        for (let n = 0; n < words.length; n++) {
+            let testLine = line + words[n] + ' ';
+            let metrics = ctx.measureText(testLine);
+            let testWidth = metrics.width;
+            
+            if (testWidth > maxWidth && n > 0) {
+                ctx.fillText(line, 540, y);
+                line = words[n] + ' ';
+                y += lineHeight;
+            } else {
+                line = testLine;
+            }
+        }
+        ctx.fillText(line, 540, y);
+        
+        // Signature
+        ctx.font = 'bold 48px Arial';
+        ctx.fillText(`- ${this.surprise.deLaPartDe}`, 540, y + 100);
+        
+        // QR Code placehold (explication)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.fillRect(290, 1100, 500, 500);
+        
+        ctx.fillStyle = 'white';
+        ctx.font = '40px Arial';
+        ctx.fillText('Scanne pour créer', 540, 1350);
+        ctx.fillText('ta propre surprise', 540, 1400);
+        
+        // Watermark en bas
+        ctx.font = '32px Arial';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.fillText('Créé avec LoveCraft', 540, 1850);
+        ctx.fillText('lovecraft.com', 540, 1900);
+        
+        // Télécharger l'image
+        const link = document.createElement('a');
+        link.download = `LoveCraft_Story_${this.userName}.jpg`;
+        link.href = canvas.toDataURL('image/jpeg', 0.9);
+        link.click();
+        
+        this.showNotification('📸 Story téléchargée ! Partagez-la sur Instagram.');
     }
 
     showShareModal() {
@@ -406,32 +532,38 @@ class SurpriseViewer {
                     </div>
                     
                     <div class="grid grid-cols-2 gap-3">
-                        <button class="share-platform bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-lg hover:opacity-90" data-platform="whatsapp">
+                        <button class="share-platform bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-lg hover:opacity-90 transition" data-platform="whatsapp">
                             <div class="text-2xl mb-2">
                                 <i class="fab fa-whatsapp"></i>
                             </div>
                             <div class="font-bold">WhatsApp</div>
                         </button>
                         
-                        <button class="share-platform bg-gradient-to-r from-blue-500 to-blue-700 text-white p-4 rounded-lg hover:opacity-90" data-platform="facebook">
+                        <button class="share-platform bg-gradient-to-r from-blue-500 to-blue-700 text-white p-4 rounded-lg hover:opacity-90 transition" data-platform="facebook">
                             <div class="text-2xl mb-2">
                                 <i class="fab fa-facebook"></i>
                             </div>
                             <div class="font-bold">Facebook</div>
                         </button>
                         
-                        <button class="share-platform bg-gradient-to-r from-pink-400 to-red-500 text-white p-4 rounded-lg hover:opacity-90" data-platform="instagram">
+                        <button class="share-platform bg-gradient-to-r from-pink-400 to-red-500 text-white p-4 rounded-lg hover:opacity-90 transition" data-platform="instagram">
                             <div class="text-2xl mb-2">
                                 <i class="fab fa-instagram"></i>
                             </div>
                             <div class="font-bold">Instagram</div>
                         </button>
                         
-                        <button class="share-platform bg-gradient-to-r from-purple-500 to-pink-500 text-white p-4 rounded-lg hover:opacity-90" data-platform="copy">
+                        <button class="share-platform bg-gradient-to-r from-purple-500 to-pink-500 text-white p-4 rounded-lg hover:opacity-90 transition" data-platform="copy">
                             <div class="text-2xl mb-2">
                                 <i class="fas fa-copy"></i>
                             </div>
                             <div class="font-bold">Copier</div>
+                        </button>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button id="createStoryBtn" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-bold hover:opacity-90 transition w-full">
+                            <i class="fas fa-plus-circle mr-2"></i>Créer une Story Instagram
                         </button>
                     </div>
                     
@@ -449,6 +581,12 @@ class SurpriseViewer {
         
         // Fermer modal
         shareModal.querySelector('.close-share-modal').addEventListener('click', () => {
+            shareModal.remove();
+        });
+        
+        // Créer Story Instagram
+        shareModal.querySelector('#createStoryBtn').addEventListener('click', () => {
+            this.createInstagramStory();
             shareModal.remove();
         });
         
@@ -478,28 +616,32 @@ class SurpriseViewer {
         switch(platform) {
             case 'whatsapp':
                 shareUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                window.open(shareUrl, '_blank');
                 break;
                 
             case 'facebook':
                 shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(message)}`;
+                window.open(shareUrl, '_blank', 'width=600,height=400');
                 break;
                 
             case 'instagram':
-                // Instagram ne permet pas de partage direct
-                navigator.clipboard.writeText(url).then(() => {
-                    this.showNotification('✅ Lien copié ! Collez-le dans votre story Instagram');
-                });
-                return;
+                this.createInstagramStory();
+                break;
                 
             case 'copy':
                 navigator.clipboard.writeText(message).then(() => {
                     this.showNotification('✅ Message copié dans le presse-papier !');
+                }).catch(() => {
+                    // Fallback
+                    const tempInput = document.createElement('input');
+                    tempInput.value = message;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+                    this.showNotification('✅ Message copié !');
                 });
-                return;
-        }
-        
-        if (shareUrl) {
-            window.open(shareUrl, '_blank', 'width=600,height=400');
+                break;
         }
     }
 
@@ -537,4 +679,3 @@ class SurpriseViewer {
 document.addEventListener('DOMContentLoaded', () => {
     new SurpriseViewer();
 });
-
