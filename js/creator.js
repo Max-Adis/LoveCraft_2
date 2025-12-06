@@ -1,4 +1,3 @@
-
 import { database, auth, ref, set, get, update } from './firebase.js';
 
 class SurpriseCreator {
@@ -7,7 +6,6 @@ class SurpriseCreator {
         this.user = auth.currentUser;
         this.step = 1;
         
-        // Récupérer nom Google depuis localStorage ou Firebase
         const googleName = localStorage.getItem('googleUserName') || this.user.displayName || '';
         
         this.surprise = {
@@ -51,7 +49,6 @@ class SurpriseCreator {
                 const data = snapshot.val();
                 this.surpriseId = id;
                 this.surprise = { ...data };
-                console.log('Surprise chargée pour édition:', this.surprise);
             }
         } catch (error) {
             console.error('Erreur chargement:', error);
@@ -62,426 +59,468 @@ class SurpriseCreator {
         const app = document.getElementById('app');
         
         if (this.step === 1) {
-            app.innerHTML = `
-                <div class="max-w-4xl mx-auto">
-                    <div class="mb-8">
-                        <a href="dashboard.html" class="inline-flex items-center text-purple-600 hover:text-purple-700 mb-6">
-                            <i class="fas fa-arrow-left mr-2"></i>
-                            Retour au dashboard
-                        </a>
-                        <h1 class="text-3xl font-bold text-gray-800 mb-2">
-                            <i class="fas fa-magic text-purple-600 mr-2"></i>
-                            ${this.editMode ? 'Modifier votre surprise' : 'Créez votre surprise'}
-                        </h1>
-                        <p class="text-gray-600">
-                            Personnalisez chaque détail pour créer un moment unique
-                        </p>
-                    </div>
+            app.innerHTML = this.renderStep1();
+        } else if (this.step === 2) {
+            app.innerHTML = this.renderStep2();
+            
+            // Générer QR Code avec délai pour laisser le DOM se charger
+            setTimeout(() => {
+                this.generateQRCode();
+            }, 100);
+        }
+    }
 
-                    <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8">
-                        <div class="space-y-8">
-                            <!-- Section 1: Pour qui -->
-                            <div class="space-y-4">
-                                <h2 class="text-xl font-bold text-gray-800">
-                                    <i class="fas fa-user-check mr-2 text-purple-600"></i>
-                                    Pour qui est cette surprise ?
-                                </h2>
-                                <div class="grid md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                                            Nom de la personne *
-                                        </label>
-                                        <input 
-                                            id="pourQui" 
-                                            type="text" 
-                                            value="${this.surprise.pourQui}"
-                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-800"
-                                            placeholder="Ex: Eve"
-                                            required
-                                            style="color: #1f2937; background: white;"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                                            Votre nom *
-                                        </label>
-                                        <input 
-                                            id="deLaPartDe" 
-                                            type="text" 
-                                            value="${this.surprise.deLaPartDe}"
-                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-800"
-                                            placeholder="Ex: Max"
-                                            required
-                                            style="color: #1f2937; background: white;"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
+    renderStep1() {
+        return `
+            <div class="max-w-4xl mx-auto">
+                <div class="mb-8">
+                    <a href="dashboard.html" class="inline-flex items-center text-purple-600 hover:text-purple-700 mb-6">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Retour au dashboard
+                    </a>
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                        <i class="fas fa-magic text-purple-600 mr-2"></i>
+                        ${this.editMode ? 'Modifier votre surprise' : 'Créez votre surprise'}
+                    </h1>
+                    <p class="text-gray-600">
+                        Personnalisez chaque détail pour créer un moment unique
+                    </p>
+                </div>
 
-                            <!-- Section 2: Question -->
-                            <div class="space-y-4">
-                                <h2 class="text-xl font-bold text-gray-800">
-                                    <i class="fas fa-question-circle mr-2 text-blue-600"></i>
-                                    Question personnalisée
-                                </h2>
+                <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8">
+                    <div class="space-y-8">
+                        <!-- Section 1: Pour qui -->
+                        <div class="space-y-4">
+                            <h2 class="text-xl font-bold text-gray-800">
+                                <i class="fas fa-user-check mr-2 text-purple-600"></i>
+                                Pour qui est cette surprise ?
+                            </h2>
+                            <div class="grid md:grid-cols-2 gap-6">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        Question à poser
+                                        Nom de la personne *
                                     </label>
                                     <input 
-                                        id="question1" 
+                                        id="pourQui" 
                                         type="text" 
-                                        value="${this.surprise.question1}"
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800"
-                                        placeholder="Ex: Qui t'aime plus que tout ?"
+                                        value="${this.surprise.pourQui}"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-800"
+                                        placeholder="Ex: Eve"
+                                        required
                                         style="color: #1f2937; background: white;"
                                     />
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        Réponse attendue
+                                        Votre nom *
                                     </label>
                                     <input 
-                                        id="reponse1" 
+                                        id="deLaPartDe" 
                                         type="text" 
-                                        value="${this.surprise.reponse1}"
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800"
-                                        placeholder="Ex: Max (sera utilisé comme indice)"
+                                        value="${this.surprise.deLaPartDe}"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-800"
+                                        placeholder="Ex: Max"
+                                        required
                                         style="color: #1f2937; background: white;"
                                     />
-                                    <p class="text-sm text-gray-500 mt-2">
-                                        <i class="fas fa-info-circle mr-1"></i>
-                                        Cette réponse servira d'indice si la personne se trompe
-                                    </p>
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Section 3: Message -->
-                            <div class="space-y-4">
-                                <h2 class="text-xl font-bold text-gray-800">
-                                    <i class="fas fa-heart mr-2 text-pink-600"></i>
-                                    Message final
-                                </h2>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        Votre message d'amour
-                                    </label>
-                                    <textarea 
-                                        id="messageFinal"
-                                        rows="5"
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-800"
-                                        placeholder="Écrivez votre message le plus touchant..."
-                                        style="color: #1f2937; background: white;"
-                                    >${this.surprise.messageFinal}</textarea>
-                                    <div class="flex justify-between mt-2">
-                                        <p class="text-sm text-gray-500">
-                                            Ce message sera révélé à la fin de la surprise
-                                        </p>
-                                        <span id="charCount" class="text-sm text-gray-500">${this.surprise.messageFinal.length}/500</span>
-                                    </div>
-                                </div>
+                        <!-- Section 2: Question -->
+                        <div class="space-y-4">
+                            <h2 class="text-xl font-bold text-gray-800">
+                                <i class="fas fa-question-circle mr-2 text-blue-600"></i>
+                                Question personnalisée
+                            </h2>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Question à poser
+                                </label>
+                                <input 
+                                    id="question1" 
+                                    type="text" 
+                                    value="${this.surprise.question1}"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800"
+                                    placeholder="Ex: Qui t'aime plus que tout ?"
+                                    style="color: #1f2937; background: white;"
+                                />
                             </div>
-
-                            <!-- Section 4: Thème -->
-                            <div class="space-y-4">
-                                <h2 class="text-xl font-bold text-gray-800">
-                                    <i class="fas fa-palette mr-2 text-purple-600"></i>
-                                    Choisissez un thème
-                                </h2>
-                                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                    <button data-theme="romantique" class="p-4 rounded-lg border-2 ${this.surprise.theme === 'romantique' ? 'border-pink-500 bg-pink-50' : 'border-gray-200 hover:border-pink-300'} transition">
-                                        <div class="text-2xl mb-2">❤️</div>
-                                        <span class="font-medium">Romantique</span>
-                                    </button>
-                                    <button data-theme="geek" class="p-4 rounded-lg border-2 ${this.surprise.theme === 'geek' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'} transition">
-                                        <div class="text-2xl mb-2">👨‍💻</div>
-                                        <span class="font-medium">Geek</span>
-                                    </button>
-                                    <button data-theme="fun" class="p-4 rounded-lg border-2 ${this.surprise.theme === 'fun' ? 'border-yellow-500 bg-yellow-50' : 'border-gray-200 hover:border-yellow-300'} transition">
-                                        <div class="text-2xl mb-2">😄</div>
-                                        <span class="font-medium">Fun</span>
-                                    </button>
-                                    <button data-theme="classique" class="p-4 rounded-lg border-2 ${this.surprise.theme === 'classique' ? 'border-gray-500 bg-gray-50' : 'border-gray-200 hover:border-gray-300'} transition">
-                                        <div class="text-2xl mb-2">🎩</div>
-                                        <span class="font-medium">Classique</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Bouton création -->
-                            <div class="pt-6 border-t border-gray-200">
-                                <button id="createBtn" class="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-lg hover:opacity-90 transition shadow-lg">
-                                    <i class="fas fa-${this.editMode ? 'save' : 'sparkles'} mr-2"></i>
-                                    ${this.editMode ? 'Mettre à jour la surprise' : 'Créer ma surprise'}
-                                </button>
-                                <p class="text-center text-sm text-gray-500 mt-4">
-                                    <i class="fas fa-shield-alt mr-1"></i>
-                                    Votre surprise sera sauvegardée dans votre espace personnel
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Réponse attendue
+                                </label>
+                                <input 
+                                    id="reponse1" 
+                                    type="text" 
+                                    value="${this.surprise.reponse1}"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800"
+                                    placeholder="Ex: Max (sera utilisé comme indice)"
+                                    style="color: #1f2937; background: white;"
+                                />
+                                <p class="text-sm text-gray-500 mt-2">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Cette réponse servira d'indice si la personne se trompe
                                 </p>
                             </div>
                         </div>
-                    </div>
-                </div>
-            `;
-            
-        } else if (this.step === 2) {
-            app.innerHTML = `
-                <div class="max-w-4xl mx-auto">
-                    <div class="mb-8">
-                        <a href="dashboard.html" class="inline-flex items-center text-purple-600 hover:text-purple-700 mb-6">
-                            <i class="fas fa-arrow-left mr-2"></i>
-                            Retour au dashboard
-                        </a>
-                    </div>
 
-                    <div class="text-center mb-8">
-                        <div class="text-5xl mb-4 animate-bounce">🎉</div>
-                        <h1 class="text-3xl font-bold text-gray-800 mb-4">
-                            ${this.editMode ? 'Surprise mise à jour !' : 'Félicitations !'}
-                        </h1>
-                        <p class="text-gray-600">
-                            Votre surprise "<span class="font-semibold">${this.surprise.pourQui}</span>" a été ${this.editMode ? 'mise à jour' : 'créée'} avec succès.
-                        </p>
-                    </div>
-
-                    <!-- QR Code -->
-                    <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
-                        <div class="text-center">
-                            <h2 class="text-xl font-bold text-gray-800 mb-6">
-                                <i class="fas fa-qrcode mr-2 text-purple-600"></i>
-                                QR Code de votre surprise
+                        <!-- Section 3: Message -->
+                        <div class="space-y-4">
+                            <h2 class="text-xl font-bold text-gray-800">
+                                <i class="fas fa-heart mr-2 text-pink-600"></i>
+                                Message final
                             </h2>
-                            <div id="qrCode" class="inline-block p-6 bg-gray-50 rounded-xl mb-6 qr-appear">
-                                <!-- QR Code généré ici -->
-                                <div class="text-center text-gray-500">
-                                    <i class="fas fa-spinner fa-spin text-3xl mb-2"></i>
-                                    <p>Génération du QR Code...</p>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Votre message d'amour
+                                </label>
+                                <textarea 
+                                    id="messageFinal"
+                                    rows="5"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-800"
+                                    placeholder="Écrivez votre message le plus touchant..."
+                                    style="color: #1f2937; background: white;"
+                                >${this.surprise.messageFinal}</textarea>
+                                <div class="flex justify-between mt-2">
+                                    <p class="text-sm text-gray-500">
+                                        Ce message sera révélé à la fin de la surprise
+                                    </p>
+                                    <span id="charCount" class="text-sm text-gray-500">${this.surprise.messageFinal.length}/500</span>
                                 </div>
                             </div>
-                            <div class="mt-6 space-x-4">
-                                <button id="downloadQRBtn" class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-lg font-bold hover:opacity-90 transition shadow-md">
-                                    <i class="fas fa-download mr-2"></i>Télécharger JPG
+                        </div>
+
+                        <!-- Section 4: Thème -->
+                        <div class="space-y-4">
+                            <h2 class="text-xl font-bold text-gray-800">
+                                <i class="fas fa-palette mr-2 text-purple-600"></i>
+                                Choisissez un thème
+                            </h2>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <button data-theme="romantique" class="p-4 rounded-lg border-2 ${this.surprise.theme === 'romantique' ? 'border-pink-500 bg-pink-50' : 'border-gray-200 hover:border-pink-300'} transition">
+                                    <div class="text-2xl mb-2">❤️</div>
+                                    <span class="font-medium">Romantique</span>
                                 </button>
-                                <button id="shareQRBtn" class="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-6 py-3 rounded-lg font-bold hover:opacity-90 transition shadow-md">
-                                    <i class="fas fa-share-alt mr-2"></i>Partager sur réseaux
+                                <button data-theme="geek" class="p-4 rounded-lg border-2 ${this.surprise.theme === 'geek' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'} transition">
+                                    <div class="text-2xl mb-2">👨‍💻</div>
+                                    <span class="font-medium">Geek</span>
+                                </button>
+                                <button data-theme="fun" class="p-4 rounded-lg border-2 ${this.surprise.theme === 'fun' ? 'border-yellow-500 bg-yellow-50' : 'border-gray-200 hover:border-yellow-300'} transition">
+                                    <div class="text-2xl mb-2">😄</div>
+                                    <span class="font-medium">Fun</span>
+                                </button>
+                                <button data-theme="classique" class="p-4 rounded-lg border-2 ${this.surprise.theme === 'classique' ? 'border-gray-500 bg-gray-50' : 'border-gray-200 hover:border-gray-300'} transition">
+                                    <div class="text-2xl mb-2">🎩</div>
+                                    <span class="font-medium">Classique</span>
                                 </button>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Lien de partage -->
-                    <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
-                        <h2 class="text-xl font-bold text-gray-800 mb-4">
-                            <i class="fas fa-link mr-2 text-blue-600"></i>
-                            Lien de partage
-                        </h2>
-                        <div class="flex flex-col md:flex-row gap-2 mb-4">
-                            <input 
-                                type="text" 
-                                id="surpriseUrl"
-                                value="${window.location.origin}/LoveCraft/s/?id=${this.surpriseId}"
-                                readonly
-                                class="flex-grow px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800"
-                                style="color: #1f2937;"
-                            />
-                            <button id="copyLinkBtn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                                <i class="fas fa-copy mr-2"></i>Copier
+                        <!-- Bouton création -->
+                        <div class="pt-6 border-t border-gray-200">
+                            <button id="createBtn" class="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-lg hover:opacity-90 transition shadow-lg">
+                                <i class="fas fa-${this.editMode ? 'save' : 'sparkles'} mr-2"></i>
+                                ${this.editMode ? 'Mettre à jour la surprise' : 'Créer ma surprise'}
                             </button>
-                        </div>
-                        <p class="text-sm text-gray-500">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            Partagez ce lien par message, email ou réseaux sociaux
-                        </p>
-                    </div>
-
-                    <!-- Partage social -->
-                    <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-8 mb-8 border border-purple-200">
-                        <h2 class="text-xl font-bold text-gray-800 mb-4">
-                            <i class="fas fa-share-alt mr-2 text-purple-600"></i>
-                            Partagez votre surprise
-                        </h2>
-                        <p class="text-gray-600 mb-6">Créez une story Instagram/TikTok/WhatsApp avec votre QR Code personnalisé :</p>
-                        
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                            <button class="share-social-btn bg-gradient-to-r from-pink-500 to-purple-500 text-white p-4 rounded-xl text-center hover:opacity-90 transition" data-platform="instagram">
-                                <div class="text-3xl mb-2">
-                                    <i class="fab fa-instagram"></i>
-                                </div>
-                                <div class="font-bold">Instagram</div>
-                                <div class="text-sm opacity-90">Story</div>
-                            </button>
-                            
-                            <button class="share-social-btn bg-gradient-to-r from-blue-400 to-blue-600 text-white p-4 rounded-xl text-center hover:opacity-90 transition" data-platform="facebook">
-                                <div class="text-3xl mb-2">
-                                    <i class="fab fa-facebook"></i>
-                                </div>
-                                <div class="font-bold">Facebook</div>
-                                <div class="text-sm opacity-90">Story</div>
-                            </button>
-                            
-                            <button class="share-social-btn bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-xl text-center hover:opacity-90 transition" data-platform="whatsapp">
-                                <div class="text-3xl mb-2">
-                                    <i class="fab fa-whatsapp"></i>
-                                </div>
-                                <div class="font-bold">WhatsApp</div>
-                                <div class="text-sm opacity-90">Message</div>
-                            </button>
-                            
-                            <button class="share-social-btn bg-gradient-to-r from-black to-gray-800 text-white p-4 rounded-xl text-center hover:opacity-90 transition" data-platform="tiktok">
-                                <div class="text-3xl mb-2">
-                                    <i class="fab fa-tiktok"></i>
-                                </div>
-                                <div class="font-bold">TikTok</div>
-                                <div class="text-sm opacity-90">Story</div>
-                            </button>
-                        </div>
-                        
-                        <div class="bg-white/70 p-4 rounded-lg">
-                            <p class="text-sm text-gray-600">
-                                <i class="fas fa-info-circle text-purple-600 mr-2"></i>
-                                <strong>Astuce :</strong> L'image téléchargée contient déjà le watermark "Créé sur LoveCraft" 
-                                pour créditer la plateforme.
+                            <p class="text-center text-sm text-gray-500 mt-4">
+                                <i class="fas fa-shield-alt mr-1"></i>
+                                Votre surprise sera sauvegardée dans votre espace personnel
                             </p>
                         </div>
                     </div>
+                </div>
+            </div>
+        `;
+    }
 
-                    <!-- Actions -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                        <a href="dashboard.html" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-6 rounded-xl text-center hover:opacity-90 transition shadow-lg">
-                            <div class="text-3xl mb-3">
-                                <i class="fas fa-tachometer-alt"></i>
+    renderStep2() {
+        const surpriseUrl = `${window.location.origin}/LoveCraft/s/?id=${this.surpriseId}`;
+        
+        return `
+            <div class="max-w-4xl mx-auto">
+                <div class="mb-8">
+                    <a href="dashboard.html" class="inline-flex items-center text-purple-600 hover:text-purple-700 mb-6">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Retour au dashboard
+                    </a>
+                </div>
+
+                <div class="text-center mb-8">
+                    <div class="text-5xl mb-4 animate-bounce">🎉</div>
+                    <h1 class="text-3xl font-bold text-gray-800 mb-4">
+                        ${this.editMode ? 'Surprise mise à jour !' : 'Félicitations !'}
+                    </h1>
+                    <p class="text-gray-600">
+                        Votre surprise "<span class="font-semibold">${this.surprise.pourQui}</span>" a été ${this.editMode ? 'mise à jour' : 'créée'} avec succès.
+                    </p>
+                </div>
+
+                <!-- QR Code -->
+                <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+                    <div class="text-center">
+                        <h2 class="text-xl font-bold text-gray-800 mb-6">
+                            <i class="fas fa-qrcode mr-2 text-purple-600"></i>
+                            QR Code de votre surprise
+                        </h2>
+                        <div id="qrCode" class="inline-block p-4 bg-white rounded-xl mb-6 border-2 border-gray-200">
+                            <!-- QR Code sera généré ici -->
+                            <div class="text-center text-gray-500 p-4">
+                                <i class="fas fa-spinner fa-spin text-3xl mb-2"></i>
+                                <p>Génération du QR Code...</p>
                             </div>
-                            <div class="font-bold">Dashboard</div>
-                            <div class="text-sm opacity-90 mt-1">Voir mes surprises</div>
-                        </a>
-                        <a href="create.html" class="bg-white border-2 border-purple-200 text-purple-600 p-6 rounded-xl text-center hover:border-purple-400 transition shadow">
-                            <div class="text-3xl mb-3">
-                                <i class="fas fa-plus"></i>
-                            </div>
-                            <div class="font-bold">Créer une autre</div>
-                            <div class="text-sm text-gray-500 mt-1">Nouvelle surprise</div>
-                        </a>
-                        <a href="s/?id=${this.surpriseId}" target="_blank" class="bg-white border-2 border-blue-200 text-blue-600 p-6 rounded-xl text-center hover:border-blue-400 transition shadow">
-                            <div class="text-3xl mb-3">
-                                <i class="fas fa-eye"></i>
-                            </div>
-                            <div class="font-bold">Voir la surprise</div>
-                            <div class="text-sm text-gray-500 mt-1">Comme le destinataire</div>
-                        </a>
+                        </div>
+                        <div class="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+                            <button id="downloadQRBtn" class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-lg font-bold hover:opacity-90 transition shadow-md">
+                                <i class="fas fa-download mr-2"></i>Télécharger JPG
+                            </button>
+                            <button id="shareQRBtn" class="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-6 py-3 rounded-lg font-bold hover:opacity-90 transition shadow-md">
+                                <i class="fas fa-share-alt mr-2"></i>Partager
+                            </button>
+                        </div>
                     </div>
                 </div>
-            `;
-            
-            // Générer QR Code
-            this.generateQRCode();
-        }
+
+                <!-- Lien de partage -->
+                <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-link mr-2 text-blue-600"></i>
+                        Lien de partage
+                    </h2>
+                    <div class="flex flex-col md:flex-row gap-2 mb-4">
+                        <input 
+                            type="text" 
+                            id="surpriseUrl"
+                            value="${surpriseUrl}"
+                            readonly
+                            class="flex-grow px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800"
+                            style="color: #1f2937;"
+                        />
+                        <button id="copyLinkBtn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                            <i class="fas fa-copy mr-2"></i>Copier
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-500">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Partagez ce lien par message, email ou réseaux sociaux
+                    </p>
+                </div>
+
+                <!-- Partage social -->
+                <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-8 mb-8 border border-purple-200">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-share-alt mr-2 text-purple-600"></i>
+                        Partagez votre surprise
+                    </h2>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <button class="share-social-btn bg-gradient-to-r from-pink-500 to-purple-500 text-white p-4 rounded-xl text-center hover:opacity-90 transition" data-platform="instagram">
+                            <div class="text-3xl mb-2">
+                                <i class="fab fa-instagram"></i>
+                            </div>
+                            <div class="font-bold">Instagram</div>
+                            <div class="text-sm opacity-90">Story</div>
+                        </button>
+                        
+                        <button class="share-social-btn bg-gradient-to-r from-blue-400 to-blue-600 text-white p-4 rounded-xl text-center hover:opacity-90 transition" data-platform="facebook">
+                            <div class="text-3xl mb-2">
+                                <i class="fab fa-facebook"></i>
+                            </div>
+                            <div class="font-bold">Facebook</div>
+                            <div class="text-sm opacity-90">Story</div>
+                        </button>
+                        
+                        <button class="share-social-btn bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-xl text-center hover:opacity-90 transition" data-platform="whatsapp">
+                            <div class="text-3xl mb-2">
+                                <i class="fab fa-whatsapp"></i>
+                            </div>
+                            <div class="font-bold">WhatsApp</div>
+                            <div class="text-sm opacity-90">Message</div>
+                        </button>
+                        
+                        <button class="share-social-btn bg-gradient-to-r from-black to-gray-800 text-white p-4 rounded-xl text-center hover:opacity-90 transition" data-platform="sms">
+                            <div class="text-3xl mb-2">
+                                <i class="fas fa-sms"></i>
+                            </div>
+                            <div class="font-bold">SMS</div>
+                            <div class="text-sm opacity-90">Message</div>
+                        </button>
+                    </div>
+                    
+                    <div class="bg-white/70 p-4 rounded-lg">
+                        <p class="text-sm text-gray-600">
+                            <i class="fas fa-info-circle text-purple-600 mr-2"></i>
+                            <strong>Astuce :</strong> L'image téléchargée contient déjà le watermark "Créé sur LoveCraft" 
+                            pour créditer la plateforme.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <a href="dashboard.html" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-6 rounded-xl text-center hover:opacity-90 transition shadow-lg">
+                        <div class="text-3xl mb-3">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+                        <div class="font-bold">Dashboard</div>
+                        <div class="text-sm opacity-90 mt-1">Voir mes surprises</div>
+                    </a>
+                    <a href="create.html" class="bg-white border-2 border-purple-200 text-purple-600 p-6 rounded-xl text-center hover:border-purple-400 transition shadow">
+                        <div class="text-3xl mb-3">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <div class="font-bold">Créer une autre</div>
+                        <div class="text-sm text-gray-500 mt-1">Nouvelle surprise</div>
+                    </a>
+                    <a href="s/?id=${this.surpriseId}" target="_blank" class="bg-white border-2 border-blue-200 text-blue-600 p-6 rounded-xl text-center hover:border-blue-400 transition shadow">
+                        <div class="text-3xl mb-3">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <div class="font-bold">Voir la surprise</div>
+                        <div class="text-sm text-gray-500 mt-1">Comme le destinataire</div>
+                    </a>
+                </div>
+            </div>
+        `;
     }
 
     bindEvents() {
         if (this.step === 1) {
-            // Input listeners
-            document.getElementById('pourQui').addEventListener('input', (e) => {
-                this.surprise.pourQui = e.target.value;
-            });
-            
-            document.getElementById('deLaPartDe').addEventListener('input', (e) => {
-                this.surprise.deLaPartDe = e.target.value;
-                this.surprise.reponse1 = e.target.value;
-                document.getElementById('reponse1').value = e.target.value;
-            });
-            
-            document.getElementById('question1').addEventListener('input', (e) => {
-                this.surprise.question1 = e.target.value;
-            });
-            
-            document.getElementById('reponse1').addEventListener('input', (e) => {
-                this.surprise.reponse1 = e.target.value;
-            });
-            
-            // Message avec compteur
-            const messageInput = document.getElementById('messageFinal');
-            const charCount = document.getElementById('charCount');
-            
-            if (messageInput) {
-                messageInput.addEventListener('input', (e) => {
-                    this.surprise.messageFinal = e.target.value;
-                    const count = e.target.value.length;
+            this.bindStep1Events();
+        } else if (this.step === 2) {
+            // Attendre que le DOM soit complètement chargé
+            setTimeout(() => {
+                this.bindStep2Events();
+            }, 200);
+        }
+    }
+
+    bindStep1Events() {
+        // Input listeners
+        document.getElementById('pourQui')?.addEventListener('input', (e) => {
+            this.surprise.pourQui = e.target.value;
+        });
+        
+        document.getElementById('deLaPartDe')?.addEventListener('input', (e) => {
+            this.surprise.deLaPartDe = e.target.value;
+            this.surprise.reponse1 = e.target.value;
+            const reponseInput = document.getElementById('reponse1');
+            if (reponseInput) reponseInput.value = e.target.value;
+        });
+        
+        document.getElementById('question1')?.addEventListener('input', (e) => {
+            this.surprise.question1 = e.target.value;
+        });
+        
+        document.getElementById('reponse1')?.addEventListener('input', (e) => {
+            this.surprise.reponse1 = e.target.value;
+        });
+        
+        // Message avec compteur
+        const messageInput = document.getElementById('messageFinal');
+        const charCount = document.getElementById('charCount');
+        
+        if (messageInput) {
+            messageInput.addEventListener('input', (e) => {
+                this.surprise.messageFinal = e.target.value;
+                const count = e.target.value.length;
+                if (charCount) {
                     charCount.textContent = `${count}/500`;
                     charCount.className = `text-sm ${count > 500 ? 'text-red-500' : 'text-gray-500'}`;
-                });
-            }
-            
-            // Thèmes
-            document.querySelectorAll('[data-theme]').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const theme = e.currentTarget.dataset.theme;
-                    this.surprise.theme = theme;
-                    
-                    // Reset
-                    document.querySelectorAll('[data-theme]').forEach(b => {
-                        b.className = b.className.replace(/border-(pink|blue|yellow|gray)-500 bg-\1-50/, '');
-                        b.className += ' border-gray-200';
-                    });
-                    
-                    // Activer
-                    const themeClasses = {
-                        romantique: ['border-pink-500', 'bg-pink-50'],
-                        geek: ['border-blue-500', 'bg-blue-50'],
-                        fun: ['border-yellow-500', 'bg-yellow-50'],
-                        classique: ['border-gray-500', 'bg-gray-50']
-                    };
-                    
-                    e.currentTarget.classList.remove('border-gray-200');
-                    e.currentTarget.classList.add(...themeClasses[theme]);
-                });
-            });
-            
-            // Bouton création
-            const createBtn = document.getElementById('createBtn');
-            if (createBtn) {
-                createBtn.addEventListener('click', () => {
-                    this.saveSurprise();
-                });
-            }
-            
-        } else if (this.step === 2) {
-            // Copier lien
-            document.getElementById('copyLinkBtn').addEventListener('click', () => {
-                const urlInput = document.getElementById('surpriseUrl');
-                urlInput.select();
-                urlInput.setSelectionRange(0, 99999);
-                
-                navigator.clipboard.writeText(urlInput.value).then(() => {
-                    const btn = document.getElementById('copyLinkBtn');
-                    const originalHTML = btn.innerHTML;
-                    btn.innerHTML = '<i class="fas fa-check mr-2"></i>Copié !';
-                    btn.classList.add('bg-green-600');
-                    
-                    setTimeout(() => {
-                        btn.innerHTML = originalHTML;
-                        btn.classList.remove('bg-green-600');
-                    }, 2000);
-                });
-            });
-            
-            // Télécharger QR Code
-            document.getElementById('downloadQRBtn').addEventListener('click', () => {
-                this.downloadQRCode();
-            });
-            
-            // Partager QR Code
-            document.getElementById('shareQRBtn').addEventListener('click', () => {
-                this.showShareOptions();
-            });
-            
-            // Boutons partage social
-            document.querySelectorAll('.share-social-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const platform = e.currentTarget.dataset.platform;
-                    this.shareOnSocial(platform);
-                });
+                }
             });
         }
+        
+        // Thèmes
+        document.querySelectorAll('[data-theme]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const theme = e.currentTarget.dataset.theme;
+                this.surprise.theme = theme;
+                
+                // Reset tous les boutons
+                document.querySelectorAll('[data-theme]').forEach(b => {
+                    b.classList.remove('border-pink-500', 'bg-pink-50', 'border-blue-500', 'bg-blue-50', 
+                                      'border-yellow-500', 'bg-yellow-50', 'border-gray-500', 'bg-gray-50');
+                    b.classList.add('border-gray-200');
+                });
+                
+                // Activer le bouton sélectionné
+                const themeClasses = {
+                    romantique: ['border-pink-500', 'bg-pink-50'],
+                    geek: ['border-blue-500', 'bg-blue-50'],
+                    fun: ['border-yellow-500', 'bg-yellow-50'],
+                    classique: ['border-gray-500', 'bg-gray-50']
+                };
+                
+                e.currentTarget.classList.remove('border-gray-200');
+                e.currentTarget.classList.add(...themeClasses[theme]);
+            });
+        });
+        
+        // Bouton création
+        const createBtn = document.getElementById('createBtn');
+        if (createBtn) {
+            createBtn.addEventListener('click', () => {
+                this.saveSurprise();
+            });
+        }
+    }
+
+    bindStep2Events() {
+        // Copier lien - FONCTIONNEL
+        const copyBtn = document.getElementById('copyLinkBtn');
+        const urlInput = document.getElementById('surpriseUrl');
+        
+        if (copyBtn && urlInput) {
+            copyBtn.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(urlInput.value);
+                    
+                    // Feedback visuel
+                    const originalHTML = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Copié !';
+                    copyBtn.classList.remove('bg-blue-600');
+                    copyBtn.classList.add('bg-green-600');
+                    
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalHTML;
+                        copyBtn.classList.remove('bg-green-600');
+                        copyBtn.classList.add('bg-blue-600');
+                    }, 2000);
+                    
+                    this.showNotification('✅ Lien copié dans le presse-papier !');
+                } catch (error) {
+                    // Fallback pour anciens navigateurs
+                    urlInput.select();
+                    document.execCommand('copy');
+                    this.showNotification('✅ Lien copié ! (méthode ancienne)');
+                }
+            });
+        }
+        
+        // Télécharger QR Code - FONCTIONNEL
+        const downloadBtn = document.getElementById('downloadQRBtn');
+        if (downloadBtn) {
+            downloadBtn.addEventListener('click', () => {
+                this.downloadQRCode();
+            });
+        }
+        
+        // Partager QR Code - FONCTIONNEL
+        const shareBtn = document.getElementById('shareQRBtn');
+        if (shareBtn) {
+            shareBtn.addEventListener('click', () => {
+                this.showShareOptions();
+            });
+        }
+        
+        // Boutons partage social - FONCTIONNEL
+        document.querySelectorAll('.share-social-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const platform = e.currentTarget.dataset.platform;
+                this.shareOnSocial(platform);
+            });
+        });
     }
 
     async saveSurprise() {
@@ -570,7 +609,10 @@ class SurpriseCreator {
         const url = `${window.location.origin}/LoveCraft/s/?id=${this.surpriseId}`;
         const qrContainer = document.getElementById('qrCode');
         
-        if (!qrContainer) return;
+        if (!qrContainer) {
+            console.error('Conteneur QR Code non trouvé');
+            return;
+        }
         
         // Effacer contenu
         qrContainer.innerHTML = '';
@@ -581,23 +623,24 @@ class SurpriseCreator {
             qrContainer.innerHTML = `
                 <div class="text-center p-4">
                     <p class="text-red-500 mb-2">QR Code non disponible</p>
-                    <a href="${url}" class="text-blue-600 text-sm break-all">${url}</a>
+                    <a href="${url}" class="text-blue-600 text-sm break-all" target="_blank">${url}</a>
                 </div>
             `;
             return;
         }
         
         try {
+            // Créer le QR Code
             new QRCode(qrContainer, {
                 text: url,
                 width: 200,
                 height: 200,
-                colorDark: "#7C3AED", // Purple
+                colorDark: "#7C3AED",
                 colorLight: "#FFFFFF",
                 correctLevel: QRCode.CorrectLevel.H
             });
             
-            // Ajouter watermark discret
+            // Ajouter watermark discret après génération
             setTimeout(() => {
                 const canvas = qrContainer.querySelector('canvas');
                 if (canvas) {
@@ -606,14 +649,14 @@ class SurpriseCreator {
                     ctx.font = '8px Arial';
                     ctx.fillText('LoveCraft', 160, 195);
                 }
-            }, 100);
+            }, 500);
             
         } catch (error) {
             console.error('Erreur génération QR:', error);
             qrContainer.innerHTML = `
                 <div class="text-center p-4">
                     <p class="text-red-500">Erreur génération QR</p>
-                    <a href="${url}" class="text-blue-600 text-sm break-all">${url}</a>
+                    <a href="${url}" class="text-blue-600 text-sm break-all" target="_blank">${url}</a>
                 </div>
             `;
         }
@@ -628,7 +671,7 @@ class SurpriseCreator {
         
         const canvas = qrContainer.querySelector('canvas');
         if (!canvas) {
-            this.showNotification('QR Code non généré', 'error');
+            this.showNotification('QR Code non généré. Veuillez patienter...', 'error');
             return;
         }
         
@@ -701,13 +744,16 @@ class SurpriseCreator {
         
         // Télécharger
         const link = document.createElement('a');
-        link.download = `LoveCraft_${this.surprise.pourQui}_${new Date().toISOString().split('T')[0]}.jpg`;
+        const fileName = `LoveCraft_${this.surprise.pourQui}_${new Date().toISOString().split('T')[0]}.jpg`;
+        link.download = fileName;
         link.href = downloadCanvas.toDataURL('image/jpeg', 0.9);
+        
+        // Déclencher le téléchargement
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         
-        this.showNotification('✅ QR Code téléchargé avec watermark !');
+        this.showNotification(`✅ QR Code téléchargé : ${fileName}`);
     }
 
     showShareOptions() {
@@ -734,28 +780,28 @@ class SurpriseCreator {
                     </div>
                     
                     <div class="grid grid-cols-2 gap-3">
-                        <button class="share-action bg-gradient-to-r from-pink-500 to-purple-500 text-white p-4 rounded-lg hover:opacity-90" data-action="sms">
+                        <button class="share-action bg-gradient-to-r from-pink-500 to-purple-500 text-white p-4 rounded-lg hover:opacity-90 transition" data-action="sms">
                             <div class="text-2xl mb-2">
                                 <i class="fas fa-sms"></i>
                             </div>
                             <div class="font-bold">SMS</div>
                         </button>
                         
-                        <button class="share-action bg-gradient-to-r from-blue-500 to-indigo-500 text-white p-4 rounded-lg hover:opacity-90" data-action="email">
+                        <button class="share-action bg-gradient-to-r from-blue-500 to-indigo-500 text-white p-4 rounded-lg hover:opacity-90 transition" data-action="email">
                             <div class="text-2xl mb-2">
                                 <i class="fas fa-envelope"></i>
                             </div>
                             <div class="font-bold">Email</div>
                         </button>
                         
-                        <button class="share-action bg-gradient-to-r from-green-500 to-emerald-500 text-white p-4 rounded-lg hover:opacity-90" data-action="whatsapp">
+                        <button class="share-action bg-gradient-to-r from-green-500 to-emerald-500 text-white p-4 rounded-lg hover:opacity-90 transition" data-action="whatsapp">
                             <div class="text-2xl mb-2">
                                 <i class="fab fa-whatsapp"></i>
                             </div>
                             <div class="font-bold">WhatsApp</div>
                         </button>
                         
-                        <button class="share-action bg-gradient-to-r from-gray-700 to-gray-900 text-white p-4 rounded-lg hover:opacity-90" data-action="copy">
+                        <button class="share-action bg-gradient-to-r from-gray-700 to-gray-900 text-white p-4 rounded-lg hover:opacity-90 transition" data-action="copy">
                             <div class="text-2xl mb-2">
                                 <i class="fas fa-copy"></i>
                             </div>
@@ -800,20 +846,29 @@ class SurpriseCreator {
         
         switch(action) {
             case 'sms':
-                window.open(`sms:?body=${encodeURIComponent(message)}`);
+                window.location.href = `sms:?body=${encodeURIComponent(message)}`;
                 break;
                 
             case 'email':
-                window.open(`mailto:?subject=Surprise de ${this.surprise.deLaPartDe}&body=${encodeURIComponent(message)}`);
+                window.location.href = `mailto:?subject=Surprise de ${this.surprise.deLaPartDe}&body=${encodeURIComponent(message)}`;
                 break;
                 
             case 'whatsapp':
-                window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
+                window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
                 break;
                 
             case 'copy':
                 navigator.clipboard.writeText(message).then(() => {
                     this.showNotification('✅ Message copié dans le presse-papier !');
+                }).catch(() => {
+                    // Fallback
+                    const tempInput = document.createElement('input');
+                    tempInput.value = message;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+                    this.showNotification('✅ Message copié !');
                 });
                 break;
         }
@@ -828,9 +883,9 @@ class SurpriseCreator {
         
         switch(platform) {
             case 'instagram':
-                // Instagram ne permet pas de partage direct, on suggère de télécharger l'image
+                // Pour Instagram, on télécharge l'image
                 this.downloadQRCode();
-                this.showNotification('📸 Téléchargez l\'image et partagez-la dans votre story Instagram !');
+                this.showNotification('📸 Image téléchargée ! Partagez-la dans votre story Instagram.');
                 return;
                 
             case 'facebook':
@@ -841,10 +896,8 @@ class SurpriseCreator {
                 shareUrl = `https://wa.me/?text=${encodeURIComponent(fullMessage)}`;
                 break;
                 
-            case 'tiktok':
-                // TikTok ne permet pas de partage direct non plus
-                this.downloadQRCode();
-                this.showNotification('🎵 Téléchargez l\'image et utilisez-la dans votre vidéo TikTok !');
+            case 'sms':
+                window.location.href = `sms:?body=${encodeURIComponent(fullMessage)}`;
                 return;
         }
         
@@ -877,4 +930,3 @@ class SurpriseCreator {
 }
 
 export default SurpriseCreator;
-
