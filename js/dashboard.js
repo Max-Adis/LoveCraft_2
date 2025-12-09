@@ -652,4 +652,4 @@ class DashboardManager {
 
 // Démarrer l'application
 new DashboardManager();
-[file content end]
+
