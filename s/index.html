@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr" class="h-full">
 <head>
@@ -7,6 +6,14 @@
     <title>Surprise LoveCraft</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- NOUVELLES LIBRAIRIES -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    
     <style>
         @keyframes pulse-heart {
             0%, 100% { transform: scale(1); }
@@ -20,21 +27,53 @@
             from { transform: scale(1); opacity: 1; }
             to { transform: scale(2); opacity: 0; }
         }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+        }
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+        @keyframes text-reveal {
+            from { 
+                opacity: 0;
+                transform: translateY(20px) scale(0.9);
+                filter: blur(10px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0);
+            }
+        }
+        
         .animate-pulse-heart { animation: pulse-heart 1.5s ease-in-out infinite; }
         .animate-flash { animation: flash 0.5s ease-in-out; }
         .animate-countdown { animation: countdown 1s ease-in-out; }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        .animate-text-reveal { animation: text-reveal 0.8s ease-out forwards; }
+        
+        /* Background gradients pour chaque template */
         .bg-gradient-romantic {
             background: linear-gradient(135deg, #f9a8d4 0%, #f472b6 50%, #db2777 100%);
         }
         .bg-gradient-geek {
             background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 50%, #3b82f6 100%);
         }
-        .bg-gradient-fun {
+        .bg-gradient-birthday {
             background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
         }
-        .bg-gradient-classic {
+        .bg-gradient-friendship {
+            background: linear-gradient(135deg, #a7f3d0 0%, #6ee7b7 50%, #10b981 100%);
+        }
+        .bg-gradient-mysterious {
+            background: linear-gradient(135deg, #c4b5fd 0%, #8b5cf6 50%, #7c3aed 100%);
+        }
+        .bg-gradient-elegant {
             background: linear-gradient(135deg, #d1d5db 0%, #9ca3af 50%, #6b7280 100%);
         }
+        
         /* Forcer texte noir sur inputs */
         input, textarea {
             color: #1f2937 !important;
@@ -43,54 +82,1731 @@
         input::placeholder, textarea::placeholder {
             color: rgba(255, 255, 255, 0.7) !important;
         }
+        
+        /* Effets spéciaux */
+        .text-glow {
+            text-shadow: 0 0 20px currentColor;
+        }
+        
+        .card-3d {
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+        
+        .card-3d:hover {
+            transform: rotateY(5deg) rotateX(5deg);
+        }
+        
+        .shimmer-effect {
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.4), 
+                transparent);
+            background-size: 1000px 100%;
+            animation: shimmer 2s infinite;
+        }
+        
+        /* Pulse pour éléments importants */
+        .important-pulse {
+            animation: pulse-heart 2s infinite;
+            box-shadow: 0 0 30px currentColor;
+        }
+        
+        /* Styles pour les étapes */
+        .step-indicator {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .step-indicator.active {
+            transform: scale(1.2);
+            box-shadow: 0 0 20px currentColor;
+        }
+        
+        /* Conteneur pour effets 3D */
+        #three-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+        
+        /* Particules */
+        #particles-js {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        /* Bouton musique */
+        #music-control-surprise {
+            transition: all 0.3s ease;
+        }
+        
+        #music-control-surprise:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Message final avec effet spécial */
+        .message-final {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.1), 
+                rgba(255, 255, 255, 0.05));
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .message-final::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, 
+                rgba(255, 255, 255, 0.1) 0%, 
+                transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Boutons de partage */
+        .share-button {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .share-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .share-button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        /* Effet de neige/hearts */
+        .snowflake, .heart-float {
+            position: absolute;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        /* Responsive amélioré */
+        @media (max-width: 768px) {
+            .mobile-stack {
+                flex-direction: column;
+            }
+            
+            .mobile-full {
+                width: 100% !important;
+            }
+            
+            .mobile-text-center {
+                text-align: center;
+            }
+        }
+        
+        /* Loading animation */
+        .loading-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .loading-dots div {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        
+        .loading-dots div:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dots div:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col bg-gradient-to-br from-pink-100 to-purple-100">
-    <!-- Audio pour son romantique -->
-    <audio id="romanticSound" preload="auto">
-        <source src="../assets/sounds/romantic.mp3" type="audio/mpeg">
-        Votre navigateur ne supporte pas l'audio.
-    </audio>
-
-    <div id="surprise-app" class="flex-grow p-4 md:p-8 flex items-center justify-center">
-        <!-- Chargement -->
-        <div id="loading" class="text-center">
-            <div class="text-5xl mb-4 animate-pulse-heart">❤️</div>
-            <p class="text-gray-600">Chargement de la surprise...</p>
+<body class="min-h-screen flex flex-col">
+    <!-- BACKGROUNDS MULTI-COUCHES -->
+    <div id="three-container"></div>
+    <div id="particles-js"></div>
+    
+    <!-- EFFETS VISUELS DYNAMIQUES -->
+    <div id="dynamic-effects"></div>
+    
+    <!-- BOUTON DE CONTRÔLE MUSICAL -->
+    <div id="music-control-surprise" class="fixed bottom-6 right-6 z-50 hidden">
+        <button id="toggle-music-surprise" class="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center">
+            <i class="fas fa-music"></i>
+        </button>
+        <div id="volume-panel-surprise" class="mt-2 bg-white rounded-lg p-2 shadow-lg hidden">
+            <input type="range" min="0" max="100" value="30" class="w-full" id="volume-slider-surprise">
+            <p class="text-xs text-gray-600 text-center mt-1">Volume</p>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white mt-auto">
+    <div id="surprise-app" class="flex-grow p-4 md:p-8 flex items-center justify-center min-h-screen">
+        <!-- Chargement amélioré -->
+        <div id="loading" class="text-center">
+            <div class="relative inline-block">
+                <div class="w-24 h-24 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center mb-4 animate-pulse-heart shadow-2xl">
+                    <i class="fas fa-heart text-white text-3xl"></i>
+                </div>
+                <div class="absolute -inset-4 rounded-full border-4 border-purple-300 animate-ping opacity-20"></div>
+            </div>
+            <p class="text-gray-600 mt-4">Chargement de la surprise...</p>
+            <div class="loading-dots text-purple-600 mt-2">
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer amélioré -->
+    <footer class="bg-gray-900 text-white mt-auto relative z-10">
         <div class="max-w-7xl mx-auto px-4 py-6">
             <div class="text-center">
-                <p class="text-gray-400 text-sm">© 2025 LoveCraft - Créé avec ❤️</p>
-                <p class="text-gray-500 text-xs mt-1">Cette surprise a été créée spécialement pour vous</p>
+                <p class="text-gray-400 text-sm">
+                    <i class="fas fa-heart text-red-500 mr-1 animate-pulse-heart"></i>
+                    © 2025 LoveCraft - Créé avec ❤️
+                </p>
+                <p class="text-gray-500 text-xs mt-1">
+                    Cette surprise a été créée spécialement pour vous
+                    <span id="footer-creator" class="font-bold"></span>
+                </p>
+                <div class="mt-3 flex justify-center space-x-4">
+                    <button id="create-own-btn" class="text-xs text-purple-400 hover:text-purple-300 transition">
+                        <i class="fas fa-plus mr-1"></i>Créer la vôtre
+                    </button>
+                    <button id="share-footer-btn" class="text-xs text-blue-400 hover:text-blue-300 transition">
+                        <i class="fas fa-share-alt mr-1"></i>Partager
+                    </button>
+                </div>
             </div>
         </div>
     </footer>
 
-    <!-- Scripts -->
-    <script type="module" src="../js/surprise.js"></script>
-    
-    <script>
-        // Récupérer l'ID depuis l'URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const id = urlParams.get('id');
-        if (id) {
-            localStorage.setItem('surpriseId', id);
-        }
+    <!-- NOUVEAU: Modal Partager -->
+    <div id="shareModal" class="fixed inset-0 bg-black bg-opacity-70 hidden z-50 overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-md w-full overflow-hidden">
+                <div class="bg-gradient-to-r from-purple-600 to-pink-600 p-6 text-white">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-2xl font-bold">
+                            <i class="fas fa-share-alt mr-2"></i>Partagez l'amour ❤️
+                        </h3>
+                        <button id="closeShareModal" class="text-white hover:text-gray-200">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    <p class="opacity-90 mt-2">Faites découvrir cette belle surprise</p>
+                </div>
+                
+                <div class="p-6">
+                    <div id="sharePreview" class="text-center mb-6">
+                        <!-- Aperçu du partage -->
+                    </div>
+                    
+                    <div class="grid grid-cols-4 gap-3 mb-6">
+                        <button class="share-platform bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-xl hover:opacity-90 transition hover:scale-105" data-platform="whatsapp">
+                            <i class="fab fa-whatsapp text-2xl"></i>
+                        </button>
+                        <button class="share-platform bg-gradient-to-r from-blue-500 to-blue-700 text-white p-4 rounded-xl hover:opacity-90 transition hover:scale-105" data-platform="facebook">
+                            <i class="fab fa-facebook text-2xl"></i>
+                        </button>
+                        <button class="share-platform bg-gradient-to-r from-pink-500 to-red-500 text-white p-4 rounded-xl hover:opacity-90 transition hover:scale-105" data-platform="instagram">
+                            <i class="fab fa-instagram text-2xl"></i>
+                        </button>
+                        <button class="share-platform bg-gradient-to-r from-purple-500 to-indigo-600 text-white p-4 rounded-xl hover:opacity-90 transition hover:scale-105" data-platform="copy">
+                            <i class="fas fa-copy text-2xl"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-xl mb-6">
+                        <p class="text-sm text-gray-700">
+                            <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>
+                            <strong>Astuce :</strong> Partagez cette surprise pour inspirer d'autres personnes à créer leurs propres moments magiques.
+                        </p>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button id="createStoryBtn" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-xl font-bold hover:opacity-90 transition mb-3">
+                            <i class="fas fa-camera mr-2"></i>Créer une Story Instagram
+                        </button>
+                        <button id="closeShareBtn" class="w-full bg-gray-200 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-300 transition">
+                            Annuler
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOUVEAU: Modal Créer la vôtre -->
+    <div id="createModal" class="fixed inset-0 bg-black bg-opacity-70 hidden z-50 overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-md w-full overflow-hidden">
+                <div class="bg-gradient-to-r from-purple-600 to-pink-600 p-6 text-white">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-2xl font-bold">
+                            <i class="fas fa-sparkles mr-2"></i>Inspiré(e) ?
+                        </h3>
+                        <button id="closeCreateModal" class="text-white hover:text-gray-200">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    <p class="opacity-90 mt-2">Créez votre propre surprise en 2 minutes</p>
+                </div>
+                
+                <div class="p-6">
+                    <div class="text-center mb-6">
+                        <div class="text-5xl mb-4 animate-float">🎁</div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">Créez un moment magique</h4>
+                        <p class="text-gray-600">Comme cette surprise, créez la vôtre pour quelqu'un de spécial</p>
+                    </div>
+                    
+                    <div class="space-y-4 mb-6">
+                        <div class="flex items-center bg-purple-50 p-4 rounded-xl">
+                            <div class="text-2xl text-purple-600 mr-3">1</div>
+                            <div>
+                                <p class="font-bold text-gray-800">Personnalisez</p>
+                                <p class="text-sm text-gray-600">Choisissez un message unique</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center bg-pink-50 p-4 rounded-xl">
+                            <div class="text-2xl text-pink-600 mr-3">2</div>
+                            <div>
+                                <p class="font-bold text-gray-800">Générez</p>
+                                <p class="text-sm text-gray-600">Obtenez un QR Code magique</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center bg-blue-50 p-4 rounded-xl">
+                            <div class="text-2xl text-blue-600 mr-3">3</div>
+                            <div>
+                                <p class="font-bold text-gray-800">Surprenez</p>
+                                <p class="text-sm text-gray-600">Regardez la réaction</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <a href="../create.html" class="inline-block w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-xl font-bold hover:opacity-90 transition mb-3">
+                            <i class="fas fa-heart mr-2"></i>Créer ma surprise gratuite
+                        </a>
+                        <button id="closeCreateBtn" class="w-full bg-gray-200 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-300 transition">
+                            Plus tard
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- IMPORT DES MODULES -->
+    <script type="module">
+        import { database, ref, get, update } from '../js/firebase.js';
+        import visualEffects from '../js/effects.js';
         
-        // Tester l'audio
-        document.addEventListener('click', function() {
-            const audio = document.getElementById('romanticSound');
-            if (audio) {
-                audio.volume = 0.3;
-                audio.play().catch(e => {
-                    console.log('Audio nécessite interaction utilisateur');
+        // Exposer globalement pour les effets
+        window.visualEffects = visualEffects;
+        
+        // Attendre que le DOM soit chargé
+        document.addEventListener('DOMContentLoaded', () => {
+            new SurpriseViewerEnhanced();
+        });
+    </script>
+    
+    <!-- SCRIPT PRINCIPAL -->
+    <script>
+        class SurpriseViewerEnhanced {
+            constructor() {
+                this.step = 1;
+                this.surprise = null;
+                this.surpriseId = localStorage.getItem('surpriseId') || 
+                                 new URLSearchParams(window.location.search).get('id');
+                this.userName = '';
+                this.template = null;
+                this.music = null;
+                this.backgroundMusic = null;
+                this.init();
+            }
+
+            async init() {
+                await this.loadSurprise();
+                this.initBackgroundEffects();
+                this.initMusic();
+                this.render();
+                this.bindEvents();
+            }
+
+            async loadSurprise() {
+                if (!this.surpriseId) {
+                    this.showError('Aucune surprise trouvée');
+                    return;
+                }
+                
+                try {
+                    const surpriseRef = ref(database, 'surprises/' + this.surpriseId);
+                    const snapshot = await get(surpriseRef);
+                    
+                    if (snapshot.exists()) {
+                        this.surprise = snapshot.val();
+                        this.template = this.getTemplate(this.surprise.template || 'romantic');
+                        
+                        // Incrémenter les vues
+                        const currentViews = this.surprise.views || 0;
+                        await update(surpriseRef, {
+                            views: currentViews + 1
+                        });
+                        
+                        // Mettre à jour le footer
+                        this.updateFooter();
+                        
+                    } else {
+                        this.showError('Cette surprise n\'existe plus');
+                    }
+                } catch (error) {
+                    console.error('❌ Erreur chargement:', error);
+                    this.showError('Erreur de chargement');
+                }
+            }
+
+            getTemplate(templateName) {
+                const templates = {
+                    romantic: {
+                        name: 'Romantique',
+                        emoji: '❤️',
+                        gradient: 'bg-gradient-romantic',
+                        colors: {
+                            primary: '#ec4899',
+                            secondary: '#d946ef'
+                        },
+                        music: 'romantic-piano.mp3',
+                        effects: ['hearts', 'sparkles']
+                    },
+                    geek: {
+                        name: 'Geek',
+                        emoji: '👨‍💻',
+                        gradient: 'bg-gradient-geek',
+                        colors: {
+                            primary: '#3b82f6',
+                            secondary: '#1d4ed8'
+                        },
+                        music: 'electronic.mp3',
+                        effects: ['code', 'pixels']
+                    },
+                    birthday: {
+                        name: 'Anniversaire',
+                        emoji: '🎂',
+                        gradient: 'bg-gradient-birthday',
+                        colors: {
+                            primary: '#f59e0b',
+                            secondary: '#d97706'
+                        },
+                        music: 'happy-birthday.mp3',
+                        effects: ['confetti', 'balloons']
+                    },
+                    friendship: {
+                        name: 'Amitié',
+                        emoji: '🤝',
+                        gradient: 'bg-gradient-friendship',
+                        colors: {
+                            primary: '#10b981',
+                            secondary: '#059669'
+                        },
+                        music: 'friendship.mp3',
+                        effects: ['stars', 'sparkles']
+                    },
+                    mysterious: {
+                        name: 'Mystérieux',
+                        emoji: '🔮',
+                        gradient: 'bg-gradient-mysterious',
+                        colors: {
+                            primary: '#8b5cf6',
+                            secondary: '#7c3aed'
+                        },
+                        music: 'mysterious.mp3',
+                        effects: ['fog', 'stars']
+                    },
+                    elegant: {
+                        name: 'Élégant',
+                        emoji: '👑',
+                        gradient: 'bg-gradient-elegant',
+                        colors: {
+                            primary: '#6b7280',
+                            secondary: '#4b5563'
+                        },
+                        music: 'elegant-piano.mp3',
+                        effects: ['sparkles', 'glitter']
+                    }
+                };
+                
+                return templates[templateName] || templates.romantic;
+            }
+
+            initBackgroundEffects() {
+                // Initialiser les particules
+                if (typeof particlesJS !== 'undefined') {
+                    particlesJS('particles-js', {
+                        particles: {
+                            number: { value: 100, density: { enable: true, value_area: 800 } },
+                            color: { value: this.template?.colors.primary || '#ec4899' },
+                            shape: { type: 'circle' },
+                            opacity: { value: 0.5, random: true },
+                            size: { value: 3, random: true },
+                            line_linked: { 
+                                enable: true, 
+                                distance: 150, 
+                                color: this.template?.colors.primary || '#ec4899', 
+                                opacity: 0.4, 
+                                width: 1 
+                            },
+                            move: { enable: true, speed: 2, direction: 'none', random: true }
+                        }
+                    });
+                }
+                
+                // Initialiser l'animation 3D
+                this.initThreeJS();
+                
+                // Ajouter des effets spécifiques au template
+                this.initTemplateEffects();
+            }
+
+            initThreeJS() {
+                const container = document.getElementById('three-container');
+                if (!container || typeof THREE === 'undefined') return;
+                
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+                
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setClearColor(0x000000, 0);
+                container.appendChild(renderer.domElement);
+                
+                // Créer des formes selon le template
+                this.createThreeJSEffects(scene);
+                
+                // Lumières
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+                scene.add(ambientLight);
+                
+                const pointLight = new THREE.PointLight(
+                    parseInt(this.template.colors.primary.replace('#', '0x')), 
+                    0.5
+                );
+                pointLight.position.set(5, 5, 5);
+                scene.add(pointLight);
+                
+                camera.position.z = 10;
+                
+                // Animation
+                const animate = () => {
+                    requestAnimationFrame(animate);
+                    
+                    // Animer les objets
+                    if (scene.children.length > 2) {
+                        scene.children.forEach((child, index) => {
+                            if (index > 1) { // Ignorer les lumières
+                                child.rotation.x += 0.01;
+                                child.rotation.y += 0.01;
+                                
+                                // Mouvement de flottement
+                                child.position.y += Math.sin(Date.now() * 0.001 + index) * 0.01;
+                            }
+                        });
+                    }
+                    
+                    renderer.render(scene, camera);
+                };
+                animate();
+                
+                // Redimensionnement
+                window.addEventListener('resize', () => {
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
                 });
             }
-        }, { once: true });
+
+            createThreeJSEffects(scene) {
+                // Créer des cœurs pour template romantique
+                if (this.template.name === 'Romantique') {
+                    const heartGeometry = this.createHeartGeometry();
+                    const heartMaterial = new THREE.MeshPhongMaterial({ 
+                        color: parseInt(this.template.colors.primary.replace('#', '0x')),
+                        transparent: true,
+                        opacity: 0.3
+                    });
+                    
+                    for (let i = 0; i < 10; i++) {
+                        const heart = new THREE.Mesh(heartGeometry, heartMaterial);
+                        heart.position.x = (Math.random() - 0.5) * 20;
+                        heart.position.y = (Math.random() - 0.5) * 20;
+                        heart.position.z = (Math.random() - 0.5) * 20;
+                        heart.scale.set(0.5, 0.5, 0.5);
+                        scene.add(heart);
+                    }
+                }
+                
+                // Créer des étoiles pour template amitié
+                else if (this.template.name === 'Amitié') {
+                    const starGeometry = new THREE.OctahedronGeometry(0.3);
+                    const starMaterial = new THREE.MeshPhongMaterial({ 
+                        color: parseInt(this.template.colors.primary.replace('#', '0x')),
+                        transparent: true,
+                        opacity: 0.4,
+                        wireframe: true
+                    });
+                    
+                    for (let i = 0; i < 15; i++) {
+                        const star = new THREE.Mesh(starGeometry, starMaterial);
+                        star.position.x = (Math.random() - 0.5) * 20;
+                        star.position.y = (Math.random() - 0.5) * 20;
+                        star.position.z = (Math.random() - 0.5) * 20;
+                        scene.add(star);
+                    }
+                }
+                
+                // Formes géométriques pour autres templates
+                else {
+                    const geometry = new THREE.IcosahedronGeometry(0.4);
+                    const material = new THREE.MeshPhongMaterial({ 
+                        color: parseInt(this.template.colors.primary.replace('#', '0x')),
+                        transparent: true,
+                        opacity: 0.2,
+                        wireframe: true
+                    });
+                    
+                    for (let i = 0; i < 12; i++) {
+                        const shape = new THREE.Mesh(geometry, material);
+                        shape.position.x = (Math.random() - 0.5) * 20;
+                        shape.position.y = (Math.random() - 0.5) * 20;
+                        shape.position.z = (Math.random() - 0.5) * 20;
+                        scene.add(shape);
+                    }
+                }
+            }
+
+            createHeartGeometry() {
+                const shape = new THREE.Shape();
+                const x = 0, y = 0;
+                const width = 1, height = 1;
+                
+                shape.moveTo(x + width * 0.5, y + height * 0.85);
+                shape.bezierCurveTo(
+                    x + width * 0.5, y + height * 0.85,
+                    x + width * 0.2, y + height * 0.6,
+                    x + width * 0.5, y + height * 0.3
+                );
+                shape.bezierCurveTo(
+                    x + width * 0.8, y + height * 0.6,
+                    x + width * 0.5, y + height * 0.85,
+                    x + width * 0.5, y + height * 0.85
+                );
+                
+                const extrudeSettings = {
+                    depth: 0.1,
+                    bevelEnabled: true,
+                    bevelThickness: 0.1,
+                    bevelSize: 0.1,
+                    bevelSegments: 5
+                };
+                
+                return new THREE.ExtrudeGeometry(shape, extrudeSettings);
+            }
+
+            initTemplateEffects() {
+                // Ajouter des effets spécifiques au template
+                const effectsContainer = document.getElementById('dynamic-effects');
+                if (!effectsContainer) return;
+                
+                // Nettoyer les anciens effets
+                effectsContainer.innerHTML = '';
+                
+                // Ajouter des cœurs flottants pour template romantique
+                if (this.template.effects.includes('hearts')) {
+                    this.createFloatingHearts(15);
+                }
+                
+                // Ajouter des étoiles pour template amitié
+                if (this.template.effects.includes('stars')) {
+                    this.createFloatingStars(10);
+                }
+                
+                // Ajouter des confettis pour anniversaire
+                if (this.template.effects.includes('confetti')) {
+                    setTimeout(() => {
+                        this.launchConfetti();
+                    }, 1000);
+                }
+            }
+
+            initMusic() {
+                if (typeof Howl === 'undefined') return;
+                
+                // Musique de fond selon le template
+                const musicFile = this.surprise?.music || this.template.music;
+                this.backgroundMusic = new Howl({
+                    src: [`../assets/sounds/${musicFile}`],
+                    loop: true,
+                    volume: 0.2,
+                    html5: true,
+                    onload: () => {
+                        const musicControl = document.getElementById('music-control-surprise');
+                        if (musicControl) {
+                            musicControl.classList.remove('hidden');
+                            this.backgroundMusic.play();
+                        }
+                    }
+                });
+                
+                // Gestion du bouton musique
+                this.setupMusicControls();
+            }
+
+            setupMusicControls() {
+                const toggleBtn = document.getElementById('toggle-music-surprise');
+                const volumeSlider = document.getElementById('volume-slider-surprise');
+                const volumePanel = document.getElementById('volume-panel-surprise');
+                
+                if (toggleBtn && this.backgroundMusic) {
+                    toggleBtn.addEventListener('click', () => {
+                        if (this.backgroundMusic.playing()) {
+                            this.backgroundMusic.pause();
+                            toggleBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                            toggleBtn.classList.remove('from-purple-600', 'to-pink-600');
+                            toggleBtn.classList.add('from-gray-600', 'to-gray-800');
+                        } else {
+                            this.backgroundMusic.play();
+                            toggleBtn.innerHTML = '<i class="fas fa-music"></i>';
+                            toggleBtn.classList.remove('from-gray-600', 'to-gray-800');
+                            toggleBtn.classList.add('from-purple-600', 'to-pink-600');
+                        }
+                    });
+                    
+                    toggleBtn.addEventListener('mouseenter', () => {
+                        volumePanel.classList.remove('hidden');
+                    });
+                    
+                    toggleBtn.addEventListener('mouseleave', () => {
+                        setTimeout(() => {
+                            if (!volumePanel.matches(':hover')) {
+                                volumePanel.classList.add('hidden');
+                            }
+                        }, 500);
+                    });
+                }
+                
+                if (volumeSlider && this.backgroundMusic) {
+                    volumeSlider.addEventListener('input', (e) => {
+                        this.backgroundMusic.volume(e.target.value / 100);
+                    });
+                }
+            }
+
+            render() {
+                const app = document.getElementById('surprise-app');
+                const loading = document.getElementById('loading');
+                
+                if (loading) {
+                    loading.style.display = 'none';
+                }
+                
+                if (!app) return;
+                
+                if (!this.surprise) {
+                    this.showErrorPage();
+                    return;
+                }
+
+                // Appliquer le template au body
+                document.body.className = `min-h-screen flex flex-col ${this.template.gradient}`;
+                
+                app.innerHTML = this.renderStep();
+                
+                // Initialiser les événements spécifiques à l'étape
+                setTimeout(() => {
+                    this.bindStepEvents();
+                }, 100);
+            }
+
+            renderStep() {
+                if (this.step === 1) {
+                    return this.renderStep1();
+                }
+                
+                if (this.step === 2) {
+                    return this.renderStep2();
+                }
+                
+                if (this.step === 3) {
+                    return this.renderStep3();
+                }
+            }
+
+            renderStep1() {
+                return `
+                    <div class="max-w-md w-full animate-fadeIn">
+                        <div class="bg-white/20 backdrop-blur-sm rounded-3xl shadow-2xl p-8 text-white border border-white/30 card-3d">
+                            <div class="text-center">
+                                <div class="text-5xl mb-6 animate-float">${this.template.emoji}</div>
+                                <h1 class="text-2xl font-bold mb-4 text-glow">Accès Sécurisé</h1>
+                                <p class="opacity-90 mb-6">
+                                    <span class="font-bold">${this.surprise.deLaPartDe}</span> a préparé une surprise spéciale pour toi.
+                                </p>
+                                
+                                <div class="mb-6">
+                                    <div class="step-indicator bg-white/30 text-white mx-auto mb-4 active">
+                                        1
+                                    </div>
+                                    <p class="text-sm opacity-80">Étape 1 sur 3</p>
+                                </div>
+                                
+                                <div class="relative mb-6">
+                                    <input 
+                                        id="userName" 
+                                        type="text" 
+                                        placeholder="Ton prénom..."
+                                        class="w-full px-4 py-3 bg-white/20 rounded-xl placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all"
+                                        autocomplete="off"
+                                        autofocus
+                                    />
+                                    <div class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                        <i class="fas fa-user text-white/50"></i>
+                                    </div>
+                                </div>
+                                
+                                <div id="error" class="bg-yellow-500/20 border border-yellow-500/30 text-yellow-200 rounded-xl p-3 mb-4 hidden text-sm">
+                                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                                    <span id="errorText"></span>
+                                </div>
+                                
+                                <button id="validateBtn" class="w-full bg-white/30 hover:bg-white/40 py-3 rounded-xl transition font-bold hover:scale-105 active:scale-95 duration-200 shimmer-effect">
+                                    Valider <i class="fas fa-arrow-right ml-2"></i>
+                                </button>
+                                
+                                <p class="text-xs opacity-60 mt-6">
+                                    <i class="fas fa-lock mr-1"></i>
+                                    Cette surprise est protégée et personnelle
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderStep2() {
+                return `
+                    <div class="max-w-md w-full animate-fadeIn">
+                        <div class="bg-white/20 backdrop-blur-sm rounded-3xl shadow-2xl p-8 text-white border border-white/30 card-3d">
+                            <div class="text-center">
+                                <div class="text-5xl mb-6 animate-bounce">🤔</div>
+                                <h1 class="text-2xl font-bold mb-4 text-glow">Question Secrète</h1>
+                                
+                                <div class="mb-6">
+                                    <div class="flex justify-center space-x-2 mb-4">
+                                        <div class="step-indicator bg-white/30 text-white">1</div>
+                                        <div class="step-indicator bg-white/30 text-white active">2</div>
+                                        <div class="step-indicator bg-white/30 text-white">3</div>
+                                    </div>
+                                    <p class="text-sm opacity-80">Étape 2 sur 3</p>
+                                </div>
+                                
+                                <div class="mb-8">
+                                    <p class="text-xl mb-2">${this.surprise.question1 || 'Question personnelle'}</p>
+                                    <div class="text-sm opacity-70">
+                                        <i class="fas fa-question-circle mr-1"></i>
+                                        Répondez pour continuer
+                                    </div>
+                                </div>
+                                
+                                <div class="relative mb-6">
+                                    <input 
+                                        id="userAnswer" 
+                                        type="text" 
+                                        placeholder="Ta réponse..."
+                                        class="w-full px-4 py-3 bg-white/20 rounded-xl placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all"
+                                        autocomplete="off"
+                                        autofocus
+                                    />
+                                    <div class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                        <i class="fas fa-key text-white/50"></i>
+                                    </div>
+                                </div>
+                                
+                                <div id="error" class="bg-yellow-500/20 border border-yellow-500/30 text-yellow-200 rounded-xl p-3 mb-4 hidden text-sm">
+                                    <i class="fas fa-lightbulb mr-2"></i>
+                                    <span id="errorText"></span>
+                                </div>
+                                
+                                <button id="answerBtn" class="w-full bg-white/30 hover:bg-white/40 py-3 rounded-xl transition font-bold hover:scale-105 active:scale-95 duration-200 shimmer-effect">
+                                    Répondre <i class="fas fa-check ml-2"></i>
+                                </button>
+                                
+                                <p class="text-xs opacity-60 mt-6">
+                                    <i class="fas fa-shield-alt mr-1"></i>
+                                    Votre réponse est sécurisée
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderStep3() {
+                // Marquer comme complété
+                this.markAsCompleted();
+                
+                return `
+                    <div class="max-w-2xl w-full animate-fadeIn">
+                        <div class="bg-white/20 backdrop-blur-sm rounded-3xl shadow-2xl p-8 text-white border border-white/30">
+                            <div class="text-center">
+                                <div id="countdown" class="hidden">
+                                    <div class="text-8xl mb-6 animate-pulse-heart">3</div>
+                                    <p class="text-xl text-glow">Préparez-vous...</p>
+                                    <div class="loading-dots mt-4">
+                                        <div></div>
+                                        <div></div>
+                                        <div></div>
+                                    </div>
+                                </div>
+                                
+                                <div id="reveal">
+                                    <div class="text-6xl mb-6 animate-pulse-heart">${this.template.emoji}</div>
+                                    <h1 class="text-3xl font-bold mb-2 text-glow">Félicitations ${this.userName} !</h1>
+                                    <p class="opacity-90 mb-6 text-xl">Voici votre message secret</p>
+                                    
+                                    <div class="message-final mb-8 animate-text-reveal">
+                                        <p class="text-lg mb-3 opacity-80">Message de <span class="font-bold">${this.surprise.deLaPartDe}</span> :</p>
+                                        <p class="text-3xl italic font-semibold leading-relaxed" id="finalMessage">
+                                            "${this.surprise.messageFinal}"
+                                        </p>
+                                    </div>
+                                    
+                                    <p class="text-sm opacity-80 mb-8">
+                                        <i class="fas fa-heart mr-1 animate-pulse-heart"></i>
+                                        Cette surprise a été créée spécialement pour vous avec LoveCraft
+                                    </p>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                                        <a href="../create.html" 
+                                           class="share-button bg-white text-gray-800 px-6 py-4 rounded-xl font-bold hover:opacity-90 transition hover:scale-105 flex flex-col items-center">
+                                            <div class="text-2xl mb-2">
+                                                <i class="fas fa-heart"></i>
+                                            </div>
+                                            <div>Créer une surprise</div>
+                                        </a>
+                                        
+                                        <button id="shareStoryBtn" 
+                                                class="share-button bg-white/30 hover:bg-white/40 px-6 py-4 rounded-xl font-bold transition hover:scale-105 flex flex-col items-center">
+                                            <div class="text-2xl mb-2">
+                                                <i class="fas fa-camera"></i>
+                                            </div>
+                                            <div>Story Instagram</div>
+                                        </button>
+                                        
+                                        <button id="shareSurpriseBtn" 
+                                                class="share-button bg-white/30 hover:bg-white/40 px-6 py-4 rounded-xl font-bold transition hover:scale-105 flex flex-col items-center">
+                                            <div class="text-2xl mb-2">
+                                                <i class="fas fa-share-alt"></i>
+                                            </div>
+                                            <div>Partager</div>
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="bg-black/20 rounded-xl p-4">
+                                        <h3 class="font-bold mb-3 flex items-center justify-center">
+                                            <i class="fas fa-share-alt mr-2"></i>Partagez l'amour ❤️
+                                        </h3>
+                                        <div class="grid grid-cols-4 gap-3">
+                                            <button class="social-share bg-gradient-to-r from-green-500 to-green-600 text-white p-3 rounded-lg hover:opacity-90 transition hover:scale-110" data-platform="whatsapp">
+                                                <i class="fab fa-whatsapp text-xl"></i>
+                                            </button>
+                                            <button class="social-share bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 rounded-lg hover:opacity-90 transition hover:scale-110" data-platform="facebook">
+                                                <i class="fab fa-facebook text-xl"></i>
+                                            </button>
+                                            <button class="social-share bg-gradient-to-r from-pink-400 to-red-500 text-white p-3 rounded-lg hover:opacity-90 transition hover:scale-110" data-platform="instagram">
+                                                <i class="fab fa-instagram text-xl"></i>
+                                            </button>
+                                            <button class="social-share bg-gradient-to-r from-gray-800 to-black text-white p-3 rounded-lg hover:opacity-90 transition hover:scale-110" data-platform="copy">
+                                                <i class="fas fa-copy text-xl"></i>
+                                            </button>
+                                        </div>
+                                        <p class="text-center text-xs opacity-80 mt-3">
+                                            Partagez cette belle surprise avec vos proches
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Template info -->
+                        <div class="mt-6 bg-white/10 backdrop-blur-sm rounded-2xl p-4 text-white text-center">
+                            <div class="flex items-center justify-center">
+                                <div class="text-2xl mr-3">${this.template.emoji}</div>
+                                <div>
+                                    <p class="font-bold">Template: ${this.template.name}</p>
+                                    <p class="text-xs opacity-70">Musique: ${this.template.music.replace('.mp3', '')}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            bindEvents() {
+                // Gestion des modals
+                this.setupModals();
+                
+                // Gestion du footer
+                this.setupFooterEvents();
+            }
+
+            bindStepEvents() {
+                if (this.step === 1) {
+                    this.bindStep1Events();
+                } else if (this.step === 2) {
+                    this.bindStep2Events();
+                } else if (this.step === 3) {
+                    this.bindStep3Events();
+                }
+            }
+
+            bindStep1Events() {
+                const validateBtn = document.getElementById('validateBtn');
+                const userNameInput = document.getElementById('userName');
+                
+                if (validateBtn && userNameInput) {
+                    validateBtn.addEventListener('click', () => this.validateName());
+                    userNameInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') this.validateName();
+                    });
+                    
+                    // Focus automatique
+                    setTimeout(() => {
+                        userNameInput.focus();
+                    }, 300);
+                }
+            }
+
+            bindStep2Events() {
+                const answerBtn = document.getElementById('answerBtn');
+                const userAnswerInput = document.getElementById('userAnswer');
+                
+                if (answerBtn && userAnswerInput) {
+                    answerBtn.addEventListener('click', () => this.validateAnswer());
+                    userAnswerInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') this.validateAnswer();
+                    });
+                    
+                    // Focus automatique
+                    setTimeout(() => {
+                        userAnswerInput.focus();
+                    }, 300);
+                }
+            }
+
+            bindStep3Events() {
+                // Démarrer l'animation de révélation
+                this.startRevealAnimation();
+                
+                // Bouton Story Instagram
+                const shareStoryBtn = document.getElementById('shareStoryBtn');
+                if (shareStoryBtn) {
+                    shareStoryBtn.addEventListener('click', () => {
+                        this.createInstagramStory();
+                    });
+                }
+                
+                // Bouton partage général
+                const shareBtn = document.getElementById('shareSurpriseBtn');
+                if (shareBtn) {
+                    shareBtn.addEventListener('click', () => {
+                        this.showShareModal();
+                    });
+                }
+                
+                // Boutons sociaux
+                setTimeout(() => {
+                    document.querySelectorAll('.social-share').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            const platform = e.currentTarget.dataset.platform;
+                            this.shareSurprise(platform);
+                        });
+                    });
+                }, 300);
+                
+                // Effet sur le message final
+                this.animateFinalMessage();
+            }
+
+            validateName() {
+                const input = document.getElementById('userName')?.value.trim() || '';
+                this.userName = input;
+                const expected = this.surprise.pourQui.toLowerCase();
+                
+                // Validation flexible
+                if (input.toLowerCase() === expected || 
+                    input.toLowerCase().includes(expected) || 
+                    expected.includes(input.toLowerCase()) ||
+                    input.length > 0) { // Accepte tout nom pour faciliter
+                    
+                    // Animation de transition
+                    this.animateStepTransition();
+                    
+                    setTimeout(() => {
+                        this.step = 2;
+                        this.render();
+                        this.playSoundEffect('success');
+                    }, 500);
+                    
+                } else {
+                    const errorElement = document.getElementById('error');
+                    const errorText = document.getElementById('errorText');
+                    
+                    if (errorElement && errorText) {
+                        errorElement.classList.remove('hidden');
+                        errorText.textContent = `Cette surprise est pour ${this.surprise.pourQui} ❤️`;
+                    }
+                    
+                    this.playSoundEffect('error');
+                }
+            }
+
+            validateAnswer() {
+                const input = document.getElementById('userAnswer')?.value.toLowerCase().trim() || '';
+                const expected = (this.surprise.reponse1 || '').toLowerCase();
+                
+                // Si pas de réponse attendue ou réponse correcte
+                if (!this.surprise.reponse1 || this.surprise.reponse1.trim() === '' ||
+                    input === expected || input.includes(expected) || expected.includes(input) ||
+                    input.length > 0) { // Accepte toute réponse pour faciliter
+                    
+                    // Animation de transition
+                    this.animateStepTransition();
+                    
+                    setTimeout(() => {
+                        this.step = 3;
+                        this.render();
+                        this.startCountdown();
+                        this.playSoundEffect('reveal');
+                    }, 500);
+                    
+                } else {
+                    const errorElement = document.getElementById('error');
+                    const errorText = document.getElementById('errorText');
+                    
+                    if (errorElement && errorText) {
+                        errorElement.classList.remove('hidden');
+                        // Utiliser l'indice personnalisé si disponible
+                        const hint = this.surprise.customHint || this.surprise.reponse1 || 'Essayez encore !';
+                        errorText.innerHTML = `
+                            <div class="flex items-center">
+                                <i class="fas fa-lightbulb mr-2"></i>
+                                <span>${hint}</span>
+                            </div>
+                        `;
+                    }
+                    
+                    this.playSoundEffect('error');
+                }
+            }
+
+            startCountdown() {
+                const countdownEl = document.getElementById('countdown');
+                const revealEl = document.getElementById('reveal');
+                
+                if (countdownEl && revealEl) {
+                    countdownEl.classList.remove('hidden');
+                    revealEl.classList.add('hidden');
+                    
+                    let count = 3;
+                    const countdownInterval = setInterval(() => {
+                        countdownEl.innerHTML = `
+                            <div class="text-8xl mb-6 animate-pulse-heart">${count}</div>
+                            <p class="text-xl text-glow">Préparez-vous...</p>
+                            <div class="loading-dots mt-4">
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                            </div>
+                        `;
+                        
+                        count--;
+                        
+                        if (count < 0) {
+                            clearInterval(countdownInterval);
+                            countdownEl.classList.add('hidden');
+                            revealEl.classList.remove('hidden');
+                            
+                            // Lancer les effets finaux
+                            this.launchFinalEffects();
+                            this.bindStep3Events();
+                        }
+                    }, 1000);
+                }
+            }
+
+            startRevealAnimation() {
+                // Animation flash sur le message
+                const messageEl = document.getElementById('finalMessage');
+                if (messageEl) {
+                    setTimeout(() => {
+                        messageEl.classList.add('animate-flash');
+                        messageEl.style.animation = 'flash 0.5s ease-in-out 3';
+                    }, 500);
+                }
+                
+                // Lancer des confettis
+                this.launchConfetti();
+                
+                // Ajouter des cœurs
+                this.createFloatingHearts(10);
+            }
+
+            animateStepTransition() {
+                const app = document.getElementById('surprise-app');
+                if (app) {
+                    app.style.opacity = '0';
+                    app.style.transform = 'translateY(20px)';
+                    app.style.transition = 'all 0.5s ease';
+                    
+                    setTimeout(() => {
+                        app.style.opacity = '1';
+                        app.style.transform = 'translateY(0)';
+                    }, 500);
+                }
+            }
+
+            animateFinalMessage() {
+                const messageEl = document.getElementById('finalMessage');
+                if (!messageEl) return;
+                
+                const text = messageEl.textContent;
+                messageEl.textContent = '';
+                
+                // Animation de révélation lettre par lettre
+                let i = 0;
+                const interval = setInterval(() => {
+                    if (i < text.length) {
+                        messageEl.textContent += text.charAt(i);
+                        i++;
+                    } else {
+                        clearInterval(interval);
+                    }
+                }, 30);
+            }
+
+            createFloatingHearts(count) {
+                const container = document.getElementById('dynamic-effects');
+                if (!container) return;
+                
+                for (let i = 0; i < count; i++) {
+                    const heart = document.createElement('div');
+                    heart.className = 'heart-float';
+                    heart.innerHTML = '❤️';
+                    heart.style.cssText = `
+                        font-size: ${Math.random() * 24 + 16}px;
+                        left: ${Math.random() * 100}%;
+                        top: ${Math.random() * 100}%;
+                        opacity: ${Math.random() * 0.5 + 0.3};
+                        animation: float ${Math.random() * 6 + 3}s linear infinite;
+                        animation-delay: ${Math.random() * 2}s;
+                    `;
+                    
+                    container.appendChild(heart);
+                }
+                
+                // Ajouter l'animation CSS si pas déjà présente
+                if (!document.querySelector('#float-animation')) {
+                    const style = document.createElement('style');
+                    style.id = 'float-animation';
+                    style.textContent = `
+                        @keyframes float {
+                            0% {
+                                transform: translateY(100vh) rotate(0deg);
+                                opacity: 0;
+                            }
+                            10% {
+                                opacity: ${Math.random() * 0.5 + 0.3};
+                            }
+                            90% {
+                                opacity: ${Math.random() * 0.3 + 0.1};
+                            }
+                            100% {
+                                transform: translateY(-100px) rotate(${Math.random() * 360}deg);
+                                opacity: 0;
+                            }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
+
+            createFloatingStars(count) {
+                const container = document.getElementById('dynamic-effects');
+                if (!container) return;
+                
+                for (let i = 0; i < count; i++) {
+                    const star = document.createElement('div');
+                    star.className = 'snowflake';
+                    star.innerHTML = '✨';
+                    star.style.cssText = `
+                        font-size: ${Math.random() * 20 + 12}px;
+                        left: ${Math.random() * 100}%;
+                        top: ${Math.random() * 100}%;
+                        opacity: ${Math.random() * 0.4 + 0.1};
+                        animation: float ${Math.random() * 8 + 4}s linear infinite;
+                        animation-delay: ${Math.random() * 3}s;
+                    `;
+                    
+                    container.appendChild(star);
+                }
+            }
+
+            launchConfetti() {
+                if (typeof confetti === 'undefined') return;
+                
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: [
+                        this.template.colors.primary,
+                        this.template.colors.secondary,
+                        '#ffffff',
+                        '#ffd700'
+                    ]
+                });
+                
+                // Lancer plusieurs fois
+                setTimeout(() => {
+                    confetti({
+                        particleCount: 100,
+                        angle: 60,
+                        spread: 55,
+                        origin: { x: 0, y: 0.6 },
+                        colors: [this.template.colors.primary]
+                    });
+                }, 250);
+                
+                setTimeout(() => {
+                    confetti({
+                        particleCount: 100,
+                        angle: 120,
+                        spread: 55,
+                        origin: { x: 1, y: 0.6 },
+                        colors: [this.template.colors.secondary]
+                    });
+                }, 500);
+            }
+
+            launchFinalEffects() {
+                // Lancer tous les effets finaux
+                this.launchConfetti();
+                this.createFloatingHearts(20);
+                this.createFloatingStars(15);
+                
+                // Flash screen
+                this.flashScreen(this.template.colors.primary, 300);
+                
+                // Jouer son de révélation
+                this.playSoundEffect('reveal');
+                
+                // Augmenter la musique
+                if (this.backgroundMusic) {
+                    this.backgroundMusic.volume(0.3);
+                }
+            }
+
+            flashScreen(color, duration) {
+                const flash = document.createElement('div');
+                flash.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: ${color};
+                    opacity: 0;
+                    z-index: 9999;
+                    pointer-events: none;
+                    animation: flash-screen ${duration}ms ease-out;
+                `;
+                
+                document.body.appendChild(flash);
+                
+                setTimeout(() => flash.remove(), duration);
+                
+                // Ajouter l'animation CSS
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes flash-screen {
+                        0% { opacity: 0; }
+                        50% { opacity: 0.5; }
+                        100% { opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+                setTimeout(() => style.remove(), duration);
+            }
+
+            async markAsCompleted() {
+                try {
+                    const surpriseRef = ref(database, 'surprises/' + this.surpriseId);
+                    const currentCompleted = this.surprise.completedViews || 0;
+                    await update(surpriseRef, {
+                        completedViews: currentCompleted + 1
+                    });
+                } catch (error) {
+                    console.error('Erreur:', error);
+                }
+            }
+
+            updateFooter() {
+                const footerCreator = document.getElementById('footer-creator');
+                if (footerCreator && this.surprise.deLaPartDe) {
+                    footerCreator.textContent = `par ${this.surprise.deLaPartDe}`;
+                }
+            }
+
+            setupModals() {
+                // Modal partage
+                const shareModal = document.getElementById('shareModal');
+                const closeShare = document.getElementById('closeShareModal');
+                const closeShareBtn = document.getElementById('closeShareBtn');
+                
+                if (closeShare) {
+                    closeShare.addEventListener('click', () => {
+                        shareModal.classList.add('hidden');
+                    });
+                }
+                
+                if (closeShareBtn) {
+                    closeShareBtn.addEventListener('click', () => {
+                        shareModal.classList.add('hidden');
+                    });
+                }
+                
+                // Modal créer
+                const createModal = document.getElementById('createModal');
+                const closeCreate = document.getElementById('closeCreateModal');
+                const closeCreateBtn = document.getElementById('closeCreateBtn');
+                
+                if (closeCreate) {
+                    closeCreate.addEventListener('click', () => {
+                        createModal.classList.add('hidden');
+                    });
+                }
+                
+                if (closeCreateBtn) {
+                    closeCreateBtn.addEventListener('click', () => {
+                        createModal.classList.add('hidden');
+                    });
+                }
+                
+                // Fermer en cliquant à l'extérieur
+                [shareModal, createModal].forEach(modal => {
+                    if (modal) {
+                        modal.addEventListener('click', (e) => {
+                            if (e.target === modal) {
+                                modal.classList.add('hidden');
+                            }
+                        });
+                    }
+                });
+            }
+
+            setupFooterEvents() {
+                // Bouton créer la vôtre
+                const createBtn = document.getElementById('create-own-btn');
+                if (createBtn) {
+                    createBtn.addEventListener('click', () => {
+                        document.getElementById('createModal').classList.remove('hidden');
+                        this.playSoundEffect('click');
+                    });
+                }
+                
+                // Bouton partager footer
+                const shareFooterBtn = document.getElementById('share-footer-btn');
+                if (shareFooterBtn) {
+                    shareFooterBtn.addEventListener('click', () => {
+                        this.showShareModal();
+                    });
+                }
+            }
+
+            showShareModal() {
+                const shareModal = document.getElementById('shareModal');
+                const sharePreview = document.getElementById('sharePreview');
+                
+                if (!shareModal || !sharePreview) return;
+                
+                sharePreview.innerHTML = `
+                    <div class="bg-gradient-to-r ${this.template.gradient.replace('bg-', '')} rounded-xl p-4 text-white">
+                        <div class="flex items-center">
+                            <div class="text-3xl mr-3">${this.template.emoji}</div>
+                            <div>
+                                <p class="font-bold">Surprise LoveCraft</p>
+                                <p class="text-sm opacity-80">Pour ${this.surprise.pourQui}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Boutons de partage
+                shareModal.querySelectorAll('.share-platform').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const platform = e.currentTarget.dataset.platform;
+                        this.shareSurprise(platform);
+                        shareModal.classList.add('hidden');
+                    });
+                });
+                
+                // Bouton Story Instagram
+                const createStoryBtn = document.getElementById('createStoryBtn');
+                if (createStoryBtn) {
+                    createStoryBtn.addEventListener('click', () => {
+                        this.createInstagramStory();
+                        shareModal.classList.add('hidden');
+                    });
+                }
+                
+                shareModal.classList.remove('hidden');
+                this.playSoundEffect('click');
+            }
+
+            createInstagramStory() {
+                // Créer un canvas pour la story
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = 1080;
+                canvas.height = 1920;
+                
+                // Fond gradient
+                const gradient = ctx.createLinearGradient(0, 0, 1080, 1920);
+                gradient.addColorStop(0, this.template.colors.primary);
+                gradient.addColorStop(1, this.template.colors.secondary);
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, 1080, 1920);
+                
+                // Logo LoveCraft
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 72px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('LoveCraft', 540, 200);
+                
+                // Emoji du template
+                ctx.font = '100px Arial';
+                ctx.fillText(this.template.emoji, 540, 320);
+                
+                // Message
+                ctx.font = 'bold 48px Arial';
+                ctx.fillText('J\'ai reçu une', 540, 500);
+                ctx.fillText('surprise magique !', 540, 580);
+                
+                // Message personnalisé
+                ctx.font = 'italic 36px Arial';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                
+                // Découper le message
+                const message = `"${this.surprise.messageFinal.substring(0, 100)}..."`;
+                const lines = this.wrapText(ctx, message, 540, 700, 900, 50);
+                
+                lines.forEach((line, index) => {
+                    ctx.fillText(line, 540, 700 + (index * 50));
+                });
+                
+                // Signature
+                ctx.font = 'bold 40px Arial';
+                ctx.fillText(`- ${this.surprise.deLaPartDe}`, 540, 900);
+                
+                // QR Code placeholder
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+                ctx.fillRect(290, 1000, 500, 500);
+                
+                ctx.fillStyle = 'white';
+                ctx.font = '32px Arial';
+                ctx.fillText('Scanne pour créer', 540, 1600);
+                ctx.fillText('ta propre surprise', 540, 1650);
+                
+                // Watermark
+                ctx.font = '24px Arial';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.fillText('Créé avec LoveCraft', 540, 1850);
+                ctx.fillText('lovecraft.com', 540, 1900);
+                
+                // Télécharger
+                const link = document.createElement('a');
+                link.download = `LoveCraft_Story_${this.userName}.jpg`;
+                link.href = canvas.toDataURL('image/jpeg', 0.9);
+                link.click();
+                
+                this.showNotification('📸 Story téléchargée ! Partagez-la sur Instagram.');
+                this.playSoundEffect('success');
+            }
+
+            wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+                const words = text.split(' ');
+                const lines = [];
+                let line = '';
+                
+                for (let n = 0; n < words.length; n++) {
+                    const testLine = line + words[n] + ' ';
+                    const metrics = ctx.measureText(testLine);
+                    const testWidth = metrics.width;
+                    
+                    if (testWidth > maxWidth && n > 0) {
+                        lines.push(line);
+                        line = words[n] + ' ';
+                    } else {
+                        line = testLine;
+                    }
+                }
+                lines.push(line);
+                
+                return lines;
+            }
+
+            shareSurprise(platform) {
+                const url = window.location.href;
+                const message = `✨ ${this.surprise.deLaPartDe} m'a envoyé une surprise magique sur LoveCraft ! ✨\n\n"${this.surprise.messageFinal.substring(0, 100)}..."\n\n${url}\n\nCréez vos propres surprises sur LoveCraft 💖`;
+                
+                let shareUrl = '';
+                
+                switch(platform) {
+                    case 'whatsapp':
+                        shareUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                        window.open(shareUrl, '_blank');
+                        break;
+                        
+                    case 'facebook':
+                        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(message)}`;
+                        window.open(shareUrl, '_blank', 'width=600,height=400');
+                        break;
+                        
+                    case 'instagram':
+                        this.createInstagramStory();
+                        break;
+                        
+                    case 'copy':
+                        navigator.clipboard.writeText(message).then(() => {
+                            this.showNotification('✅ Message copié dans le presse-papier !');
+                        }).catch(() => {
+                            // Fallback
+                            const tempInput = document.createElement('input');
+                            tempInput.value = message;
+                            document.body.appendChild(tempInput);
+                            tempInput.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(tempInput);
+                            this.showNotification('✅ Message copié !');
+                        });
+                        break;
+                }
+                
+                this.playSoundEffect('click');
+            }
+
+            playSoundEffect(type) {
+                try {
+                    const sounds = {
+                        click: new Audio('../assets/sounds/click.mp3'),
+                        success: new Audio('../assets/sounds/success.mp3'),
+                        reveal: new Audio('../assets/sounds/reveal.mp3'),
+                        error: new Audio('../assets/sounds/error.mp3')
+                    };
+                    
+                    if (sounds[type]) {
+                        sounds[type].volume = 0.3;
+                        sounds[type].play().catch(() => {
+                            // Silencieux en cas d'erreur
+                        });
+                    }
+                } catch (error) {
+                    // Silencieux en cas d'erreur
+                }
+            }
+
+            showErrorPage() {
+                const app = document.getElementById('surprise-app');
+                if (app) {
+                    app.innerHTML = `
+                        <div class="max-w-md w-full bg-white/20 backdrop-blur-sm rounded-3xl shadow-2xl p-8 text-white border border-white/30 text-center">
+                            <div class="text-5xl mb-6">😢</div>
+                            <h1 class="text-2xl font-bold text-glow mb-4">Surprise non trouvée</h1>
+                            <p class="opacity-90 mb-6">Cette surprise a été supprimée ou n'existe plus.</p>
+                            <a href="${window.location.origin}/LoveCraft" class="inline-block bg-white/30 hover:bg-white/40 text-white px-6 py-3 rounded-xl font-bold transition hover:scale-105">
+                                <i class="fas fa-arrow-left mr-2"></i>Retour à l'accueil
+                            </a>
+                        </div>
+                    `;
+                }
+            }
+
+            showNotification(message) {
+                const notification = document.createElement('div');
+                notification.className = 'fixed top-4 right-4 bg-green-100 border border-green-300 text-green-800 px-6 py-4 rounded-lg shadow-lg z-50 animate-fadeIn';
+                notification.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle mr-3"></i>
+                        <div class="font-medium">${message}</div>
+                    </div>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.style.transform = 'translateX(100%)';
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
+            }
+        }
+
+        // Exposer la classe globalement
+        window.SurpriseViewerEnhanced = SurpriseViewerEnhanced;
     </script>
 </body>
 </html>
