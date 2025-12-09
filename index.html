@@ -7,6 +7,16 @@
     <title>LoveCraft - Créez des surprises digitales</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- AJOUTER DANS LA SECTION <head> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
+    <style>
+      #music-control {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+      }
+    </style>
     <style>
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
@@ -478,6 +488,49 @@
             });
         });
     </script>
+    <!-- AJOUTER AVANT LA FERMETURE DU </body> -->
+<div id="music-control" class="hidden">
+  <button id="toggle-music" class="bg-purple-600 text-white p-3 rounded-full shadow-lg hover:bg-purple-700">
+    <i class="fas fa-music"></i>
+  </button>
+</div>
+
+<script>
+  // MUSIQUE GLOBALE
+  let globalMusic = null;
+  
+  function initGlobalMusic() {
+    if (!globalMusic) {
+      globalMusic = new Howl({
+        src: ['assets/sounds/romantic-piano.mp3'],
+        loop: true,
+        volume: 0.3,
+        html5: true,
+        onload: function() {
+          document.getElementById('music-control').classList.remove('hidden');
+          globalMusic.play();
+        }
+      });
+    }
+  }
+  
+  // Démarrer la musique au premier clic
+  document.addEventListener('click', function initMusicOnce() {
+    initGlobalMusic();
+    document.removeEventListener('click', initMusicOnce);
+  }, { once: true });
+  
+  // Contrôle de la musique
+  document.getElementById('toggle-music')?.addEventListener('click', function() {
+    if (globalMusic.playing()) {
+      globalMusic.pause();
+      this.innerHTML = '<i class="fas fa-volume-mute"></i>';
+    } else {
+      globalMusic.play();
+      this.innerHTML = '<i class="fas fa-music"></i>';
+    }
+  });
+</script>
 </body>
 </html>
 
