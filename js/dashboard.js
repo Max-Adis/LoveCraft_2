@@ -1,5 +1,37 @@
-[file name]: dashboard.js (suite et fin)
-[file content begin]
+
+import { auth, database, ref, get, onAuthStateChanged, signOut, remove } from './firebase.js';
+
+class DashboardManager {
+    constructor() {
+        this.user = null;
+        this.surprises = [];
+        this.stats = {};
+        this.badges = [];
+        this.init();
+    }
+
+    async init() {
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            this.user = user;
+            await this.loadUserData();
+            this.render();
+            this.bindEvents();
+            this.setupMobileMenu();
+        });
+    }
+
+    async loadUserData() {
+        try {
+            // Charger TOUTES les surprises
+            const surprisesRef = ref(database, 'surprises');
+            const snapshot = await get(surprisesRef);
+            
+       
         } catch (error) {
             console.error('❌ Erreur chargement données:', error);
             this.showError('Impossible de charger les données');
