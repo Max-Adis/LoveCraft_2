@@ -7,33 +7,22 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- NOUVELLES LIBRAIRIES -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-    
-    <!-- QR Code Library -->
+    <!-- Librairie QR Code seulement -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
-    <!-- Nouvelle librairie pour meilleurs QR Codes -->
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
-    
-    <!-- html2canvas pour génération images -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
     <style>
-        /* FORCE TEXTE NOIR SUR TOUS LES INPUTS */
+        /* FORCE TEXTE NOIR */
         input, textarea, select {
-            color: #1f2937 !important; /* gray-800 */
+            color: #1f2937 !important;
             background-color: white !important;
             border: 1px solid #d1d5db !important;
         }
         
-        input::placeholder, textarea::placeholder, select::placeholder {
-            color: #9ca3af !important; /* gray-400 */
+        input::placeholder, textarea::placeholder {
+            color: #9ca3af !important;
         }
         
-        /* Animation pour QR Code */
+        /* Animation QR Code */
         @keyframes qr-appear {
             from { opacity: 0; transform: scale(0.8); }
             to { opacity: 1; transform: scale(1); }
@@ -43,96 +32,41 @@
             animation: qr-appear 0.5s ease-out;
         }
         
-        /* ANIMATIONS AJOUTÉES */
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(236, 72, 153, 0.5); }
-            50% { box-shadow: 0 0 40px rgba(236, 72, 153, 0.8); }
-        }
-        
-        @keyframes float-slow {
+        /* Animation cœur */
+        @keyframes float-heart {
             0%, 100% { transform: translateY(0) rotate(0deg); }
             50% { transform: translateY(-10px) rotate(5deg); }
         }
         
-        @keyframes shine {
-            0% { background-position: -100px; }
-            100% { background-position: 200px; }
+        .animate-float-heart {
+            animation: float-heart 3s ease-in-out infinite;
         }
         
-        .animate-pulse-glow {
-            animation: pulse-glow 2s ease-in-out infinite;
-        }
-        
-        .animate-float-slow {
-            animation: float-slow 3s ease-in-out infinite;
-        }
-        
-        .animate-shine {
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            background-size: 200px 100%;
-            animation: shine 2s infinite;
-        }
-        
-        /* STYLES POUR TEMPLATES */
-        .template-card {
-            transition: all 0.3s ease;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .template-card:hover {
-            transform: translateY(-5px) scale(1.02);
-        }
-        
-        .template-card.selected {
-            border-width: 3px;
-            border-color: #8b5cf6;
-        }
-        
-        .template-badge {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: #8b5cf6;
-            color: white;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 10px;
-        }
-        
-        /* STYLES POUR EFFETS 3D */
-        #three-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            pointer-events: none;
-            opacity: 0.3;
-        }
-        
-        /* STYLE POUR INDICE PERSONNALISÉ */
+        /* Style pour indice */
         .hint-section {
             border-left: 4px solid #f59e0b;
             background: linear-gradient(to right, #fef3c7, #fefce8);
         }
         
-        /* ANIMATION POUR MESSAGE */
-        .message-preview {
-            min-height: 150px;
+        /* Template cards */
+        .template-card {
             transition: all 0.3s ease;
+            cursor: pointer;
         }
         
-        .message-preview:hover {
-            transform: scale(1.01);
+        .template-card:hover {
+            transform: translateY(-3px);
         }
         
-        /* BOUTON SPÉCIAL */
+        .template-card.selected {
+            border-width: 3px !important;
+            transform: scale(1.05);
+        }
+        
+        /* Bouton magique */
         .btn-magic {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #ec4899 50%, #f59e0b 75%, #10b981 100%);
-            background-size: 400% 400%;
+            background: linear-gradient(135deg, #ec4899, #8b5cf6, #3b82f6);
+            background-size: 200% 200%;
             animation: gradient-shift 3s ease infinite;
         }
         
@@ -142,42 +76,23 @@
             100% { background-position: 0% 50%; }
         }
         
-        /* STYLE POUR PARTAGE */
-        .share-option {
-            transition: all 0.2s ease;
-        }
-        
-        .share-option:hover {
-            transform: scale(1.1);
+        /* Cœurs flottants */
+        .floating-heart {
+            position: absolute;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.3;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col bg-gradient-to-br from-pink-50 to-red-50">
-    <!-- BACKGROUND 3D -->
-    <div id="three-bg"></div>
-    
-    <!-- PARTICULES -->
-    <div id="particles-create" style="position: fixed; width: 100%; height: 100%; top: 0; left: 0; z-index: 0; pointer-events: none;"></div>
-    
-    <!-- BOUTON MUSIQUE -->
-    <div id="music-control-create" class="fixed bottom-6 right-6 z-40 hidden">
-        <button id="toggle-music-create" class="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center">
-            <i class="fas fa-music"></i>
-        </button>
-        <div id="volume-panel-create" class="mt-2 bg-white rounded-lg p-2 shadow-lg hidden">
-            <input type="range" min="0" max="100" value="30" class="w-full" id="volume-slider-create">
-            <p class="text-xs text-gray-600 text-center mt-1">Volume</p>
-        </div>
-    </div>
-
-    <!-- Navigation -->
-    <nav class="bg-white shadow-sm relative z-10">
+<body class="min-h-screen flex flex-col bg-gradient-to-br from-purple-50 to-pink-50">
+    <!-- Navigation simple -->
+    <nav class="bg-white shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
                     <a href="dashboard.html" class="flex-shrink-0 flex items-center">
-                        <!-- LOGO ROND PARFAIT -->
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center overflow-hidden mr-3 border-2 border-white shadow-lg animate-float-slow">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center overflow-hidden mr-3 border-2 border-white shadow-lg animate-float-heart">
                             <img src="assets/logo.png" alt="LoveCraft Logo" class="w-full h-full object-cover p-0.5">
                         </div>
                         <span class="text-xl font-bold text-purple-600">LoveCraft</span>
@@ -185,757 +100,60 @@
                 </div>
                 <div class="flex items-center">
                     <a href="dashboard.html" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium hover:bg-purple-50 transition">
-                        <i class="fas fa-arrow-left mr-1"></i>Retour au dashboard
+                        <i class="fas fa-arrow-left mr-1"></i>Retour
                     </a>
                 </div>
             </div>
         </div>
     </nav>
 
-    <div id="app" class="flex-grow max-w-6xl mx-auto px-4 md:px-8 py-8 relative z-10">
+    <div id="app" class="flex-grow max-w-6xl mx-auto px-4 md:px-8 py-8">
         <!-- Chargement -->
         <div id="loading" class="text-center py-12">
             <div class="inline-block animate-pulse">
-                <div class="w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center mb-4 animate-pulse-glow">
+                <div class="w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center mb-4">
                     <i class="fas fa-heart text-white text-2xl"></i>
                 </div>
             </div>
-            <p class="text-gray-600">Chargement du créateur de surprise...</p>
+            <p class="text-gray-600">Chargement du créateur...</p>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white mt-auto relative z-10">
-        <div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Footer simple -->
+    <footer class="bg-gray-800 text-white mt-auto">
+        <div class="max-w-7xl mx-auto px-4 py-6">
             <div class="text-center">
-                <p class="text-gray-400">© 2025 LoveCraft - Conçu avec ❤️ par Max_Adis</p>
-                <div class="flex justify-center space-x-6 mt-4">
-                    <a href="legal/terms.html" class="text-gray-400 hover:text-white text-sm transition">Conditions</a>
-                    <a href="legal/privacy.html" class="text-gray-400 hover:text-white text-sm transition">Confidentialité</a>
-                    <a href="mailto:contact@lovecraft.com" class="text-gray-400 hover:text-white text-sm transition contact-footer">Contact</a>
-                </div>
+                <p class="text-gray-400 text-sm">© 2025 LoveCraft - Fait avec ❤️</p>
             </div>
         </div>
     </footer>
 
-    <!-- Modal Contact -->
-    <div id="contactModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50 overflow-y-auto">
-        <div class="min-h-screen flex items-center justify-center p-4">
-            <div class="bg-white rounded-xl max-w-md w-full p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-bold text-gray-800">Contactez-nous</h3>
-                    <button id="closeContactModal" class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                
-                <form id="contactForm" action="https://formspree.io/f/mgvgzykk" method="POST">
-                    <input type="hidden" name="_replyto" value="maxhounkpatin001@gmail.com">
-                    <input type="hidden" name="_subject" value="Contact LoveCraft">
-                    
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Votre nom *</label>
-                        <input type="text" name="name" required
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-800"
-                               placeholder="Votre nom complet">
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Votre email *</label>
-                        <input type="email" name="email" required
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-800"
-                               placeholder="votre@email.com">
-                    </div>
-                    
-                    <div class="mb-6">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Votre message *</label>
-                        <textarea name="message" rows="4" required
-                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-800"
-                                  placeholder="Comment pouvons-nous vous aider ?"></textarea>
-                    </div>
-                    
-                    <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-bold hover:opacity-90 transition">
-                        <i class="fas fa-paper-plane mr-2"></i>Envoyer le message
-                    </button>
-                </form>
-                
-                <div class="mt-6 pt-6 border-t border-gray-200">
-                    <p class="text-sm text-gray-600">
-                        <i class="fas fa-envelope mr-2"></i>
-                        <strong>Email :</strong> maxhounkpatin001@gmail.com
-                    </p>
-                    <p class="text-sm text-gray-600 mt-2">
-                        <i class="fas fa-clock mr-2"></i>
-                        Réponse sous 24-48h
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Aperçu -->
-    <div id="previewModal" class="fixed inset-0 bg-black bg-opacity-70 hidden z-50 overflow-y-auto">
-        <div class="min-h-screen flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl max-w-2xl w-full overflow-hidden">
-                <div class="bg-gradient-to-r from-purple-600 to-pink-600 p-6 text-white">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-2xl font-bold">
-                            <i class="fas fa-eye mr-2"></i>Aperçu de votre surprise
-                        </h3>
-                        <button id="closePreviewModal" class="text-white hover:text-gray-200">
-                            <i class="fas fa-times text-xl"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="p-6">
-                    <div id="previewContent" class="text-center space-y-6">
-                        <!-- Aperçu sera injecté ici -->
-                        <div class="text-center py-8">
-                            <div class="text-4xl mb-4 animate-spin">⏳</div>
-                            <p>Chargement de l'aperçu...</p>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-8 pt-6 border-t border-gray-200">
-                        <button id="closePreviewBtn" class="w-full bg-gray-100 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-200 transition">
-                            Fermer l'aperçu
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- NOUVEAU: Modal Templates -->
-    <div id="templatesModal" class="fixed inset-0 bg-black bg-opacity-70 hidden z-50 overflow-y-auto">
-        <div class="min-h-screen flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                <div class="bg-gradient-to-r from-purple-600 to-pink-600 p-6 text-white sticky top-0">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-2xl font-bold">
-                            <i class="fas fa-palette mr-2"></i>Choisissez un template
-                        </h3>
-                        <button id="closeTemplatesModal" class="text-white hover:text-gray-200">
-                            <i class="fas fa-times text-xl"></i>
-                        </button>
-                    </div>
-                    <p class="opacity-90 mt-2">Sélectionnez un thème pour personnaliser votre surprise</p>
-                </div>
-                
-                <div class="p-6">
-                    <div id="templatesGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <!-- Templates seront injectés ici -->
-                    </div>
-                    
-                    <div class="mt-8 pt-6 border-t border-gray-200">
-                        <button id="confirmTemplateBtn" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-bold hover:opacity-90 transition">
-                            <i class="fas fa-check mr-2"></i>Appliquer ce template
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- IMPORT DES MODULES -->
-    <script type="module">
-        import { auth, onAuthStateChanged } from './js/firebase.js';
-        
-        onAuthStateChanged(auth, (user) => {
-            if (!user) {
-                window.location.href = 'index.html';
-                return;
-            }
-            
-            // Cache le loader
-            document.getElementById('loading').style.display = 'none';
-            
-            // Charge le créateur avec les nouvelles fonctionnalités
-            import('./js/creator-enhanced.js').then(module => {
-                new module.default(user.uid);
-            }).catch(error => {
-                console.error('Erreur:', error);
-                // Fallback à l'ancien creator
-                import('./js/creator.js').then(module => {
-                    new module.default(user.uid);
-                }).catch(() => {
-                    document.getElementById('app').innerHTML = `
-                        <div class="text-center py-12">
-                            <div class="text-5xl mb-4">😢</div>
-                            <h2 class="text-2xl font-bold text-gray-800 mb-4">Erreur</h2>
-                            <p class="text-gray-600 mb-6">Impossible de charger le créateur</p>
-                            <a href="dashboard.html" class="text-purple-600 hover:text-purple-700">
-                                Retour au dashboard
-                            </a>
-                        </div>
-                    `;
-                });
-            });
-        });
-    </script>
+    <!-- Script principal -->
+    <script type="module" src="js/creator.js"></script>
     
-    <!-- NOUVEAU: FICHIER TEMPLATES -->
-    <script type="module" src="js/templates.js"></script>
-    
-    <!-- SCRIPTS LOCAUX -->
+    <!-- Script pour effets légers -->
     <script>
-        // Gestion du modal contact
+        // Créer quelques cœurs flottants
         document.addEventListener('DOMContentLoaded', function() {
-            // INITIALISER LES PARTICULES
-            if (typeof particlesJS !== 'undefined') {
-                particlesJS('particles-create', {
-                    particles: {
-                        number: { value: 60, density: { enable: true, value_area: 800 } },
-                        color: { value: '#ec4899' },
-                        shape: { type: 'circle' },
-                        opacity: { value: 0.3, random: true },
-                        size: { value: 2, random: true },
-                        line_linked: { enable: false },
-                        move: { enable: true, speed: 1, direction: 'none', random: true }
-                    }
-                });
-            }
-            
-            // INITIALISER L'ANIMATION 3D
-            function initCreateBackground() {
-                const container = document.getElementById('three-bg');
-                if (!container || typeof THREE === 'undefined') return;
-                
-                const scene = new THREE.Scene();
-                const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-                const renderer = new THREE.WebGLRenderer({ alpha: true });
-                
-                renderer.setSize(window.innerWidth, window.innerHeight);
-                renderer.setClearColor(0x000000, 0);
-                container.appendChild(renderer.domElement);
-                
-                // Créer des formes géométriques pour inspiration
-                const geometries = [
-                    new THREE.TorusGeometry(0.5, 0.2, 16, 100),
-                    new THREE.OctahedronGeometry(0.4),
-                    new THREE.DodecahedronGeometry(0.35),
-                    new THREE.IcosahedronGeometry(0.3)
-                ];
-                
-                const material = new THREE.MeshPhongMaterial({ 
-                    color: 0x8b5cf6, 
-                    transparent: true, 
-                    opacity: 0.1,
-                    wireframe: true 
-                });
-                
-                const shapes = [];
-                for (let i = 0; i < 8; i++) {
-                    const geometry = geometries[Math.floor(Math.random() * geometries.length)];
-                    const shape = new THREE.Mesh(geometry, material);
-                    
-                    shape.position.x = (Math.random() - 0.5) * 20;
-                    shape.position.y = (Math.random() - 0.5) * 20;
-                    shape.position.z = (Math.random() - 0.5) * 20;
-                    
-                    shape.userData = {
-                        speed: Math.random() * 0.005 + 0.002,
-                        rotationSpeed: Math.random() * 0.01 + 0.005
-                    };
-                    
-                    scene.add(shape);
-                    shapes.push(shape);
-                }
-                
-                const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
-                scene.add(ambientLight);
-                
-                camera.position.z = 15;
-                
-                function animate() {
-                    requestAnimationFrame(animate);
-                    
-                    shapes.forEach(shape => {
-                        shape.rotation.x += shape.userData.rotationSpeed;
-                        shape.rotation.y += shape.userData.rotationSpeed;
-                        shape.position.y += Math.sin(Date.now() * 0.001 + shape.position.x) * 0.005;
-                    });
-                    
-                    renderer.render(scene, camera);
-                }
-                animate();
-                
-                window.addEventListener('resize', () => {
-                    camera.aspect = window.innerWidth / window.innerHeight;
-                    camera.updateProjectionMatrix();
-                    renderer.setSize(window.innerWidth, window.innerHeight);
-                });
-            }
-            
-            // Démarrer l'animation 3D
-            setTimeout(initCreateBackground, 500);
-            
-            // GESTION AUDIO
-            let createMusic = null;
-            
-            function initCreateMusic() {
-                createMusic = new Howl({
-                    src: ['assets/sounds/creative-ambient.mp3'],
-                    loop: true,
-                    volume: 0.2,
-                    html5: true,
-                    onload: function() {
-                        const musicControl = document.getElementById('music-control-create');
-                        if (musicControl) {
-                            musicControl.classList.remove('hidden');
-                            createMusic.play();
-                        }
-                    }
-                });
-                
-                // Bouton musique
-                const toggleBtn = document.getElementById('toggle-music-create');
-                const volumeSlider = document.getElementById('volume-slider-create');
-                const volumePanel = document.getElementById('volume-panel-create');
-                
-                if (toggleBtn) {
-                    toggleBtn.addEventListener('click', function() {
-                        if (createMusic.playing()) {
-                            createMusic.pause();
-                            this.innerHTML = '<i class="fas fa-volume-mute"></i>';
-                            this.classList.remove('from-purple-600', 'to-pink-600');
-                            this.classList.add('from-gray-600', 'to-gray-800');
-                        } else {
-                            createMusic.play();
-                            this.innerHTML = '<i class="fas fa-music"></i>';
-                            this.classList.remove('from-gray-600', 'to-gray-800');
-                            this.classList.add('from-purple-600', 'to-pink-600');
-                        }
-                    });
-                    
-                    toggleBtn.addEventListener('mouseenter', function() {
-                        volumePanel.classList.remove('hidden');
-                    });
-                    
-                    toggleBtn.addEventListener('mouseleave', function() {
-                        setTimeout(() => {
-                            if (!volumePanel.matches(':hover')) {
-                                volumePanel.classList.add('hidden');
-                            }
-                        }, 500);
-                    });
-                }
-                
-                if (volumeSlider) {
-                    volumeSlider.addEventListener('input', function(e) {
-                        createMusic.volume(e.target.value / 100);
-                    });
-                }
-            }
-            
-            // Initialiser la musique
-            if (typeof Howl !== 'undefined') {
-                initCreateMusic();
-            }
-            
-            // EFFETS SPÉCIAUX SUR LES CHAMPS
-            const specialFields = ['pourQui', 'messageFinal', 'customHint'];
-            
-            function addFieldEffects() {
+            // Ajouter 5 cœurs flottants
+            for (let i = 0; i < 5; i++) {
                 setTimeout(() => {
-                    specialFields.forEach(fieldName => {
-                        const field = document.getElementById(fieldName);
-                        if (field) {
-                            // Effet de focus
-                            field.addEventListener('focus', function() {
-                                this.parentElement.classList.add('animate-pulse-glow');
-                                if (typeof visualEffects !== 'undefined') {
-                                    visualEffects.createHeartRain(2);
-                                }
-                            });
-                            
-                            field.addEventListener('blur', function() {
-                                this.parentElement.classList.remove('animate-pulse-glow');
-                            });
-                            
-                            // Auto-resize pour textarea
-                            if (field.tagName === 'TEXTAREA') {
-                                field.addEventListener('input', function() {
-                                    this.style.height = 'auto';
-                                    this.style.height = (this.scrollHeight) + 'px';
-                                });
-                            }
-                        }
-                    });
-                }, 1000);
+                    createFloatingHeart();
+                }, i * 300);
             }
             
-            // Exécuter après chargement
-            setTimeout(addFieldEffects, 2000);
-            
-            // GESTION MODALS
-            const contactLinks = document.querySelectorAll('.contact-footer');
-            const contactModal = document.getElementById('contactModal');
-            const closeContact = document.getElementById('closeContactModal');
-            
-            contactLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    contactModal.classList.remove('hidden');
-                });
-            });
-            
-            if (closeContact) {
-                closeContact.addEventListener('click', function() {
-                    contactModal.classList.add('hidden');
-                });
-            }
-            
-            // Modal preview
-            const previewModal = document.getElementById('previewModal');
-            const closePreview = document.getElementById('closePreviewModal');
-            const closePreviewBtn = document.getElementById('closePreviewBtn');
-            
-            if (closePreview) {
-                closePreview.addEventListener('click', function() {
-                    previewModal.classList.add('hidden');
-                });
-            }
-            
-            if (closePreviewBtn) {
-                closePreviewBtn.addEventListener('click', function() {
-                    previewModal.classList.add('hidden');
-                });
-            }
-            
-            // Modal templates
-            const templatesModal = document.getElementById('templatesModal');
-            const closeTemplates = document.getElementById('closeTemplatesModal');
-            
-            if (closeTemplates) {
-                closeTemplates.addEventListener('click', function() {
-                    templatesModal.classList.add('hidden');
-                });
-            }
-            
-            // Gestion formulaire contact
-            const contactForm = document.getElementById('contactForm');
-            if (contactForm) {
-                contactForm.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    
-                    const submitBtn = this.querySelector('button[type="submit"]');
-                    const originalText = submitBtn.innerHTML;
-                    
-                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Envoi en cours...';
-                    submitBtn.disabled = true;
-                    
-                    try {
-                        const formData = new FormData(this);
-                        formData.set('_replyto', 'maxhounkpatin001@gmail.com');
-                        
-                        const response = await fetch(this.action, {
-                            method: 'POST',
-                            body: formData,
-                            headers: {
-                                'Accept': 'application/json'
-                            }
-                        });
-                        
-                        if (response.ok) {
-                            contactForm.innerHTML = `
-                                <div class="text-center py-8">
-                                    <div class="text-5xl text-green-500 mb-4">✅</div>
-                                    <h4 class="text-xl font-bold text-gray-800 mb-2">Message envoyé !</h4>
-                                    <p class="text-gray-600">Nous vous répondrons dans les plus brefs délais.</p>
-                                    <button type="button" onclick="location.reload()" class="mt-6 text-purple-600 hover:text-purple-700">
-                                        <i class="fas fa-times mr-1"></i>Fermer
-                                    </button>
-                                </div>
-                            `;
-                        } else {
-                            throw new Error('Erreur d\'envoi');
-                        }
-                        
-                    } catch (error) {
-                        console.error('Erreur:', error);
-                        alert('Erreur lors de l\'envoi du message. Veuillez réessayer.');
-                        
-                        submitBtn.innerHTML = originalText;
-                        submitBtn.disabled = false;
-                    }
-                });
-            }
-            
-            // FERMER MODALS EN CLIQUANT À L'EXTÉRIEUR
-            [contactModal, previewModal, templatesModal].forEach(modal => {
-                if (modal) {
-                    modal.addEventListener('click', function(e) {
-                        if (e.target === this) {
-                            this.classList.add('hidden');
-                        }
-                    });
-                }
-            });
-            
-            // AJOUTER DES EFFETS AU SCROLL
-            let lastScroll = 0;
-            window.addEventListener('scroll', function() {
-                const currentScroll = window.scrollY;
-                
-                // Ajouter des cœurs occasionnellement
-                if (currentScroll > lastScroll + 100) {
-                    if (Math.random() > 0.7) {
-                        createHeartEffect();
-                    }
-                    lastScroll = currentScroll;
-                }
-                
-                // Animation des éléments
-                const floatElements = document.querySelectorAll('.animate-float-slow');
-                floatElements.forEach(el => {
-                    el.style.transform = `translateY(${Math.sin(currentScroll * 0.01) * 5}px) rotate(${Math.sin(currentScroll * 0.005) * 5}deg)`;
-                });
-            });
-            
-            // FONCTION POUR CRÉER DES CŒURS
-            function createHeartEffect() {
+            function createFloatingHeart() {
                 const heart = document.createElement('div');
                 heart.innerHTML = '❤️';
+                heart.className = 'floating-heart';
                 heart.style.cssText = `
-                    position: fixed;
-                    font-size: 20px;
+                    font-size: ${Math.random() * 20 + 15}px;
                     left: ${Math.random() * 100}%;
                     top: ${Math.random() * 100}%;
-                    opacity: ${Math.random() * 0.3 + 0.1};
-                    pointer-events: none;
-                    z-index: 9999;
-                    animation: float-heart ${Math.random() * 2 + 1}s ease-out forwards;
+                    animation: float-heart ${Math.random() * 10 + 5}s infinite ease-in-out;
                 `;
-                
-                document.body.appendChild(heart);
-                
-                // Ajouter l'animation
-                const style = document.createElement('style');
-                style.textContent = `
-                    @keyframes float-heart {
-                        0% {
-                            transform: translate(0, 0) scale(1);
-                            opacity: 0.5;
-                        }
-                        100% {
-                            transform: translate(${Math.random() * 100 - 50}px, -100px) scale(0);
-                            opacity: 0;
-                        }
-                    }
-                `;
-                document.head.appendChild(style);
-                
-                setTimeout(() => {
-                    heart.remove();
-                    style.remove();
-                }, 2000);
+                document.getElementById('app').appendChild(heart);
             }
-            
-            // BOUTON MAGIQUE POUR PRÉVISUALISATION
-            document.addEventListener('click', function(e) {
-                if (e.target.id === 'previewBtn' || e.target.closest('#previewBtn')) {
-                    e.preventDefault();
-                    showPreview();
-                }
-                
-                if (e.target.id === 'templatesBtn' || e.target.closest('#templatesBtn')) {
-                    e.preventDefault();
-                    showTemplatesModal();
-                }
-            });
-            
-            // FONCTION POUR AFFICHER L'APERÇU
-            function showPreview() {
-                const previewModal = document.getElementById('previewModal');
-                const previewContent = document.getElementById('previewContent');
-                
-                if (!previewModal || !previewContent) return;
-                
-                // Récupérer les valeurs des champs
-                const pourQui = document.getElementById('pourQui')?.value || 'Nom';
-                const deLaPartDe = document.getElementById('deLaPartDe')?.value || 'Vous';
-                const messageFinal = document.getElementById('messageFinal')?.value || 'Message d\'amour';
-                const question1 = document.getElementById('question1')?.value || 'Question personnelle';
-                
-                // Créer l'aperçu
-                previewContent.innerHTML = `
-                    <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-8 text-white">
-                        <div class="text-center">
-                            <div class="text-5xl mb-6 animate-pulse">🔮</div>
-                            <h2 class="text-2xl font-bold mb-4">Aperçu de la surprise</h2>
-                            <p class="opacity-90 mb-6">Voici comment verra la personne</p>
-                        </div>
-                        
-                        <div class="space-y-6">
-                            <div class="bg-white/20 p-4 rounded-xl">
-                                <p class="font-bold mb-2">Pour :</p>
-                                <p class="text-xl">${pourQui}</p>
-                            </div>
-                            
-                            <div class="bg-white/20 p-4 rounded-xl">
-                                <p class="font-bold mb-2">De la part de :</p>
-                                <p class="text-xl">${deLaPartDe}</p>
-                            </div>
-                            
-                            <div class="bg-white/20 p-4 rounded-xl">
-                                <p class="font-bold mb-2">Question :</p>
-                                <p class="text-lg italic">"${question1}"</p>
-                            </div>
-                            
-                            <div class="bg-white/20 p-4 rounded-xl">
-                                <p class="font-bold mb-2">Message final :</p>
-                                <p class="text-lg">"${messageFinal}"</p>
-                            </div>
-                        </div>
-                        
-                        <div class="mt-8 text-center">
-                            <div class="inline-block p-4 bg-white/10 rounded-xl">
-                                <p class="text-sm opacity-80">
-                                    <i class="fas fa-qrcode mr-2"></i>
-                                    Un QR Code sera généré automatiquement
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                previewModal.classList.remove('hidden');
-                
-                // Effet sonore
-                if (createMusic) {
-                    createMusic.volume(0.1);
-                    setTimeout(() => createMusic.volume(0.2), 1000);
-                }
-            }
-            
-            // FONCTION POUR AFFICHER LES TEMPLATES
-            function showTemplatesModal() {
-                const templatesModal = document.getElementById('templatesModal');
-                const templatesGrid = document.getElementById('templatesGrid');
-                
-                if (!templatesModal || !templatesGrid) return;
-                
-                // Templates disponibles
-                const templates = [
-                    {
-                        id: 'romantic',
-                        name: 'Romantique',
-                        emoji: '❤️',
-                        colors: ['#ec4899', '#d946ef'],
-                        description: 'Parfait pour une déclaration d\'amour'
-                    },
-                    {
-                        id: 'geek',
-                        name: 'Geek',
-                        emoji: '👨‍💻',
-                        colors: ['#3b82f6', '#1d4ed8'],
-                        description: 'Pour les amoureux de la tech'
-                    },
-                    {
-                        id: 'birthday',
-                        name: 'Anniversaire',
-                        emoji: '🎂',
-                        colors: ['#f59e0b', '#d97706'],
-                        description: 'Célébrez un anniversaire spécial'
-                    },
-                    {
-                        id: 'friendship',
-                        name: 'Amitié',
-                        emoji: '🤝',
-                        colors: ['#10b981', '#059669'],
-                        description: 'Pour montrer votre amitié'
-                    },
-                    {
-                        id: 'mysterious',
-                        name: 'Mystérieux',
-                        emoji: '🔮',
-                        colors: ['#8b5cf6', '#7c3aed'],
-                        description: 'Créez du suspense et de la magie'
-                    },
-                    {
-                        id: 'elegant',
-                        name: 'Élégant',
-                        emoji: '👑',
-                        colors: ['#6b7280', '#4b5563'],
-                        description: 'Un style sobre et raffiné'
-                    }
-                ];
-                
-                // Générer les cartes de template
-                templatesGrid.innerHTML = templates.map(template => `
-                    <div class="template-card border-2 border-gray-200 rounded-xl p-4 text-center hover:border-${template.colors[0].replace('#', '')}"
-                         data-template="${template.id}"
-                         style="border-color: ${template.colors[0]}; background: linear-gradient(135deg, ${template.colors[0]}20, ${template.colors[1]}20)">
-                        <div class="text-4xl mb-3">${template.emoji}</div>
-                        <h4 class="font-bold text-gray-800 mb-2">${template.name}</h4>
-                        <p class="text-sm text-gray-600">${template.description}</p>
-                        <div class="mt-3 flex justify-center space-x-1">
-                            <div class="w-6 h-6 rounded-full" style="background: ${template.colors[0]}"></div>
-                            <div class="w-6 h-6 rounded-full" style="background: ${template.colors[1]}"></div>
-                        </div>
-                    </div>
-                `).join('');
-                
-                // Gestion du clic sur un template
-                let selectedTemplate = null;
-                templatesGrid.querySelectorAll('.template-card').forEach(card => {
-                    card.addEventListener('click', function() {
-                        // Retirer la sélection précédente
-                        templatesGrid.querySelectorAll('.template-card').forEach(c => {
-                            c.classList.remove('selected');
-                            c.style.borderWidth = '2px';
-                        });
-                        
-                        // Sélectionner celui-ci
-                        this.classList.add('selected');
-                        this.style.borderWidth = '4px';
-                        selectedTemplate = this.dataset.template;
-                    });
-                });
-                
-                // Bouton de confirmation
-                const confirmBtn = document.getElementById('confirmTemplateBtn');
-                if (confirmBtn) {
-                    confirmBtn.addEventListener('click', function() {
-                        if (selectedTemplate) {
-                            // Appliquer le template sélectionné
-                            applyTemplate(selectedTemplate);
-                            templatesModal.classList.add('hidden');
-                        }
-                    });
-                }
-                
-                templatesModal.classList.remove('hidden');
-            }
-            
-            // FONCTION POUR APPLIQUER UN TEMPLATE
-            function applyTemplate(templateId) {
-                // Cette fonction sera appelée par creator-enhanced.js
-                console.log('Template appliqué:', templateId);
-                
-                // Jouer un effet sonore
-                if (createMusic) {
-                    const clickSound = new Howl({
-                        src: ['assets/sounds/click.mp3'],
-                        volume: 0.3
-                    });
-                    clickSound.play();
-                }
-            }
-            
-            // CHARGER LES EFFETS VISUELS
-            import('./js/effects.js').then(module => {
-                window.visualEffects = module.default;
-                
-                // Ajouter des cœurs au chargement
-                setTimeout(() => {
-                    if (visualEffects) {
-                        visualEffects.createHeartRain(8);
-                    }
-                }, 1000);
-            }).catch(console.error);
         });
     </script>
 </body>
