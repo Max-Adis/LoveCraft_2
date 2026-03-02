@@ -1,4 +1,3 @@
-
 import { 
     auth, googleProvider,
     createUserWithEmailAndPassword, 
@@ -18,12 +17,18 @@ class AuthManager {
     init() {
         onAuthStateChanged(auth, (user) => {
             this.currentUser = user;
-            if (user && window.location.pathname.includes('index.html')) {
+            // CORRECTION : fonctionne avec "/" ET "/index.html"
+            const path = window.location.pathname;
+            const isHomePage = path === '/' || 
+                               path.endsWith('/index.html') || 
+                               path.endsWith('/LoveCraft/') ||
+                               path.endsWith('/LoveCraft');
+            
+            if (user && isHomePage) {
                 window.location.href = 'dashboard.html';
             }
         });
 
-        // Boutons navigation
         document.getElementById('loginBtn')?.addEventListener('click', (e) => {
             e.preventDefault();
             this.showAuthModal('login');
@@ -38,7 +43,6 @@ class AuthManager {
             this.showAuthModal('signup');
         });
 
-        // Tabs modal
         document.getElementById('tabLogin')?.addEventListener('click', () => {
             this.switchTab('login');
         });
@@ -47,7 +51,6 @@ class AuthManager {
             this.switchTab('signup');
         });
 
-        // Fermer modals
         document.getElementById('closeModal')?.addEventListener('click', () => {
             this.hideAuthModal();
         });
@@ -56,7 +59,6 @@ class AuthManager {
             this.hideForgotModal();
         });
 
-        // Connexion email/password
         document.getElementById('submitLogin')?.addEventListener('click', () => {
             this.loginWithEmail();
         });
@@ -65,7 +67,6 @@ class AuthManager {
             this.signupWithEmail();
         });
 
-        // Google
         document.getElementById('googleLogin')?.addEventListener('click', () => {
             this.loginWithGoogle();
         });
@@ -74,7 +75,6 @@ class AuthManager {
             this.loginWithGoogle();
         });
 
-        // Mot de passe oublié
         document.getElementById('forgotPassword')?.addEventListener('click', (e) => {
             e.preventDefault();
             this.showForgotModal();
@@ -84,7 +84,6 @@ class AuthManager {
             this.resetPassword();
         });
 
-        // Enter key
         document.getElementById('loginPassword')?.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.loginWithEmail();
         });
@@ -95,14 +94,12 @@ class AuthManager {
     }
 
     showAuthModal(tab = 'login') {
-        const modal = document.getElementById('authModal');
-        modal.classList.remove('hidden');
+        document.getElementById('authModal').classList.remove('hidden');
         this.switchTab(tab);
     }
 
     hideAuthModal() {
-        const modal = document.getElementById('authModal');
-        modal.classList.add('hidden');
+        document.getElementById('authModal').classList.add('hidden');
         this.clearErrors();
     }
 
@@ -145,28 +142,23 @@ class AuthManager {
     }
 
     showError(elementId, message) {
-        const errorElement = document.getElementById(elementId);
-        if (errorElement) {
-            errorElement.textContent = message;
-            errorElement.classList.remove('hidden');
+        const el = document.getElementById(elementId);
+        if (el) {
+            el.textContent = message;
+            el.classList.remove('hidden');
         }
     }
 
     showSuccess(message) {
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'fixed top-4 right-4 bg-green-100 text-green-800 px-6 py-4 rounded-lg shadow-lg z-50';
-        alertDiv.innerHTML = `
-            <div class="flex items-center">
-                <i class="fas fa-check-circle mr-3"></i>
-                <div>${message}</div>
-            </div>
-        `;
-        document.body.appendChild(alertDiv);
-        setTimeout(() => alertDiv.remove(), 3000);
+        const div = document.createElement('div');
+        div.className = 'fixed top-4 right-4 bg-green-100 text-green-800 px-6 py-4 rounded-lg shadow-lg z-50';
+        div.innerHTML = `<div class="flex items-center"><i class="fas fa-check-circle mr-3"></i><div>${message}</div></div>`;
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 3000);
     }
 
     async loginWithEmail() {
-        const email = document.getElementById('loginEmail').value;
+        const email = document.getElementById('loginEmail').value.trim();
         const password = document.getElementById('loginPassword').value;
 
         if (!email || !password) {
@@ -177,22 +169,35 @@ class AuthManager {
         try {
             await signInWithEmailAndPassword(auth, email, password);
             this.hideAuthModal();
-            this.showSuccess('Connexion réussie !');
+            // Redirection manuelle en plus de onAuthStateChanged
+            window.location.href = 'dashboard.html';
         } catch (error) {
+            // CORRECTION : nouveaux codes d'erreur Firebase v9+
             let message = 'Erreur de connexion';
             switch (error.code) {
-                case 'auth/invalid-email': message = 'Email invalide'; break;
-                case 'auth/user-disabled': message = 'Compte désactivé'; break;
-                case 'auth/user-not-found': message = 'Compte non trouvé'; break;
-                case 'auth/wrong-password': message = 'Mot de passe incorrect'; break;
-                default: message = error.message;
+                case 'auth/invalid-email':
+                    message = 'Email invalide'; break;
+                case 'auth/user-disabled':
+                    message = 'Compte désactivé'; break;
+                case 'auth/user-not-found':
+                    message = 'Aucun compte avec cet email'; break;
+                case 'auth/wrong-password':
+                    message = 'Mot de passe incorrect'; break;
+                case 'auth/invalid-credential':
+                    message = 'Email ou mot de passe incorrect'; break;
+                case 'auth/too-many-requests':
+                    message = 'Trop de tentatives, réessayez plus tard'; break;
+                case 'auth/network-request-failed':
+                    message = 'Erreur réseau, vérifiez votre connexion'; break;
+                default:
+                    message = 'Email ou mot de passe incorrect';
             }
             this.showError('loginError', message);
         }
     }
 
     async signupWithEmail() {
-        const email = document.getElementById('signupEmail').value;
+        const email = document.getElementById('signupEmail').value.trim();
         const password = document.getElementById('signupPassword').value;
         const confirm = document.getElementById('signupConfirm').value;
 
@@ -214,15 +219,18 @@ class AuthManager {
         try {
             await createUserWithEmailAndPassword(auth, email, password);
             this.hideAuthModal();
-            this.showSuccess('Compte créé avec succès !');
+            window.location.href = 'dashboard.html';
         } catch (error) {
             let message = "Erreur d'inscription";
             switch (error.code) {
-                case 'auth/email-already-in-use': message = 'Cet email est déjà utilisé'; break;
-                case 'auth/invalid-email': message = 'Email invalide'; break;
-                case 'auth/operation-not-allowed': message = 'Opération non autorisée'; break;
-                case 'auth/weak-password': message = 'Mot de passe trop faible'; break;
-                default: message = error.message;
+                case 'auth/email-already-in-use':
+                    message = 'Cet email est déjà utilisé'; break;
+                case 'auth/invalid-email':
+                    message = 'Email invalide'; break;
+                case 'auth/weak-password':
+                    message = 'Mot de passe trop faible (min 6 caractères)'; break;
+                default:
+                    message = "Erreur lors de la création du compte";
             }
             this.showError('signupError', message);
         }
@@ -230,19 +238,17 @@ class AuthManager {
 
     async loginWithGoogle() {
         try {
-            const result = await signInWithPopup(auth, googleProvider);
-            // Stocker le nom Google pour pré-remplissage
-            localStorage.setItem('googleUserName', result.user.displayName);
-            localStorage.setItem('googleUserPhoto', result.user.photoURL);
-            this.hideAuthModal();
-            this.showSuccess('Connexion Google réussie !');
+            await signInWithPopup(auth, googleProvider);
+            window.location.href = 'dashboard.html';
         } catch (error) {
-            this.showError('loginError', 'Erreur avec Google : ' + error.message);
+            if (error.code !== 'auth/popup-closed-by-user') {
+                this.showError('loginError', 'Erreur Google : ' + error.message);
+            }
         }
     }
 
     async resetPassword() {
-        const email = document.getElementById('resetEmail').value;
+        const email = document.getElementById('resetEmail').value.trim();
         
         if (!email) {
             alert('Veuillez entrer votre email');
@@ -251,10 +257,10 @@ class AuthManager {
 
         try {
             await sendPasswordResetEmail(auth, email);
-            this.showSuccess('Email de réinitialisation envoyé ! Vérifiez votre boîte mail.');
+            this.showSuccess('Email de réinitialisation envoyé !');
             this.hideForgotModal();
         } catch (error) {
-            alert('Erreur : ' + error.message);
+            alert('Erreur : email introuvable');
         }
     }
 
@@ -269,4 +275,3 @@ class AuthManager {
 }
 
 new AuthManager();
-
