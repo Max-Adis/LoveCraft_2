@@ -7,8 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- NOUVELLES LIBRAIRIES -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
+    <!-- LIBRAIRIES (Howler supprimé) -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
@@ -53,16 +52,10 @@
             color: #9ca3af !important;
         }
         
-        /* ANIMATIONS AJOUTÉES */
+        /* ANIMATIONS */
         @keyframes heart-rain {
-            0% {
-                transform: translateY(-100px) rotate(0deg);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(100vh) rotate(360deg);
-                opacity: 0;
-            }
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
         }
         
         @keyframes twinkle {
@@ -80,43 +73,21 @@
             z-index: -1;
             pointer-events: none;
         }
-        
-        /* BOUTON MUSIQUE */
-        #music-control {
-            transition: all 0.3s ease;
-        }
-        
-        #music-control:hover {
-            transform: scale(1.1);
-        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col bg-gray-50">
     <!-- CONTENEUR 3D EN FOND -->
     <div id="three-container"></div>
     
-    <!-- EFFETS VISUELS -->
+    <!-- EFFETS VISUELS PARTICLES -->
     <div id="particles-js" style="position: fixed; width: 100%; height: 100%; top: 0; left: 0; z-index: 0; pointer-events: none;"></div>
-    
-    <!-- BOUTON DE CONTRÔLE MUSICAL -->
-    <div id="music-control" class="fixed bottom-6 right-6 z-50 hidden">
-        <button id="toggle-music" class="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center">
-            <i class="fas fa-music"></i>
-        </button>
-        <div id="volume-panel" class="mt-2 bg-white rounded-lg p-2 shadow-lg hidden">
-            <input type="range" min="0" max="100" value="30" class="w-full" id="volume-slider">
-            <p class="text-xs text-gray-600 text-center mt-1">Volume</p>
-        </div>
-    </div>
 
     <div id="app" class="flex-grow">
-        <!-- Décorations flottantes améliorées -->
+        <!-- Décorations flottantes -->
         <div class="emoji-float top-10 left-5 animate-float delay-100 text-4xl">❤️</div>
         <div class="emoji-float top-20 right-10 animate-float delay-300 text-4xl">✨</div>
         <div class="emoji-float bottom-20 left-10 animate-float delay-500 text-4xl">🎉</div>
         <div class="emoji-float bottom-10 right-20 animate-pulse-glow delay-700 text-4xl">💖</div>
-        
-        <!-- Nouveaux effets flottants -->
         <div class="emoji-float top-1/3 left-1/4 animate-float delay-200 text-3xl" style="animation-delay: 1s;">🌟</div>
         <div class="emoji-float top-2/3 right-1/4 animate-float delay-400 text-3xl" style="animation-delay: 1.5s;">🎁</div>
 
@@ -126,10 +97,8 @@
                 <div class="flex justify-between h-16">
                     <div class="flex items-center">
                         <a href="index.html" class="flex-shrink-0 flex items-center">
-                            <!-- LOGO ROND PARFAIT -->
                             <div class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center overflow-hidden mr-3 border-2 border-white shadow-lg">
-                                <img src="assets/logo.png" alt="LoveCraft Logo" 
-                                     class="w-full h-full object-cover p-0.5">
+                                <img src="assets/logo.png" alt="LoveCraft Logo" class="w-full h-full object-cover p-0.5">
                             </div>
                             <span class="text-2xl font-bold text-purple-600">LoveCraft</span>
                         </a>
@@ -172,7 +141,7 @@
                         </a>
                     </div>
                     
-                    <!-- NOUVEAU: Démo interactive -->
+                    <!-- Démo interactive -->
                     <div class="mt-12 animate-fadeIn delay-500">
                         <div class="inline-flex items-center bg-white/10 px-4 py-2 rounded-full">
                             <i class="fas fa-sparkles text-yellow-300 mr-2"></i>
@@ -293,7 +262,7 @@
         </div>
     </footer>
 
-    <!-- Modals -->
+    <!-- Modal Auth -->
     <div id="authModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
         <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div class="mt-3">
@@ -302,16 +271,10 @@
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-                
                 <div class="flex border-b mb-6">
-                    <button id="tabLogin" class="flex-1 py-2 text-center font-medium text-purple-600 border-b-2 border-purple-600">
-                        Connexion
-                    </button>
-                    <button id="tabSignup" class="flex-1 py-2 text-center font-medium text-gray-500">
-                        Inscription
-                    </button>
+                    <button id="tabLogin" class="flex-1 py-2 text-center font-medium text-purple-600 border-b-2 border-purple-600">Connexion</button>
+                    <button id="tabSignup" class="flex-1 py-2 text-center font-medium text-gray-500">Inscription</button>
                 </div>
-                
                 <div id="loginForm">
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
@@ -325,18 +288,12 @@
                         </div>
                     </div>
                     <div id="loginError" class="text-red-500 text-sm mb-4 hidden"></div>
-                    <button id="submitLogin" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition">
-                        Se connecter
-                    </button>
-                    <div class="text-center my-4">
-                        <span class="text-gray-500">ou</span>
-                    </div>
+                    <button id="submitLogin" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition">Se connecter</button>
+                    <div class="text-center my-4"><span class="text-gray-500">ou</span></div>
                     <button id="googleLogin" class="w-full bg-white border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition flex items-center justify-center">
-                        <img src="https://www.google.com/favicon.ico" class="w-5 h-5 mr-2">
-                        Continuer avec Google
+                        <img src="https://www.google.com/favicon.ico" class="w-5 h-5 mr-2">Continuer avec Google
                     </button>
                 </div>
-                
                 <div id="signupForm" class="hidden">
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
@@ -352,37 +309,28 @@
                         <input type="password" id="signupConfirm" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-800" placeholder="••••••••">
                     </div>
                     <div id="signupError" class="text-red-500 text-sm mb-4 hidden"></div>
-                    <button id="submitSignup" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition">
-                        Créer un compte
-                    </button>
-                    <div class="text-center my-4">
-                        <span class="text-gray-500">ou</span>
-                    </div>
+                    <button id="submitSignup" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition">Créer un compte</button>
+                    <div class="text-center my-4"><span class="text-gray-500">ou</span></div>
                     <button id="googleSignup" class="w-full bg-white border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition flex items-center justify-center">
-                        <img src="https://www.google.com/favicon.ico" class="w-5 h-5 mr-2">
-                        S'inscrire avec Google
+                        <img src="https://www.google.com/favicon.ico" class="w-5 h-5 mr-2">S'inscrire avec Google
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Forgot Password Modal -->
+    <!-- Modal Mot de passe oublié -->
     <div id="forgotPasswordModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50 overflow-y-auto">
         <div class="min-h-screen flex items-center justify-center p-4">
             <div class="bg-white rounded-xl max-w-md w-full p-6">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-xl font-bold text-gray-800">Mot de passe oublié</h3>
-                    <button id="closeForgotModal" class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <button id="closeForgotModal" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="mb-4">
                     <p class="text-gray-600 mb-4">Entrez votre email pour recevoir un lien de réinitialisation :</p>
                     <input type="email" id="resetEmail" placeholder="votre@email.com" class="w-full px-4 py-2 border rounded-lg mb-4 text-gray-800">
-                    <button id="submitReset" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700">
-                        Envoyer le lien
-                    </button>
+                    <button id="submitReset" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700">Envoyer le lien</button>
                 </div>
             </div>
         </div>
@@ -394,50 +342,30 @@
             <div class="bg-white rounded-xl max-w-md w-full p-6">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-xl font-bold text-gray-800">Contactez-nous</h3>
-                    <button id="closeContactModal" class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <button id="closeContactModal" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
                 </div>
-                
                 <form id="contactForm" action="https://formspree.io/f/mgvgzykk" method="POST">
                     <input type="hidden" name="_replyto" value="maxhounkpatin001@gmail.com">
                     <input type="hidden" name="_subject" value="Contact LoveCraft">
-                    
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2">Votre nom *</label>
-                        <input type="text" name="name" required
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-800"
-                               placeholder="Votre nom complet">
+                        <input type="text" name="name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-800" placeholder="Votre nom complet">
                     </div>
-                    
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2">Votre email *</label>
-                        <input type="email" name="email" required
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-800"
-                               placeholder="votre@email.com">
+                        <input type="email" name="email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-800" placeholder="votre@email.com">
                     </div>
-                    
                     <div class="mb-6">
                         <label class="block text-gray-700 text-sm font-bold mb-2">Votre message *</label>
-                        <textarea name="message" rows="4" required
-                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-800"
-                                  placeholder="Comment pouvons-nous vous aider ?"></textarea>
+                        <textarea name="message" rows="4" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-800" placeholder="Comment pouvons-nous vous aider ?"></textarea>
                     </div>
-                    
                     <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-bold hover:opacity-90 transition">
                         <i class="fas fa-paper-plane mr-2"></i>Envoyer le message
                     </button>
                 </form>
-                
                 <div class="mt-6 pt-6 border-t border-gray-200">
-                    <p class="text-sm text-gray-600">
-                        <i class="fas fa-envelope mr-2"></i>
-                        <strong>Email :</strong> maxhounkpatin001@gmail.com
-                    </p>
-                    <p class="text-sm text-gray-600 mt-2">
-                        <i class="fas fa-clock mr-2"></i>
-                        Réponse sous 24-48h
-                    </p>
+                    <p class="text-sm text-gray-600"><i class="fas fa-envelope mr-2"></i><strong>Email :</strong> maxhounkpatin001@gmail.com</p>
+                    <p class="text-sm text-gray-600 mt-2"><i class="fas fa-clock mr-2"></i>Réponse sous 24-48h</p>
                 </div>
             </div>
         </div>
@@ -449,14 +377,10 @@
             <div class="bg-white rounded-xl max-w-2xl w-full p-6">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-2xl font-bold text-gray-800">Démo Interactive</h3>
-                    <button id="closeDemoModal" class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <button id="closeDemoModal" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
                 </div>
-                
                 <div class="mb-6">
                     <p class="text-gray-600 mb-4">Découvrez comment LoveCraft fonctionne en quelques secondes :</p>
-                    
                     <div class="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-xl mb-6">
                         <div class="flex items-center mb-4">
                             <div class="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center text-white mr-4">
@@ -467,13 +391,11 @@
                                 <p class="text-sm text-gray-600">Essayez comme si vous étiez le destinataire</p>
                             </div>
                         </div>
-                        
                         <button id="startDemo" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-bold hover:opacity-90 transition">
                             <i class="fas fa-play mr-2"></i>Démarrer la démo
                         </button>
                     </div>
                 </div>
-                
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="text-center p-4 border rounded-lg">
                         <div class="text-3xl mb-2">🎨</div>
@@ -497,14 +419,11 @@
 
     <!-- Scripts -->
     <script type="module" src="js/auth.js"></script>
-    
-    <!-- NOUVEAUX SCRIPTS -->
-    <script type="module" src="js/audio-manager.js"></script>
     <script type="module" src="js/effects.js"></script>
     
     <script>
-        // Gestion des modals
         document.addEventListener('DOMContentLoaded', function() {
+
             // INITIALISER LES EFFETS VISUELS
             if (typeof visualEffects !== 'undefined') {
                 visualEffects.initParticles('particles-js');
@@ -524,13 +443,8 @@
                 renderer.setClearColor(0x000000, 0);
                 container.appendChild(renderer.domElement);
                 
-                // Créer des cœurs 3D
                 const heartGeometry = new THREE.SphereGeometry(0.3, 16, 16);
-                const heartMaterial = new THREE.MeshPhongMaterial({ 
-                    color: 0xec4899, 
-                    transparent: true, 
-                    opacity: 0.4 
-                });
+                const heartMaterial = new THREE.MeshPhongMaterial({ color: 0xec4899, transparent: true, opacity: 0.4 });
                 
                 const hearts = [];
                 for (let i = 0; i < 20; i++) {
@@ -538,51 +452,33 @@
                     heart.position.x = (Math.random() - 0.5) * 20;
                     heart.position.y = (Math.random() - 0.5) * 20;
                     heart.position.z = (Math.random() - 0.5) * 20;
-                    heart.userData = { 
-                        speed: Math.random() * 0.01 + 0.005,
-                        direction: Math.random() * Math.PI * 2
-                    };
+                    heart.userData = { speed: Math.random() * 0.01 + 0.005, direction: Math.random() * Math.PI * 2 };
                     scene.add(heart);
                     hearts.push(heart);
                 }
                 
-                // Lumières
                 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
                 scene.add(ambientLight);
-                
                 const pointLight = new THREE.PointLight(0xec4899, 0.5);
                 pointLight.position.set(5, 5, 5);
                 scene.add(pointLight);
-                
                 camera.position.z = 15;
                 
-                // Animation
                 function animate() {
                     requestAnimationFrame(animate);
-                    
                     hearts.forEach(heart => {
                         heart.rotation.x += heart.userData.speed;
                         heart.rotation.y += heart.userData.speed;
-                        
-                        // Mouvement lent
                         heart.position.x += Math.sin(heart.userData.direction + Date.now() * 0.001) * 0.01;
                         heart.position.y += Math.cos(heart.userData.direction + Date.now() * 0.001) * 0.01;
-                        
-                        // Réapparition si hors champ
                         if (heart.position.length() > 25) {
-                            heart.position.set(
-                                (Math.random() - 0.5) * 10,
-                                (Math.random() - 0.5) * 10,
-                                (Math.random() - 0.5) * 10
-                            );
+                            heart.position.set((Math.random() - 0.5) * 10, (Math.random() - 0.5) * 10, (Math.random() - 0.5) * 10);
                         }
                     });
-                    
                     renderer.render(scene, camera);
                 }
                 animate();
                 
-                // Redimensionnement
                 window.addEventListener('resize', () => {
                     camera.aspect = window.innerWidth / window.innerHeight;
                     camera.updateProjectionMatrix();
@@ -590,7 +486,6 @@
                 });
             }
             
-            // Démarrer l'animation 3D
             if (typeof THREE !== 'undefined') {
                 initThreeJSBackground();
             }
@@ -609,8 +504,6 @@
                     trigger.addEventListener('click', function(e) {
                         e.preventDefault();
                         document.getElementById('authModal').classList.remove('hidden');
-                        
-                        // Déterminer quelle tab ouvrir
                         if (this.id === 'signupBtn' || this.id === 'footerSignup' || this.id === 'ctaSignup') {
                             document.getElementById('tabSignup').click();
                         } else {
@@ -624,90 +517,50 @@
             const contactBtn = document.getElementById('footerSupportBtn');
             const contactModal = document.getElementById('contactModal');
             const closeContact = document.getElementById('closeContactModal');
-            
             if (contactBtn && contactModal) {
-                contactBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    contactModal.classList.remove('hidden');
-                });
+                contactBtn.addEventListener('click', function(e) { e.preventDefault(); contactModal.classList.remove('hidden'); });
             }
-            
             if (closeContact) {
-                closeContact.addEventListener('click', function() {
-                    contactModal.classList.add('hidden');
-                });
+                closeContact.addEventListener('click', function() { contactModal.classList.add('hidden'); });
             }
             
             // Démo modal
             const demoBtn = document.getElementById('demoBtn');
             const demoModal = document.getElementById('demoModal');
             const closeDemo = document.getElementById('closeDemoModal');
-            
             if (demoBtn && demoModal) {
-                demoBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    demoModal.classList.remove('hidden');
-                    
-                    // Jouer un effet sonore
-                    if (typeof audioManager !== 'undefined') {
-                        audioManager.playEffect('click');
-                    }
-                });
+                demoBtn.addEventListener('click', function(e) { e.preventDefault(); demoModal.classList.remove('hidden'); });
             }
-            
             if (closeDemo) {
-                closeDemo.addEventListener('click', function() {
-                    demoModal.classList.add('hidden');
-                });
+                closeDemo.addEventListener('click', function() { demoModal.classList.add('hidden'); });
             }
             
             // Démarrer la démo
             const startDemoBtn = document.getElementById('startDemo');
             if (startDemoBtn) {
                 startDemoBtn.addEventListener('click', function() {
-                    // Lancer des effets
                     if (typeof visualEffects !== 'undefined') {
                         visualEffects.launchConfetti();
                         visualEffects.createHeartRain(15);
                         visualEffects.flashScreen('#ec4899', 200);
                     }
-                    
-                    // Son
-                    if (typeof audioManager !== 'undefined') {
-                        audioManager.playEffect('reveal');
-                    }
-                    
-                    // Redirection vers la démo
-                    setTimeout(() => {
-                        window.open('s/?id=demo_surprise_123', '_blank');
-                    }, 1000);
+                    setTimeout(() => { window.open('s/?id=demo_surprise_123', '_blank'); }, 1000);
                 });
             }
             
-            // Gestion formulaire contact
+            // Formulaire contact
             const contactForm = document.getElementById('contactForm');
             if (contactForm) {
                 contactForm.addEventListener('submit', async function(e) {
                     e.preventDefault();
-                    
                     const submitBtn = this.querySelector('button[type="submit"]');
                     const originalText = submitBtn.innerHTML;
-                    
                     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Envoi en cours...';
                     submitBtn.disabled = true;
-                    
                     try {
                         const formData = new FormData(this);
                         formData.set('_replyto', 'maxhounkpatin001@gmail.com');
-                        
-                        const response = await fetch(this.action, {
-                            method: 'POST',
-                            body: formData,
-                            headers: {
-                                'Accept': 'application/json'
-                            }
-                        });
-                        
+                        const response = await fetch(this.action, { method: 'POST', body: formData, headers: { 'Accept': 'application/json' } });
                         if (response.ok) {
                             contactForm.innerHTML = `
                                 <div class="text-center py-8">
@@ -717,16 +570,10 @@
                                     <button type="button" onclick="location.reload()" class="mt-6 text-purple-600 hover:text-purple-700">
                                         <i class="fas fa-times mr-1"></i>Fermer
                                     </button>
-                                </div>
-                            `;
-                        } else {
-                            throw new Error('Erreur d\'envoi');
-                        }
-                        
+                                </div>`;
+                        } else { throw new Error('Erreur envoi'); }
                     } catch (error) {
-                        console.error('Erreur:', error);
                         alert('Erreur lors de l\'envoi du message. Veuillez réessayer.');
-                        
                         submitBtn.innerHTML = originalText;
                         submitBtn.disabled = false;
                     }
@@ -736,25 +583,18 @@
             // Fermer modals en cliquant à l'extérieur
             [contactModal, demoModal, document.getElementById('authModal'), document.getElementById('forgotPasswordModal')].forEach(modal => {
                 if (modal) {
-                    modal.addEventListener('click', function(e) {
-                        if (e.target === this) {
-                            this.classList.add('hidden');
-                        }
-                    });
+                    modal.addEventListener('click', function(e) { if (e.target === this) this.classList.add('hidden'); });
                 }
             });
             
-            // ANIMATION SPÉCIALE QUAND ON SCROLL
+            // ANIMATION AU SCROLL
             window.addEventListener('scroll', function() {
                 const scrollY = window.scrollY;
                 const floatElements = document.querySelectorAll('.emoji-float');
-                
                 floatElements.forEach(el => {
                     const speed = parseFloat(el.style.animationDelay || 0) + 0.5;
                     el.style.transform = `translateY(${scrollY * 0.05 * speed}px) rotate(${scrollY * 0.01}deg)`;
                 });
-                
-                // Ajouter des cœurs occasionnellement
                 if (scrollY % 100 < 10 && typeof visualEffects !== 'undefined') {
                     visualEffects.createHeartRain(3);
                 }
@@ -766,9 +606,6 @@
                 btn.addEventListener('mouseenter', function() {
                     if (typeof visualEffects !== 'undefined') {
                         visualEffects.createHeartRain(5);
-                    }
-                    if (typeof audioManager !== 'undefined') {
-                        audioManager.playEffect('click');
                     }
                 });
             });
