@@ -1,4 +1,3 @@
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 import { 
     getDatabase, 
@@ -19,6 +18,7 @@ import {
     signInWithPopup,
     GoogleAuthProvider,
     sendPasswordResetEmail,
+    sendEmailVerification,
     updateProfile,
     signOut,
     onAuthStateChanged
@@ -30,7 +30,6 @@ import {
     getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-storage.js";
 
-// CONFIGURATION FIREBASE
 const firebaseConfig = {
     apiKey: "AIzaSyB1hcyt4IVDtKcOw2JcVnCcLP5gOvPt4F0",
     authDomain: "lovecraft-web.firebaseapp.com",
@@ -42,14 +41,12 @@ const firebaseConfig = {
     measurementId: "G-L1N4GTS1EL"
 };
 
-// INITIALISATION
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 const googleProvider = new GoogleAuthProvider();
 
-// EXPORTS
 export { 
     app,
     database, 
@@ -68,7 +65,8 @@ export {
     createUserWithEmailAndPassword, 
     signInWithEmailAndPassword,
     signInWithPopup, 
-    sendPasswordResetEmail, 
+    sendPasswordResetEmail,
+    sendEmailVerification,
     updateProfile, 
     signOut, 
     onAuthStateChanged,
@@ -76,4 +74,3 @@ export {
     uploadBytes, 
     getDownloadURL
 };
-
