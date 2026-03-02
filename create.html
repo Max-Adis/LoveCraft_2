@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Librairie QR Code seulement -->
+    <!-- QR Code uniquement -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
     <style>
@@ -17,7 +17,6 @@
             background-color: white !important;
             border: 1px solid #d1d5db !important;
         }
-        
         input::placeholder, textarea::placeholder {
             color: #9ca3af !important;
         }
@@ -27,7 +26,6 @@
             from { opacity: 0; transform: scale(0.8); }
             to { opacity: 1; transform: scale(1); }
         }
-        
         .qr-appear {
             animation: qr-appear 0.5s ease-out;
         }
@@ -37,7 +35,6 @@
             0%, 100% { transform: translateY(0) rotate(0deg); }
             50% { transform: translateY(-10px) rotate(5deg); }
         }
-        
         .animate-float-heart {
             animation: float-heart 3s ease-in-out infinite;
         }
@@ -53,11 +50,9 @@
             transition: all 0.3s ease;
             cursor: pointer;
         }
-        
         .template-card:hover {
             transform: translateY(-3px);
         }
-        
         .template-card.selected {
             border-width: 3px !important;
             transform: scale(1.05);
@@ -69,7 +64,6 @@
             background-size: 200% 200%;
             animation: gradient-shift 3s ease infinite;
         }
-        
         @keyframes gradient-shift {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
@@ -83,10 +77,32 @@
             z-index: 1;
             opacity: 0.3;
         }
+
+        /* Loader dots */
+        .loading-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .loading-dots div {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #8b5cf6;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .loading-dots div:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dots div:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col bg-gradient-to-br from-purple-50 to-pink-50">
-    <!-- Navigation simple -->
+
+    <!-- Navigation -->
     <nav class="bg-white shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
@@ -107,19 +123,22 @@
         </div>
     </nav>
 
-    <div id="app" class="flex-grow max-w-6xl mx-auto px-4 md:px-8 py-8">
-        <!-- Chargement -->
+    <div id="app" class="flex-grow max-w-6xl mx-auto px-4 md:px-8 py-8 w-full">
+        <!-- Loader -->
         <div id="loading" class="text-center py-12">
-            <div class="inline-block animate-pulse">
-                <div class="w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center mb-4">
+            <div class="inline-block">
+                <div class="w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center mb-4 mx-auto animate-pulse">
                     <i class="fas fa-heart text-white text-2xl"></i>
                 </div>
             </div>
             <p class="text-gray-600">Chargement du créateur...</p>
+            <div class="loading-dots">
+                <div></div><div></div><div></div>
+            </div>
         </div>
     </div>
 
-    <!-- Footer simple -->
+    <!-- Footer -->
     <footer class="bg-gray-800 text-white mt-auto">
         <div class="max-w-7xl mx-auto px-4 py-6">
             <div class="text-center">
@@ -128,18 +147,48 @@
         </div>
     </footer>
 
-    <!-- Script principal -->
-    <script type="module" src="js/creator.js"></script>
-    
-    <!-- Script pour effets légers -->
+    <!-- Auth check + chargement creator.js -->
+    <script type="module">
+        import { auth, onAuthStateChanged } from './js/firebase.js';
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Cacher le loader
+            const loader = document.getElementById('loading');
+            if (loader) loader.style.display = 'none';
+
+            // Charger creator.js dynamiquement
+            import('./js/creator.js').then(module => {
+                if (module.default) {
+                    new module.default(user.uid);
+                }
+            }).catch(error => {
+                console.error('Erreur creator.js:', error);
+                if (loader) loader.style.display = 'none';
+                document.getElementById('app').innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="text-5xl mb-4">😢</div>
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Erreur de chargement</h2>
+                        <p class="text-gray-600 mb-2">Impossible de charger le créateur.</p>
+                        <p class="text-gray-400 text-sm mb-6">${error.message}</p>
+                        <a href="dashboard.html" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition">
+                            <i class="fas fa-arrow-left mr-2"></i>Retour au dashboard
+                        </a>
+                    </div>
+                `;
+            });
+        });
+    </script>
+
+    <!-- Effets visuels légers -->
     <script>
-        // Créer quelques cœurs flottants
         document.addEventListener('DOMContentLoaded', function() {
-            // Ajouter 5 cœurs flottants
             for (let i = 0; i < 5; i++) {
-                setTimeout(() => {
-                    createFloatingHeart();
-                }, i * 300);
+                setTimeout(() => createFloatingHeart(), i * 300);
             }
             
             function createFloatingHeart() {
@@ -152,7 +201,8 @@
                     top: ${Math.random() * 100}%;
                     animation: float-heart ${Math.random() * 10 + 5}s infinite ease-in-out;
                 `;
-                document.getElementById('app').appendChild(heart);
+                const app = document.getElementById('app');
+                if (app) app.appendChild(heart);
             }
         });
     </script>
