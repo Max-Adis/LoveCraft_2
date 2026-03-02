@@ -1,9 +1,11 @@
 import { 
-    auth, googleProvider,
+    auth, 
+    googleProvider,
     createUserWithEmailAndPassword, 
     signInWithEmailAndPassword,
     signInWithPopup,
     sendPasswordResetEmail,
+    sendEmailVerification,
     signOut,
     onAuthStateChanged
 } from './firebase.js';
@@ -17,13 +19,11 @@ class AuthManager {
     init() {
         onAuthStateChanged(auth, (user) => {
             this.currentUser = user;
-            // CORRECTION : fonctionne avec "/" ET "/index.html"
             const path = window.location.pathname;
             const isHomePage = path === '/' || 
                                path.endsWith('/index.html') || 
                                path.endsWith('/LoveCraft/') ||
                                path.endsWith('/LoveCraft');
-            
             if (user && isHomePage) {
                 window.location.href = 'dashboard.html';
             }
@@ -152,9 +152,14 @@ class AuthManager {
     showSuccess(message) {
         const div = document.createElement('div');
         div.className = 'fixed top-4 right-4 bg-green-100 text-green-800 px-6 py-4 rounded-lg shadow-lg z-50';
-        div.innerHTML = `<div class="flex items-center"><i class="fas fa-check-circle mr-3"></i><div>${message}</div></div>`;
+        div.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas fa-check-circle mr-3"></i>
+                <div>${message}</div>
+            </div>
+        `;
         document.body.appendChild(div);
-        setTimeout(() => div.remove(), 3000);
+        setTimeout(() => div.remove(), 4000);
     }
 
     async loginWithEmail() {
@@ -166,14 +171,15 @@ class AuthManager {
             return;
         }
 
+        const btn = document.getElementById('submitLogin');
+        if (btn) { btn.textContent = 'Connexion...'; btn.disabled = true; }
+
         try {
             await signInWithEmailAndPassword(auth, email, password);
             this.hideAuthModal();
-            // Redirection manuelle en plus de onAuthStateChanged
             window.location.href = 'dashboard.html';
         } catch (error) {
-            // CORRECTION : nouveaux codes d'erreur Firebase v9+
-            let message = 'Erreur de connexion';
+            let message = 'Email ou mot de passe incorrect';
             switch (error.code) {
                 case 'auth/invalid-email':
                     message = 'Email invalide'; break;
@@ -182,17 +188,16 @@ class AuthManager {
                 case 'auth/user-not-found':
                     message = 'Aucun compte avec cet email'; break;
                 case 'auth/wrong-password':
-                    message = 'Mot de passe incorrect'; break;
                 case 'auth/invalid-credential':
                     message = 'Email ou mot de passe incorrect'; break;
                 case 'auth/too-many-requests':
                     message = 'Trop de tentatives, réessayez plus tard'; break;
                 case 'auth/network-request-failed':
                     message = 'Erreur réseau, vérifiez votre connexion'; break;
-                default:
-                    message = 'Email ou mot de passe incorrect';
             }
             this.showError('loginError', message);
+        } finally {
+            if (btn) { btn.textContent = 'Se connecter'; btn.disabled = false; }
         }
     }
 
@@ -216,12 +221,25 @@ class AuthManager {
             return;
         }
 
+        const btn = document.getElementById('submitSignup');
+        if (btn) { btn.textContent = 'Création...'; btn.disabled = true; }
+
         try {
-            await createUserWithEmailAndPassword(auth, email, password);
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            
+            // Envoyer email de vérification
+            await sendEmailVerification(userCredential.user, {
+                url: 'https://lovecraft-1.vercel.app/'
+            });
+
             this.hideAuthModal();
-            window.location.href = 'dashboard.html';
+            this.showSuccess('✅ Compte créé ! Vérifiez votre email pour activer votre compte.');
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 2000);
+
         } catch (error) {
-            let message = "Erreur d'inscription";
+            let message = "Erreur lors de la création du compte";
             switch (error.code) {
                 case 'auth/email-already-in-use':
                     message = 'Cet email est déjà utilisé'; break;
@@ -229,10 +247,10 @@ class AuthManager {
                     message = 'Email invalide'; break;
                 case 'auth/weak-password':
                     message = 'Mot de passe trop faible (min 6 caractères)'; break;
-                default:
-                    message = "Erreur lors de la création du compte";
             }
             this.showError('signupError', message);
+        } finally {
+            if (btn) { btn.textContent = "S'inscrire"; btn.disabled = false; }
         }
     }
 
@@ -249,18 +267,35 @@ class AuthManager {
 
     async resetPassword() {
         const email = document.getElementById('resetEmail').value.trim();
-        
+
         if (!email) {
             alert('Veuillez entrer votre email');
             return;
         }
 
+        const btn = document.getElementById('submitReset');
+        if (btn) { btn.textContent = 'Envoi en cours...'; btn.disabled = true; }
+
         try {
-            await sendPasswordResetEmail(auth, email);
-            this.showSuccess('Email de réinitialisation envoyé !');
+            await sendPasswordResetEmail(auth, email, {
+                url: 'https://lovecraft-1.vercel.app/',
+                handleCodeInApp: false
+            });
+            this.showSuccess('✅ Email envoyé ! Vérifiez votre boîte mail (et les spams)');
             this.hideForgotModal();
         } catch (error) {
-            alert('Erreur : email introuvable');
+            let message = "Erreur lors de l'envoi";
+            switch (error.code) {
+                case 'auth/user-not-found':
+                    message = 'Aucun compte associé à cet email'; break;
+                case 'auth/invalid-email':
+                    message = 'Email invalide'; break;
+                case 'auth/too-many-requests':
+                    message = 'Trop de tentatives, réessayez plus tard'; break;
+            }
+            alert(message);
+        } finally {
+            if (btn) { btn.textContent = 'Envoyer'; btn.disabled = false; }
         }
     }
 
